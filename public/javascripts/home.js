@@ -3,7 +3,7 @@ $("#test1").click(function () {
 });
 
 var foo = function(){
-  bazz();  //lives on index.jade
+  bar();  //lives on index.jade
 };
 
 var bar = function(){

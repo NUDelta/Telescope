@@ -109,6 +109,45 @@ define([],
         window.unravelAgent.traceJsActive = false;
       };
 
-      //window.unravelAgent.traceJsOn();
+      window.unravelAgent.reWritePage = function () {
+        var http = new XMLHttpRequest();
+        http.open("GET", "https://localhost:9001/?url=" + encodeURIComponent(window.location.href) + "&html=true", true);
+
+        http.onreadystatechange = function () {
+          if (http.readyState == 4 && http.status == 200) {
+            try {
+              window.unravelAgent.response = http.responseText;
+
+              var arr = Object.keys(window);
+              for (var i = 0; i < arr.length; i++) {
+                var key = arr[i];
+
+                if (
+                  key !== "unravelAgent" &&
+                  key !== "top" &&
+                  key !== "location" &&
+                  key !== "document" &&
+                  key !== "window" &&
+                  key !== "external" &&
+                  key !== "chrome"
+                ) {
+                  window[key] = undefined;
+                  delete window[key];
+                }
+              }
+
+              document.open('text/html');
+              document.write(http.responseText);
+              document.close();
+            } catch (err) {
+              debugger;
+            }
+          }
+        };
+
+        http.send();
+      };
+
     };
+
   });

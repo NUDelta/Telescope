@@ -22,7 +22,8 @@ define([
       "click #constrain": "toggleConstrain",
       "click #whittle": "whittle",
       "click #reload": "reloadInjecting",
-      "click #fiddle": "fiddle"
+      "click #fiddle": "fiddle",
+      "click #installTracer": "installTracer"
     },
 
 
@@ -126,6 +127,12 @@ define([
       };
 
       http.send();
+    },
+
+    installTracer: function(){
+      UnravelAgent.runInPage(function () {
+        unravelAgent.reWritePage();
+      });
     },
 
     fiddle: function () {
@@ -595,7 +602,7 @@ define([
           scriptOrigin = urlObj.origin;
         } else {
           scriptType = "unknown";
-          scriptOrigin = "unknown"
+          scriptOrigin = "unknown";
           path = "unknown";
         }
 

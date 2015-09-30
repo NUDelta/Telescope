@@ -48,3 +48,16 @@ chrome.tabs.onUpdated.addListener(function (updatedTabId, changeInfo) {
     }
   }
 });
+
+//Redirect script requests to fondue
+//
+//chrome.webRequest.onBeforeRequest.addListener(function (details) {
+//    if(details.url.indexOf("chrome-extension") === -1){
+//      if (details.type === "script") {
+//        return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
+//      }
+//    }
+//  },
+//  {urls: ["<all_urls>"]},
+//  ["requestBody", "blocking"]
+//);
