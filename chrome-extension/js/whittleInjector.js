@@ -29,9 +29,14 @@ define([],
             }
           }
 
+          if(url.indexOf("localhost:900") > -1){
+            path = url.split("/?url=")[1];
+            path = decodeURIComponent(path);
+          }
+
           metaScripts.push({
-            path: path || url.split(window.location.origin)[1],
-            url: url,
+            path: path,
+            url: url || window.location.href,
             inline: !scriptEl.src,
             domPath: $scriptEl.getPath(),
             order: h

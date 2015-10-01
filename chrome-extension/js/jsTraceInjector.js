@@ -111,7 +111,7 @@ define([],
 
       window.unravelAgent.reWritePage = function () {
         var http = new XMLHttpRequest();
-        http.open("GET", "https://localhost:9001/?url=" + encodeURIComponent(window.location.href) + "&html=true", true);
+        http.open("GET", "https://localhost:9001/?url=" + encodeURIComponent(window.location.href) + "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname), true);
 
         http.onreadystatechange = function () {
           if (http.readyState == 4 && http.status == 200) {

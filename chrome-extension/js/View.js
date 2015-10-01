@@ -23,7 +23,8 @@ define([
       "click #whittle": "whittle",
       "click #reload": "reloadInjecting",
       "click #fiddle": "fiddle",
-      "click #installTracer": "installTracer"
+      "click #installTracer": "installTracer",
+      "click #redirectTraces": "redirectTraces"
     },
 
 
@@ -129,10 +130,31 @@ define([
       http.send();
     },
 
-    installTracer: function(){
+    installTracer: function () {
+      this.redirectTraces();
       UnravelAgent.runInPage(function () {
         unravelAgent.reWritePage();
       });
+    },
+
+    redirectTraces: function () {
+      if(!this.redirectingSources){
+        this.redirectingSources = true;
+      } else {
+        this.redirectingSources = false;
+      }
+      UnravelAgent.runInPage(function (redirecting) {
+        window.dispatchEvent(new CustomEvent("UnravelRedirectRequests", {"detail": redirecting}));
+        return redirecting;
+      }, function(redirecting){
+        if(redirecting){
+          this.$("#redirectTraces .inactive").hide();
+          this.$("#redirectTraces .active").show();
+        } else {
+          this.$("#redirectTraces .inactive").show();
+          this.$("#redirectTraces .active").hide();
+        }
+      }, this.redirectingSources);
     },
 
     fiddle: function () {
@@ -174,9 +196,16 @@ define([
           };
         }
 
+        var nonTracedSrcUrl = meta.url.split("#")[0];
+        if(nonTracedSrcUrl.indexOf("?") > -1){
+          nonTracedSrcUrl += "&theseus=no";
+        } else {
+          nonTracedSrcUrl += "?theseus=no";
+        }
+
         return {
           path: path,
-          url: meta.url.split("#")[0] + "?theseus=no", //ignore hash parts
+          url: nonTracedSrcUrl, //ignore hash parts
           builtIn: false,
           inline: meta.inline,
           domPath: meta.domPath,

@@ -54,3 +54,17 @@ window.addEventListener('DOMContentLoaded', function () {
     name: 'ready'
   });
 }, false);
+
+window.addEventListener("UnravelRedirectRequests", function (event) {
+  chrome.extension.sendMessage({
+    target: "page",
+    name: "UnravelRedirectRequests",
+    data: event.detail
+  });
+}, false);
+
+chrome.extension.sendMessage({
+  target: "page",
+  name: "UnravelRedirectRequests",
+  data: false
+});
