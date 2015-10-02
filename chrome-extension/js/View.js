@@ -144,7 +144,7 @@ define([
         this.redirectingSources = false;
       }
       UnravelAgent.runInPage(function (redirecting) {
-        window.dispatchEvent(new CustomEvent("UnravelRedirectRequests", {"detail": redirecting}));
+        window.dispatchEvent(new CustomEvent("UnravelRedirectRequests", {"detail": {redirecting: redirecting, origin: window.location.origin}}));
         return redirecting;
       }, function(redirecting){
         if(redirecting){
