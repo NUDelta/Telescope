@@ -73,16 +73,17 @@ chrome.tabs.onUpdated.addListener(function (updatedTabId, changeInfo) {
 
 //Redirect script requests to fondue
 chrome.webRequest.onBeforeRequest.addListener(function (details) {
-    if (
-      redirectingOrigin &&
-      redirectingOrigin === thisOrigin &&
-      requestRedirecting &&
-      details.url.indexOf("chrome-extension") === -1 &&
-      details.url.indexOf("localhost:900") === -1 &&
-      details.type === "script"
-    ) {
-      return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
-    }
+    //TODO fix this
+    //if (
+    //  redirectingOrigin &&
+    //  redirectingOrigin === thisOrigin &&
+    //  requestRedirecting &&
+    //  details.url.indexOf("chrome-extension") === -1 &&
+    //  details.url.indexOf("localhost:900") === -1 &&
+    //  details.type === "script"
+    //) {
+    //  return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
+    //}
   },
   {urls: ["<all_urls>"]},
   ["requestBody", "blocking"]

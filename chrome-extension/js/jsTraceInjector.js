@@ -110,6 +110,72 @@ define([],
       };
 
       window.unravelAgent.reWritePage = function () {
+        var keepKeys = [
+          "applicationCache",
+          "caches",
+          "closed",
+          "Components",
+          "console",
+          "content",
+          "controllers",
+          "crypto",
+          "defaultStatus",
+          "devicePixelRatio",
+          "dialogArguments",
+          "directories",
+          "document",
+          "frameElement",
+          "frames",
+          "fullScreen",
+          "globalStorage",
+          "history",
+          "innerHeight",
+          "innerWidth",
+          "length",
+          "location",
+          "locationbar",
+          "localStorage",
+          "menubar",
+          "messageManager",
+          "mozAnimationStartTime",
+          "mozInnerScreenX",
+          "mozInnerScreenY",
+          "mozPaintCount",
+          "name",
+          "navigator",
+          "opener",
+          "outerHeight",
+          "outerWidth",
+          "pageXOffset",
+          "pageYOffset",
+          "sessionStorage",
+          "parent",
+          "performance",
+          "personalbar",
+          "pkcs11",
+          "returnValue",
+          "screen",
+          "screenX",
+          "screenY",
+          "scrollbars",
+          "scrollMaxX",
+          "scrollMaxY",
+          "scrollX",
+          "scrollY",
+          "self",
+          "sessionStorage",
+          "sidebar",
+          "status",
+          "statusbar",
+          "toolbar",
+          "top",
+          "window",
+          "external",
+          "console",
+          "chrome",
+          "unravelAgent"
+        ];
+
         var http = new XMLHttpRequest();
         http.open("GET", "https://localhost:9001/?url=" + encodeURIComponent(window.location.href) + "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname), true);
 
@@ -118,23 +184,41 @@ define([],
             try {
               window.unravelAgent.response = http.responseText;
 
-              var arr = Object.keys(window);
-              for (var i = 0; i < arr.length; i++) {
-                var key = arr[i];
+              var deleteKeys = [];
 
-                if (
-                  key !== "unravelAgent" &&
-                  key !== "top" &&
-                  key !== "location" &&
-                  key !== "document" &&
-                  key !== "window" &&
-                  key !== "external" &&
-                  key !== "chrome"
-                ) {
-                  window[key] = undefined;
-                  delete window[key];
+              for (var key in window) {
+                if (window.hasOwnProperty(key)) {
+                  if (!window.unravelAgent._(keepKeys).contains(key)) {
+                    deleteKeys.push(key);
+                  }
                 }
               }
+
+              console.log("Deleting", JSON.stringify(deleteKeys));
+
+              var wontDeleteKeys = [];
+              window.unravelAgent._(deleteKeys).each(function (key) {
+                var wasDeleted = delete window[key];
+                if (!wasDeleted) {
+                  wontDeleteKeys.push(key);
+                }
+              });
+
+              window.unravelAgent._(wontDeleteKeys).each(function (key) {
+                window[key] = undefined;
+                delete window[key];
+                if (window[key]) {
+                  console.log("Secondary delete didn't work:", key);
+                }
+              });
+
+              if (window.localStorage && window.localStorage.clear) {
+                window.localStorage.clear();
+              }
+
+              document.open('text/html');
+              document.write("<html><head></head><body></body></html>");
+              document.close();
 
               document.open('text/html');
               document.write(http.responseText);
@@ -151,3 +235,4 @@ define([],
     };
 
   });
+

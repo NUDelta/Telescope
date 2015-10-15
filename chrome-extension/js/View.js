@@ -282,11 +282,13 @@ define([
     },
 
     getScriptsFromInlineHTML: function (htmlUrl, noTheseus, callback) {
-      var param = noTheseus ? "?theseus=no" : "";
+      //var param = noTheseus ? "?theseus=no" : "";
 
-      htmlUrl = htmlUrl.split("#")[0] + param;  //ignoring after hashes because server doesn't get them
+      htmlUrl = htmlUrl.split("#")[0] + "";  //ignoring after hashes because server doesn't get them
 
-      this.corsGet(htmlUrl + param, _.bind(function (http) {
+      htmlUrl = "https://localhost:9001/?url=" + encodeURIComponent(htmlUrl) + "&theseus=no";
+
+      this.corsGet(htmlUrl, _.bind(function (http) {
         var $html = $(http.responseText);
         var arrEl = [];
         $html.each(function (i, el) {
