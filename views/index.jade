@@ -1,41 +1,57 @@
 html(lang='en')
   head
     title API Demo
-    script(src='http://localhost:3000/javascripts/lib/jquery-2.1.4.js')
-    script(src='http://localhost:3000/javascripts/lib/underscore-min.js')
-    script(src='http://localhost:3000/javascripts/lib/moment.js')
-    script(src='//localhost:35729/livereload.js')
-    link(href='http://localhost:3000/stylesheets/bootstrap.min.css', rel='stylesheet')
-    link(href='http://localhost:3000/stylesheets/style.css', rel='stylesheet')
+    script().
+      window.bimBazz = {};
+    script(src='/javascripts/lib/jquery-2.1.4.js')
+    script(src='/javascripts/lib/underscore-min.js')
+    script(src='/javascripts/lib/moment.js')
+
+    //script(src='//localhost:35729/livereload.js')
+    link(href='/stylesheets/bootstrap.min.css', rel='stylesheet')
+    link(href='/stylesheets/style.css', rel='stylesheet')
   body(style="padding:1em")
     h4 Unravel Demo
     hr
     .row
       .col-xs-4
-        button.btn.btn-success(id="test1") Interaction 1
+        button.btn.btn-success(id="test1") Show/Hide the Circle
       .col-xs-1
       .col-xs-4
-        img(id="effect1", src="http://localhost:3000/img/unravel128.png")
+        img(id="effect1", src="/img/unravel128.png")
     .row
       hr
+    script(type="text/javascript").
+      var bazz = function(){
+        var i = 0;
+        i++;
+        bar();
+        return i;
+      };
     .row
       .col-xs-4
         .row
           .col-xs-12
-            button.btn.btn-primary(id="test2") Interaction 2
+            button.btn.btn-primary(id="test2") Print a TimeStamp
         .row
           .col-xs-12
             br
             .container(id="effect2", style="background-color:#dbdbdb; min-height: 1em;")
     .row
+      hr
+    .row
       .col-xs-4
-        button.btn.btn-success(id="test4") Interaction 4
+        button.btn.btn-warning(id="test3") Fly the Ship
       .col-xs-1
       .col-xs-4
-        img(id="effect4", src="http://localhost:3000/img/unravel128.png")
-    .row(style="display:none;")
-      .col-xs-4
-        a(id="test3") Error
+        img(id="effect3", src="/img/ship.jpg", height="200px", style="display:none;")
+    .row
+      //.col-xs-4
+      //  button.btn.btn-warning(id="test3") Fly the Ship
+      //.col-xs-1
+      //.col-xs-4
+      //  img(id="effect3", src="/img/ship.jpg", height="200px", style="display:none;")
 
-
-    script(src='/javascripts/home.js')
+  script(src='/javascripts/home.js')
+  script().
+    window.fooBar = {};

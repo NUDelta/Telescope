@@ -22,12 +22,11 @@ define([
       "click #constrain": "toggleConstrain",
       "click #whittle": "whittle",
       "click #reload": "reloadInjecting",
-      "click #fiddle": "fiddle"
+      "click #fiddle": "fiddle",
+      "click #installTracer": "installTracer",
+      "click #redirectTraces": "redirectTraces"
     },
 
-    currentPath: "",
-
-    elementMap: {},
 
     dataTable: null,
 
@@ -35,16 +34,30 @@ define([
 
     pathsJSRows: [],
 
-    filterSVG: true,
+    domPathsToKeep: [],
 
-    eventTracePaths: [],
+    arrHitLines: [],
+
+    arrDomHitLines: [],
 
     constrainToPath: false,
 
-    domPathsToKeep: [],
+    filterSVG: true,
 
-    initialize: function (options) {
+    whittled: false,
 
+    currentPath: "",
+
+    lastRecordingJS: "",
+
+    activeCSS: "",
+
+    activeHTML: "",
+
+    initialize: function () {
+      this.parseFondue = _.bind(this.parseFondue, this);
+      this.fiddle = _.bind(this.fiddle, this);
+      this.whittle = _.bind(this.whittle, this);
     },
 
     render: function (unravelAgentActive) {
@@ -70,102 +83,247 @@ define([
       });
     },
 
-    whittle: function () {
-      UnravelAgent.runInPage(function (safePaths) {
-        return unravelAgent.whittle(safePaths);
-      }, null, this.domPathsToKeep);
-    },
+    whittle: function (e, callback) {
+      this.whittled = true;
 
-    fiddle: function () {
-      var pageCallback = function (o) {
-        var js = _(o.js).keys().join("\n");
+      var whittleCallback = function (o) {
+        this.location = o.location;
+        this.activeHTML = o.activeHTML;
+        this.activeCSS = o.activeCSS;
+        this.metaScripts = o.metaScripts;
 
-        $.ajax({
-          url: "http://localhost:3000/api/save",
-          data: {
-            html: o.html,
-            css: o.css,
-            javascript: js
-          },
-          datatype: "json",
-          method: "post"
-        }).done(function (response) {
-          var binUrl = response.url;
-          console.log("http://localhost:3000/" + binUrl + "/edit?html,css,js,output");
-        });
+        if (callback) {
+          callback();
+        }
       };
 
       UnravelAgent.runInPage(function (safePaths) {
-        unravelAgent.whittle(safePaths);
+        var location = unravelAgent.getLocation();
+        var metaScripts = unravelAgent.metaScripts();
+        var activeCSS = unravelAgent.gatherCSS(safePaths);
+        var activeHTML = unravelAgent.whittle(safePaths); //important to run _after_ css
 
-        if (document.styleSheets && document.styleSheets.length) {
-          var css = "";
-          for (var i = 0; i < document.styleSheets.length; i++) {
-            if (document.styleSheets[i] && document.styleSheets[i].cssRules) {
-              var cssRules = document.styleSheets[i].cssRules;
-              for (var j = 0; j < cssRules.length; j++) {
-                var keepRule = false;
-                var mediaRuleText = "";
-                try {
-                  var selectorText = cssRules[j].selectorText;
-                  var selectors = selectorText.split(",");
-                  keepRule = !!_(selectors).find(function (selector) {
-                    var checkText = selector.indexOf(':') > -1 ? selector.substr(0, selector.indexOf(':')) : selector;
-                    return !!unravelAgent.$(checkText).length;
-                  });
-                } catch (err) {
-                  if (cssRules[j] instanceof CSSMediaRule) {
-                    var subRulesToRemove = [];
+        return {
+          location: location,
+          metaScripts: metaScripts,
+          activeCSS: activeCSS,
+          activeHTML: activeHTML
+        };
+      }, _.bind(whittleCallback, this), this.domPathsToKeep);
+    },
 
-                    var mediaRule = cssRules[j];
-                    var innerCSSRules = mediaRule.cssRules;
-                    for (var k = 0; k < innerCSSRules.length; k++) {
-                      var innerMediaRule = innerCSSRules[k];
-                      var innerSelectorText = innerMediaRule.selectorText;
+    corsGet: function (url, callback) {
+      var http = new XMLHttpRequest();
+      http.open("GET", url, true);
 
-                      try {
-                        var innerSelectors = innerSelectorText.split(",");
-                        var innerExists = !!_(innerSelectors).find(function (selector) {
-                          var checkText = selector.indexOf(':') > -1 ? selector.substr(0, selector.indexOf(':')) : selector;
-                          return !!unravelAgent.$(checkText).length;
-                        });
-                        if (!innerExists) {
-                          subRulesToRemove.push(innerMediaRule.cssText);
-                        }
-                      } catch (err) {
-                      }
-                    }
-                    keepRule = false;
-
-                    if (innerCSSRules.length === subRulesToRemove.length) {
-                      mediaRuleText = "";
-                    } else {
-                      mediaRuleText = cssRules[j].cssText;
-                      for (var l = 0; l < subRulesToRemove.length; l++) {
-                        mediaRuleText = mediaRuleText.replace(subRulesToRemove[l], "");
-                      }
-                    }
-                  } else {
-                    keepRule = true;
-                  }
-                }
-
-                if (keepRule) {
-                  css += cssRules[j].cssText + "\n";
-                } else if (mediaRuleText) {
-                  css += mediaRuleText;
-                }
-              }
-            }
+      http.onreadystatechange = function () {
+        if (http.readyState == 4 && http.status == 200) {
+          try {
+            callback(http);
+          } catch (err) {
+            debugger;
           }
+
+        }
+      };
+
+      http.send();
+    },
+
+    installTracer: function () {
+      this.redirectTraces();
+      UnravelAgent.runInPage(function () {
+        unravelAgent.reWritePage();
+      });
+    },
+
+    redirectTraces: function () {
+      if(!this.redirectingSources){
+        this.redirectingSources = true;
+      } else {
+        this.redirectingSources = false;
+      }
+      UnravelAgent.runInPage(function (redirecting) {
+        window.dispatchEvent(new CustomEvent("UnravelRedirectRequests", {"detail": {redirecting: redirecting, origin: window.location.origin}}));
+        return redirecting;
+      }, function(redirecting){
+        if(redirecting){
+          this.$("#redirectTraces .inactive").hide();
+          this.$("#redirectTraces .active").show();
+        } else {
+          this.$("#redirectTraces .inactive").show();
+          this.$("#redirectTraces .active").hide();
+        }
+      }, this.redirectingSources);
+    },
+
+    fiddle: function () {
+      if (!this.whittled) {
+        this.whittle(null, this.fiddle);
+        return;
+      }
+
+      //var hitScripts = _.chain(this.arrHitLines).pluck("path").unique().map(function (path) {
+      //  var meta = _.find(this.metaScripts, function (s) {
+      //    return s.path === path;
+      //  }, this);
+      //
+      //  return {
+      //    path: path,
+      //    url: meta.url + "?theseus=no",
+      //    inline: meta.inline,
+      //    domPath: meta.domPath,
+      //    order: meta.order,
+      //    js: ""
+      //  };
+      //}, this).value();
+
+
+      var hitScripts = _.chain(this.tracerNodes).pluck("path").unique().map(function (path) {
+        var meta = _.find(this.metaScripts, function (s) {
+          return s.path === path;
+        }, this);
+
+        if (!meta) {
+          return {
+            path: path,
+            builtIn: true,
+            url: null,
+            inline: null,
+            domPath: null,
+            order: null,
+            js: ""
+          };
+        }
+
+        var nonTracedSrcUrl = meta.url.split("#")[0];
+        if(nonTracedSrcUrl.indexOf("?") > -1){
+          nonTracedSrcUrl += "&theseus=no";
+        } else {
+          nonTracedSrcUrl += "?theseus=no";
         }
 
         return {
-          html: unravelAgent.$("html").html(),
-          css: css,
-          js: window.unravelAgent.storedCalls
+          path: path,
+          url: nonTracedSrcUrl, //ignore hash parts
+          builtIn: false,
+          inline: meta.inline,
+          domPath: meta.domPath,
+          order: meta.order,
+          js: ""
         };
-      }, pageCallback, this.domPathsToKeep);
+      }, this).value();
+
+
+      var jsBinCallback = _.bind(function (response) {
+        var binUrl = response.url;
+        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?html,css,js,output";
+        console.log(tabUrl);
+        window.open(tabUrl);
+        this.activeHTML = "";
+        this.activeCSS = "";
+        this.reloadInjecting();
+      }, this);
+
+      var postToBin = _.bind(function () {
+        try {
+          $.ajax({
+            url: "http://localhost:8080/api/save",
+            data: {
+              html: this.activeHTML,
+              css: this.activeCSS,
+              javascript: "",
+              fondue: {
+                traces: JSON.stringify(this.arrHitLines),
+                scripts: JSON.stringify(hitScripts)
+              }
+            },
+            datatype: "json",
+            method: "post"
+          }).done(jsBinCallback);
+        } catch (err) {
+          debugger;
+        }
+      }, this);
+
+      var externalScripts = _(hitScripts).chain().where({
+        inline: false
+      }).sortBy(function (o) {
+        return o.order
+      }).value();
+
+      var internalScripts = _(hitScripts).chain().where({
+        inline: true
+      }).sortBy(function (o) {
+        return o.order
+      }).value();
+
+      var scriptHTMLCallback = function (arrJs) {
+        _(arrJs).each(function (srcJS, i) {
+          internalScripts[i].js = srcJS; //need a better way to tie
+        });
+      };
+
+      if (internalScripts.length > 0) {
+        if (externalScripts.length > 0) {
+          this.getScriptsFromInlineHTML(this.location.href, true, _.bind(function (arrJs) {
+            scriptHTMLCallback(arrJs);
+            this.getScriptsFromExternal(externalScripts, postToBin);
+          }, this));
+        } else {
+          this.getScriptsFromInlineHTML(this.location.href, true, _.bind(function (arrJs) {
+            scriptHTMLCallback(arrJs);
+            postToBin();
+          }, this));
+        }
+      } else if (externalScripts.length > 0) {
+        this.getScriptsFromExternal(externalScripts, postToBin);
+      }
+    },
+
+    getScriptsFromInlineHTML: function (htmlUrl, noTheseus, callback) {
+      //var param = noTheseus ? "?theseus=no" : "";
+
+      htmlUrl = htmlUrl.split("#")[0] + "";  //ignoring after hashes because server doesn't get them
+
+      htmlUrl = "https://localhost:9001/?url=" + encodeURIComponent(htmlUrl) + "&theseus=no";
+
+      this.corsGet(htmlUrl, _.bind(function (http) {
+        var $html = $(http.responseText);
+        var arrEl = [];
+        $html.each(function (i, el) {
+          if (el.tagName !== "SCRIPT") {
+            return;
+          }
+
+          var theseusExclusion = noTheseus ? el.innerHTML.indexOf("__tracer") === -1 : true;
+          var theseusInclusion = !noTheseus ? el.innerHTML.indexOf("__tracer.add(\"/") : true;
+
+          if (!el.getAttribute("src") && theseusExclusion && theseusInclusion) {
+            arrEl.push(el.innerHTML);
+          }
+        });
+
+        callback = _.bind(callback, this);
+        callback(arrEl);
+      }, this));
+    },
+
+    getScriptsFromExternal: function (externalScripts, callback) {
+      var tries = 0;
+      _(externalScripts).each(function (fileObj) {
+        this.corsGet(fileObj.url, _.bind(function (http) {
+          var fileObj = _(externalScripts).find(function (file) {
+            return file.url === http.responseURL;
+          });
+          fileObj.js = http.responseText;
+
+          tries++;
+          if (tries == externalScripts.length) {
+            callback();
+          }
+        }, this));
+      }, this);
     },
 
     toggleFilterSVG: function () {
@@ -204,37 +362,88 @@ define([
       var path = this.constrainToPath ? this.currentPath : "";
 
       UnravelAgent.runInPage(function (path) {
-        return unravelAgent.startObserving(path);
+        unravelAgent.startObserving(path);
+        unravelAgent.traceJsOn();
+        unravelAgent.fondueBridge.startTracking();
       }, callback, path);
 
-      UnravelAgent.runInPage(function () {
-        unravelAgent.traceJsOn();
-      });
-    },
-
-    stop: function () {
-      var callback = function () {
-        this.$("#record .active").hide();
-        this.$("#record .inactive").show();
+      var that = this;
+      var fondueCallback = function (functionMap) {
+        that.fondueFnMap = functionMap;
       };
 
       UnravelAgent.runInPage(function () {
+        return unravelAgent.fondueBridge.getFunctionMap();
+      }, fondueCallback);
+    },
+
+    stop: function () {
+      UnravelAgent.runInPage(function () {
         unravelAgent.stopObserving();
         unravelAgent.traceJsOff();
-      }, callback);
+      }, function () {
+        this.$("#record .active").hide();
+        this.$("#record .inactive").show();
+      });
+
+      UnravelAgent.runInPage(function () {
+        var tracerNodes = unravelAgent.fondueBridge.getTracerNodes();
+        var hitsAndInvokes = unravelAgent.fondueBridge.getHitsAndInvokes();
+        hitsAndInvokes = JSON.parse(hitsAndInvokes);
+
+        return {
+          tracerNodes: tracerNodes,
+          nodeHits: hitsAndInvokes.nodeHits,
+          nodeLogs: hitsAndInvokes.nodeLogs
+        };
+      }, this.parseFondue);
     },
 
     reset: function () {
       this.domDataTable.row().remove().draw(false);
       this.jsDataTable.row().remove().draw(false);
+      this.domPathsToKeep = [];
+      this.arrHitLines = [];
+      this.arrDomHitLines = [];
       this.pathsDomRows = [];
       this.pathsJSRows = [];
+      this.activeHTML = "";
+      this.activeCSS = "";
+      this.lastRecordingJS = "";
       this.stop();
     },
 
-    resetInspectedElement: function () {
-      this.currentPath = "";
-      this.$(".selectedWrap").hide();
+    parseFondue: function (o) {
+      if (!o) {
+        console.warn("Fondue not active. JS Capturing disabled.");
+        return;
+      }
+
+      var nodeHits = o.nodeHits;
+      var nodeLogs = o.nodeLogs;
+      var tracerNodes = o.tracerNodes;
+      this.tracerNodes = tracerNodes;
+
+      this.arrHitLines = _(tracerNodes).reduce(function (memo, node) {
+        var idArr = node.id.split("-");
+
+        if (nodeHits[node.id] > 0 && idArr.length > 5) {
+          var hit = {
+            path: node.path,
+            type: node.type,
+            startLine: node.start.line,
+            startColumn: node.start.column,
+            endLine: node.end.line,
+            endColumn: node.end.column,
+            hits: nodeHits[node.id],
+            invokes: nodeLogs[node.id]
+          };
+
+          memo.push(hit);
+        }
+
+        return memo;
+      }, []);
     },
 
     elementSelected: function (cssPath) {
@@ -326,12 +535,11 @@ define([
     },
 
     handleEventTrace: function (data) {
-      this.eventTracePaths = _.union(this.eventTracePaths, [data.path]);
       this.addToDomPaths(data.path);
     },
 
     handleJSTrace: function (traceEvent) {
-      var callStack = this.parseError(traceEvent.stack);
+      var callStack = this.parseError(traceEvent.stack, traceEvent.pageOrigin);
 
       var formattedArgs = traceEvent.args.replace("[", "");
       formattedArgs = formattedArgs.replace("]", "");
@@ -339,10 +547,11 @@ define([
       var formattedTrace = "";
       callStack = _(callStack).reverse();
       _(callStack).each(function (frame) {
-        var cleanedScriptName = frame.script.replace("http://54.175.112.172", "");
+        var cleanedScriptName = frame.script;
         var sourceUrl = "<a href='#' title='Inspect Element' class='inspectSource' data-path='" + frame.script + "|||" + frame.lineNumber + "'>" + (cleanedScriptName || 'none') + ":" + (frame.lineNumber || "none") + ":" + (frame.charNumber || "none") + "</a>";
         formattedTrace += sourceUrl + " (" + frame.functionName + ")<br/>";
-      });
+        this.arrDomHitLines.push(frame)
+      }, this);
 
       //TODO - add different arguments here
       var path = formattedTrace;
@@ -362,7 +571,7 @@ define([
       this.jsDataTable.draw()
     },
 
-    parseError: function (error) {
+    parseError: function (error, pageOrigin) {
       var frames = error.split('|||').slice(1).map(function (line) {
         if (line.indexOf("yimg.com") > -1) {
           return "remove";
@@ -405,9 +614,35 @@ define([
           return "remove";
         }
 
+        var scriptType = "";
+        var path = "";
+        var scriptOrigin = "";
+        var scriptHref = locationParts[0];
+        if (scriptHref && scriptHref.split(pageOrigin)[1] === "/") {
+          scriptType = "inline";
+          scriptOrigin = pageOrigin;
+          path = "/";
+        } else if (scriptHref && scriptHref.indexOf(pageOrigin) > -1) {
+          scriptType = "local";
+          scriptOrigin = pageOrigin;
+          path = scriptHref.split(pageOrigin)[1];
+        } else if (scriptHref && scriptHref.indexOf("http") > -1) {
+          scriptType = "external";
+          var urlObj = new URL(scriptHref);
+          path = urlObj.pathname;
+          scriptOrigin = urlObj.origin;
+        } else {
+          scriptType = "unknown";
+          scriptOrigin = "unknown";
+          path = "unknown";
+        }
+
         return {
           functionName: functionName,
-          script: locationParts[0],
+          script: scriptHref,
+          scriptOrigin: scriptOrigin,
+          scriptType: scriptType,
+          scriptPath: path,
           lineNumber: locationParts[1],
           charNumber: locationParts[2]
         };
@@ -470,7 +705,3 @@ define([
     }
   });
 });
-
-
-
-

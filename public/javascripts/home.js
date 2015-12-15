@@ -1,11 +1,19 @@
 $("#test1").click(function () {
+  foo();
+});
+
+var foo = function(){
+  bar();  //lives on index.jade
+};
+
+var bar = function(){
   var $effect1 = $("#effect1");
   if ($effect1.is(":visible")) {
     $effect1.hide();
   } else {
     $effect1.show();
   }
-});
+};
 
 $("#test2").click(function () {
   var $effect2 = $("#effect2");
@@ -14,82 +22,59 @@ $("#test2").click(function () {
 });
 
 $("#test3").click(function () {
-  var a = new Error();
-  console.log(a.stack);
-  var b = a.stack.replace(/(?:\r\n|\r|\n)/g, '|||');
+  secondFunction("bim", "Bazz");
+});
 
-  console.log("");
-  var c = b.split('|||').slice(1).map(function (line) {
-    var tokens = line.replace(/^\s+/, '').split(/\s+/).slice(1);
+var secondFunction = function (a, b) {
+  (function () {
+    var foo = function () {
+      thirdFunction(b);
+    };
+    foo();
+  })();
+};
 
-    var urlLike = tokens.pop().replace(/[\(\)\s]/g, '');
-    var locationParts = urlLike.split(':');
-    var lastNumber = locationParts.pop();
-    var possibleNumber = locationParts[locationParts.length - 1];
-    if (!isNaN(parseFloat(possibleNumber)) && isFinite(possibleNumber)) {
-      var lineNumber = locationParts.pop();
-      locationParts = [locationParts.join(':'), lineNumber, lastNumber];
+var $effect3 = $("#effect3");
+
+var fourthFunction = function (triggerData) {
+  $effect3.show("fast");
+  window.setTimeout(eighthFunction, 1000);
+};
+
+var thirdFunction = function () {
+  $("#effect1").off();
+  $("#effect1").on("foo-bar", fourthFunction);
+  sixthFunction();
+};
+
+var seventhFunction = function () {
+  $("#effect1").trigger("foo-bar", "some-trigger-data");
+};
+
+var sixthFunction = function () {
+  var eightFunction = $.proxy(seventhFunction, this);
+  window.setTimeout(eightFunction, 1000);
+};
+
+var eighthFunction = function () {
+  $effect3.hide("fast");
+};
+
+/*
+
+    var testElement = document.getElementById("test1");
+
+  var eventHandlerFn = function (e) {
+    var effect1 = document.getElementById("effect1");
+    if (effect1.getAttribute("style") == "display: none;") {
+      effect1.setAttribute("style", "display: initial;")
     } else {
-      locationParts = [locationParts.join(':'), lastNumber, undefined];
+      effect1.setAttribute("style", "display: none;")
     }
 
-    var functionName = (!tokens[0] || tokens[0] === 'Anonymous') ? undefined : tokens[0];
-    return {
-      fn: functionName,
-      script: locationParts[0],
-      lineNumber: locationParts[1],
-      charNumber: locationParts[2]
-    }
-  }, this);
-
-  console.log(c);
-});
-
-function makeFunc() {
-  var fn = document.getElementById;
-
-  function displayName() {
-    return fn;
-  }
-
-  return displayName;
-}
-
-var myFunc = makeFunc();
-myFunc();
-
-
-$("#test4").click(function () {
-  var a = myFunc();
-  var effect4 = a.call(document, "effect4");
-  //console.log(effect4);
-
-  var $effect1 = $("#effect4");
-  //if ($effect1.is(":visible")) {
-  //  $effect1.hide();
-  //} else {
-  //  $effect1.show();
-  //}
-});
-
-function asdf() {
-  var makeFunc = function () {
-    var fn = document.getElementById;
-
-    function displayName() {
-      return fn;
-    }
-
-    return displayName;
+    console.log(e);
   };
 
-  var myFunc = makeFunc();
-  var oldGetElementById = myFunc();
+  testElement.addEventListener("click", eventHandlerFn);
 
-  document.getElementById = function () {
-    return "foo"
-  };
-
-  console.log(oldGetElementById.call(document, "myDiv"));
-  console.log(document.getElementById("myDiv"))
-}
+ */

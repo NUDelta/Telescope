@@ -6,6 +6,9 @@
 
 // Hash <panel tab id, panel commmunication port>
 var panelPorts = {};
+var requestRedirecting = false;
+var thisOrigin = "";
+var redirectingOrigin = "none";
 
 // Receive handshake requests from extension panels and store their ports
 chrome.extension.onConnect.addListener(function (port) {
@@ -27,8 +30,21 @@ chrome.extension.onMessage.addListener(function (message, sender, sendResponse) 
     //Get the right port for the panel you want
     var port = panelPorts[sender.tab.id];
     if (port) {
-      //Send the message to the panel
-      port.postMessage(message);
+      if (message.name && message.name === "UnravelRedirectRequests") {
+        if (message.data && message.data.redirecting === true) {
+          requestRedirecting = true;
+          redirectingOrigin = message.data.origin;
+        } else if (message.data && message.data.contentScript) {
+          requestRedirecting = message.data.redirecting;
+          thisOrigin = message.data.origin;
+        } else {
+          requestRedirecting = false;
+          redirectingOrigin = "";
+        }
+      } else {
+        //Send the message to the panel
+        port.postMessage(message);
+      }
     }
   }
 });
@@ -38,6 +54,12 @@ chrome.tabs.onUpdated.addListener(function (updatedTabId, changeInfo) {
   if (changeInfo.status == 'loading') {
     var port = panelPorts[updatedTabId];
     if (port) {
+      var urlChanged = changeInfo.url !== undefined;
+
+      if (urlChanged) {
+        requestRedirecting = false;
+      }
+
       port.postMessage({
         target: 'page',
         name: 'TabUpdate',
@@ -48,3 +70,21 @@ chrome.tabs.onUpdated.addListener(function (updatedTabId, changeInfo) {
     }
   }
 });
+
+//Redirect script requests to fondue
+chrome.webRequest.onBeforeRequest.addListener(function (details) {
+    //TODO fix this
+    //if (
+    //  redirectingOrigin &&
+    //  redirectingOrigin === thisOrigin &&
+    //  requestRedirecting &&
+    //  details.url.indexOf("chrome-extension") === -1 &&
+    //  details.url.indexOf("localhost:900") === -1 &&
+    //  details.type === "script"
+    //) {
+    //  return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
+    //}
+  },
+  {urls: ["<all_urls>"]},
+  ["requestBody", "blocking"]
+);

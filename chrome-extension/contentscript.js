@@ -54,3 +54,23 @@ window.addEventListener('DOMContentLoaded', function () {
     name: 'ready'
   });
 }, false);
+
+
+//TODO here find a better way to kill this off for other tabs
+window.addEventListener("UnravelRedirectRequests", function (event) {
+  chrome.extension.sendMessage({
+    target: "page",
+    name: "UnravelRedirectRequests",
+    data: event.detail
+  });
+}, false);
+
+chrome.extension.sendMessage({
+  target: "page",
+  name: "UnravelRedirectRequests",
+  data: {
+    contentScript: true,
+    redirecting: false,
+    origin: window.location.origin
+  }
+});
