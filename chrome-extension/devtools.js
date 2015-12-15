@@ -1,5 +1,5 @@
 // Script executed every time the devtools are opened.
-var name = "Unravel";
+var name = "Ibex";
 
 //chrome.devtools.panels.elements.createSidebarPane(name,
 //  function (sidebar) {
@@ -8,7 +8,7 @@ var name = "Unravel";
 //  }
 //);
 
-chrome.devtools.panels.create(name, "img/unravel128.png", "panel.html");
+chrome.devtools.panels.create(name, "img/ibex-small.png", "panel.html");
 
 chrome.devtools.panels.elements.onSelectionChanged.addListener(function () {
   chrome.devtools.inspectedWindow.eval("window.unravelAgent.selectElement($0)");

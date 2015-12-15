@@ -1,7 +1,7 @@
 {
-  "name": "Unravel",
-  "version": "0.2.2",
-  "description": "Visualize DOM changes and JS method calls",
+  "name": "Ibex",
+  "version": "0.0.1",
+  "description": "Extract behaviors from UI",
   "minimum_chrome_version": "22.0",
   "manifest_version": 2,
   "devtools_page": "devtools.html",
@@ -39,8 +39,8 @@
     "notifications"
   ],
   "icons": {
-    "16": "img/unravel16.png",
-    "48": "img/unravel48.png",
-    "128": "img/unravel128.png"
+    "16": "img/ibex-small.png",
+    "48": "img/ibex-small.png",
+    "128": "img/ibex-small.png"
   }
 }
