@@ -163,22 +163,6 @@ define([
         return;
       }
 
-      //var hitScripts = _.chain(this.arrHitLines).pluck("path").unique().map(function (path) {
-      //  var meta = _.find(this.metaScripts, function (s) {
-      //    return s.path === path;
-      //  }, this);
-      //
-      //  return {
-      //    path: path,
-      //    url: meta.url + "?theseus=no",
-      //    inline: meta.inline,
-      //    domPath: meta.domPath,
-      //    order: meta.order,
-      //    js: ""
-      //  };
-      //}, this).value();
-
-
       var hitScripts = _.chain(this.tracerNodes).pluck("path").unique().map(function (path) {
         var meta = _.find(this.metaScripts, function (s) {
           return s.path === path;
@@ -196,16 +180,9 @@ define([
           };
         }
 
-        var nonTracedSrcUrl = meta.url.split("#")[0];
-        if(nonTracedSrcUrl.indexOf("?") > -1){
-          nonTracedSrcUrl += "&theseus=no";
-        } else {
-          nonTracedSrcUrl += "?theseus=no";
-        }
-
         return {
           path: path,
-          url: nonTracedSrcUrl, //ignore hash parts
+          url: meta.url.split("#")[0], //ignore hash parts
           builtIn: false,
           inline: meta.inline,
           domPath: meta.domPath,
@@ -266,12 +243,12 @@ define([
 
       if (internalScripts.length > 0) {
         if (externalScripts.length > 0) {
-          this.getScriptsFromInlineHTML(this.location.href, true, _.bind(function (arrJs) {
+          this.getScriptsFromInlineHTML(this.location.href, _.bind(function (arrJs) {
             scriptHTMLCallback(arrJs);
             this.getScriptsFromExternal(externalScripts, postToBin);
           }, this));
         } else {
-          this.getScriptsFromInlineHTML(this.location.href, true, _.bind(function (arrJs) {
+          this.getScriptsFromInlineHTML(this.location.href, _.bind(function (arrJs) {
             scriptHTMLCallback(arrJs);
             postToBin();
           }, this));
@@ -281,12 +258,9 @@ define([
       }
     },
 
-    getScriptsFromInlineHTML: function (htmlUrl, noTheseus, callback) {
-      //var param = noTheseus ? "?theseus=no" : "";
-
+    getScriptsFromInlineHTML: function (htmlUrl, callback) {
       htmlUrl = htmlUrl.split("#")[0] + "";  //ignoring after hashes because server doesn't get them
-
-      htmlUrl = "https://localhost:9001/?url=" + encodeURIComponent(htmlUrl) + "&theseus=no";
+      htmlUrl = "https://localhost:9001/beautifyHTML?url=" + encodeURIComponent(htmlUrl);
 
       this.corsGet(htmlUrl, _.bind(function (http) {
         var $html = $(http.responseText);
@@ -296,10 +270,7 @@ define([
             return;
           }
 
-          var theseusExclusion = noTheseus ? el.innerHTML.indexOf("__tracer") === -1 : true;
-          var theseusInclusion = !noTheseus ? el.innerHTML.indexOf("__tracer.add(\"/") : true;
-
-          if (!el.getAttribute("src") && theseusExclusion && theseusInclusion) {
+          if (!el.getAttribute("src")) {
             arrEl.push(el.innerHTML);
           }
         });
@@ -312,9 +283,11 @@ define([
     getScriptsFromExternal: function (externalScripts, callback) {
       var tries = 0;
       _(externalScripts).each(function (fileObj) {
-        this.corsGet(fileObj.url, _.bind(function (http) {
+        var formattedUrl = "https://localhost:9001/beautifyJS?url=" + encodeURIComponent(fileObj.path);
+
+        this.corsGet(formattedUrl, _.bind(function (http) {
           var fileObj = _(externalScripts).find(function (file) {
-            return file.url === http.responseURL;
+            return file.url.split("url=")[1] === http.responseURL.split("url=")[1];
           });
           fileObj.js = http.responseText;
 

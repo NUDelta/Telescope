@@ -29,9 +29,11 @@ define([],
             }
           }
 
-          if(url.indexOf("localhost:900") > -1){
-            path = url.split("/?url=")[1];
-            path = decodeURIComponent(path);
+          if (url.indexOf("localhost:900") > -1) {
+            try {
+              path = decodeURIComponent(url).split("https://localhost:9001/instrument?js=true&url=")[1];
+            } catch (ig) {
+            }
           }
 
           metaScripts.push({
