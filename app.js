@@ -1,46 +1,39 @@
-var express = require('express');
 var bodyParser = require('body-parser');
-var http = require('http');
+var express = require('express');
 var path = require('path');
+var util = require('./util/util');
+var ROUTES = require('./routes/routes');
 
 var app = express();
 
-app.set('port', 3000);
-
-//Only use this for non-production apps
 var lessMiddleware = require('less-middleware');
+var crossOriginMiddleware = require("./middleware/crossOriginMiddleware");
+
 app.use(lessMiddleware(path.join(__dirname, 'public')));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'chrome-extension')));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(crossOriginMiddleware);
 
-// Add headers
-app.use(function (req, res, next) {
-
-  // Website you wish to allow to connect
-  //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:9000');
-  res.setHeader('Access-Control-Allow-Origin', 'chrome-extension://mnpkfjilckjdlfgggeohheepnlhfnjao');
-
-  // Request methods you wish to allow
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-  // Request headers you wish to allow
-  //res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,json');
-
-  // Set to true if you need the website to include cookies in the requests sent
-  // to the API (e.g. in case you use sessions)
-  //res.setHeader('Access-Control-Allow-Credentials', true);
-
-  // Pass to next layer of middleware
-  next();
+//Upgrade HTTP traffic
+require('http').createServer(function (req, res) {
+  var host = req.headers.host.split(":")[0];
+  res.writeHead(301, {"Location": "https://" + host + ":" + ROUTES.HTTPS_PORT + req.url});
+  res.end();
+}).listen(ROUTES.HTTP_PORT, function(){
+  console.log('HTTPS upgrade listening on port ' + ROUTES.HTTP_PORT);
 });
 
+require("https").createServer({
+  cert: util.getLocalCert(),
+  key: util.getLocalKey()
+}, app).listen(ROUTES.HTTPS_PORT, function () {
+  console.log('Express server listening on port ' + ROUTES.HTTPS_PORT);
+});
+
+require("./routes/api")(app);
 require('./routes/pages')(app);
-require('./routes/services')(app);
-
-http.createServer(app).listen(app.get('port'), function () {
-  console.log('Express server listening on port ' + app.get('port'));
-});

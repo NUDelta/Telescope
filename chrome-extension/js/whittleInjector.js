@@ -29,9 +29,9 @@ define([],
             }
           }
 
-          if (url.indexOf("localhost:900") > -1) {
+          if (url.indexOf("localhost:300") > -1) {
             try {
-              path = decodeURIComponent(url).split("https://localhost:9001/instrument?js=true&url=")[1];
+              path = decodeURIComponent(url).split("https://localhost:3001/instrument?js=true&url=")[1];
             } catch (ig) {
             }
           }

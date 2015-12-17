@@ -25,20 +25,8 @@ define([
           return;
         }
 
-        router.on("elementSelectChange", function (cssPath) {
-          router.homeView.elementSelected(cssPath);
-        }, router);
-
         router.on("mutation", function (mutations) {
           router.homeView.handleMutations(mutations);
-        }, router);
-
-        router.on("JSTrace", function (data) {
-          router.homeView.handleJSTrace(data);
-        }, router);
-
-        router.on("eventTrace", function (data) {
-          router.homeView.handleEventTrace(data);
         }, router);
 
         router.on("TabUpdate", function (data) {

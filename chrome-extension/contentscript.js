@@ -2,26 +2,10 @@
  This script is added to the web, but in its own context.
  */
 
-window.addEventListener("JSTrace", function (event) {
-  chrome.extension.sendMessage({
-    target: "page",
-    name: "JSTrace",
-    data: event.detail
-  });
-}, false);
-
 window.addEventListener("UnravelKeepAlive", function (event) {
   chrome.extension.sendMessage({
     target: "page",
     name: "UnravelKeepAlive",
-    data: event.detail
-  });
-}, false);
-
-window.addEventListener("ElementSelected", function (event) {
-  chrome.extension.sendMessage({
-    target: "page",
-    name: "elementSelected",
     data: event.detail
   });
 }, false);
@@ -32,16 +16,6 @@ window.addEventListener("DOMObserve", function (event) {
   chrome.extension.sendMessage({
     target: "page",
     name: "mutation",
-    data: str
-  });
-}, false);
-
-window.addEventListener("eventTrace", function (event) {
-  var str = event.detail;
-
-  chrome.extension.sendMessage({
-    target: "page",
-    name: "eventTrace",
     data: str
   });
 }, false);

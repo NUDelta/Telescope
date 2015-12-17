@@ -1,14 +1,12 @@
 define([
   "jQueryInjector",
   "underscoreInjector",
-  "libDetectInjector",
   "observerInjector",
   "jsTraceInjector",
   "fondueInjector",
   "whittleInjector"
 ], function (jQueryInjector,
              underscoreInjector,
-             libDetectInjector,
              observerInjector,
              jsTraceInjector,
              fondueInjector,
@@ -31,7 +29,6 @@ define([
     var f1 = "(" + agentFn.toString() + ").apply(this, []); ";
     var f2 = "(" + jQueryInjector.toString() + ").apply(this, []); ";
     var f3 = "(" + underscoreInjector.toString() + ").apply(this, []); ";
-    var f4 = "(" + libDetectInjector.toString() + ").apply(this, []); ";
     var f5 = "(" + jsTraceInjector.toString() + ").apply(this, []); ";
     var f6 = "(" + observerInjector.toString() + ").apply(this, []); ";
     var f7 = "(" + fondueInjector.toString() + ").apply(this, []); ";
@@ -39,7 +36,7 @@ define([
 
     chrome.devtools.inspectedWindow.reload({
       ignoreCache: true,
-      injectedScript: f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8
+      injectedScript: f1 + f2 + f3 + f5 + f6 + f7 + f8
     });
 
     var checkTimeout = function (isActive) {

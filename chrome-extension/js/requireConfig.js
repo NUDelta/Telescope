@@ -59,18 +59,10 @@ require([
     });
 
     panelPort.onMessage.addListener(_.bind(function (message) {
-      if (message && message.target == "page" && message.name == "elementSelected") {
-        router.trigger("elementSelectChange", message.data);
-      } else if (message && message.target == "page" && message.name == "mutation") {
+      if (message && message.target == "page" && message.name == "mutation") {
         router.trigger("mutation", message.data);
-      } else if (message && message.target == "page" && message.name == "detectLibs") {
-        router.trigger("detectLibs", message.data);
-      } else if (message && message.target == "page" && message.name == "JSTrace") {
-        router.trigger("JSTrace", message.data);
       } else if (message && message.target == "page" && message.name == "TabUpdate") {
         router.trigger("TabUpdate", message.data);
-      } else if (message && message.target == "page" && message.name == "eventTrace") {
-        router.trigger("eventTrace", message.data);
       }
     }, this));
   });
