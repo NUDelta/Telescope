@@ -61,7 +61,7 @@ module.exports = {
       hits++;
       retSrc[preI] = instSrc;
 
-      if (hits === scriptLocs.length) {
+      if (hits === scriptLocs.length || scriptLocs.length < 1) {
         for (var i = scriptLocs.length - 1; i >= 0; i--) {
           passedSrc = passedSrc.slice(0, scriptLocs[i].start) + retSrc[i] + passedSrc.slice(scriptLocs[i].end);
         }
@@ -81,14 +81,18 @@ module.exports = {
       }
     };
 
-    // process the scripts in reverse order
-    for (var i = scriptLocs.length - 1; i >= 0; i--) {
-      var loc = scriptLocs[i];
-      var script = src.slice(loc.start, loc.end);
-      var options = util.mergeInto(fondueOptions, {});
-      options.path = options.path + "-script-" + i;
-      var prefix = src.slice(0, loc.start).replace(/[^\n]/g, " "); // padding it out so line numbers make sense
-      this.instrumentJavaScript(prefix + script, options, instCallback, src.valueOf(), i, loc);
+    if (scriptLocs.length < 1) {
+      instCallback(null, src, 0);
+    } else {
+      // process the scripts in reverse order
+      for (var i = scriptLocs.length - 1; i >= 0; i--) {
+        var loc = scriptLocs[i];
+        var script = src.slice(loc.start, loc.end);
+        var options = util.mergeInto(fondueOptions, {});
+        options.path = options.path + "-script-" + i;
+        var prefix = src.slice(0, loc.start).replace(/[^\n]/g, " "); // padding it out so line numbers make sense
+        this.instrumentJavaScript(prefix + script, options, instCallback, src.valueOf(), i, loc);
+      }
     }
   }
 

@@ -125,10 +125,13 @@ define([],
         ];
 
         var http = new XMLHttpRequest();
-        http.open("GET", "https://localhost:3001/instrument?url=" + encodeURIComponent(window.location.href) + "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname), true);
+        var instrumentedURL = "https://localhost:3001/instrument?url=" + encodeURIComponent(window.location.href) + "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname);
+        http.open("GET", instrumentedURL, true);
+        var complete = false;
 
         http.onreadystatechange = function () {
-          if (http.readyState == 4 && http.status == 200) {
+          if (http.readyState == 4 && http.status == 200 && !complete) {
+            complete = true;
             try {
               window.unravelAgent.response = http.responseText;
 
