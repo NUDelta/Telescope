@@ -2,23 +2,72 @@
 1 verbose cli [ '/Users/josh/.nvm/v0.10.32/bin/node',
 1 verbose cli   '/Users/josh/.nvm/v0.10.32/bin/npm',
 1 verbose cli   'install',
-1 verbose cli   '--development' ]
+1 verbose cli   '--save',
+1 verbose cli   'html-minifer' ]
 2 info using npm@1.4.28
 3 info using node@v0.10.32
-4 error install Couldn't read dependencies
-5 error Failed to parse json
-5 error Unexpected token }
-6 error File: /code/ibex/package.json
-7 error Failed to parse package.json data.
-7 error package.json must be actual JSON, not just JavaScript.
-7 error
-7 error This is not a bug in npm.
-7 error Tell the package author to fix their package.json file. JSON.parse
-8 error System Darwin 15.2.0
-9 error command "/Users/josh/.nvm/v0.10.32/bin/node" "/Users/josh/.nvm/v0.10.32/bin/npm" "install" "--development"
-10 error cwd /code/ibex
-11 error node -v v0.10.32
-12 error npm -v 1.4.28
-13 error file /code/ibex/package.json
-14 error code EJSONPARSE
-15 verbose exit [ 1, true ]
+4 warn package.json url@0.10.3 url is also the name of a node core module.
+5 verbose readDependencies using package.json deps
+6 verbose cache add [ 'html-minifer', null ]
+7 verbose cache add name=undefined spec="html-minifer" args=["html-minifer",null]
+8 verbose parsed url { protocol: null,
+8 verbose parsed url   slashes: null,
+8 verbose parsed url   auth: null,
+8 verbose parsed url   host: null,
+8 verbose parsed url   port: null,
+8 verbose parsed url   hostname: null,
+8 verbose parsed url   hash: null,
+8 verbose parsed url   search: null,
+8 verbose parsed url   query: null,
+8 verbose parsed url   pathname: 'html-minifer',
+8 verbose parsed url   path: 'html-minifer',
+8 verbose parsed url   href: 'html-minifer' }
+9 silly lockFile 1ed7d3cd-html-minifer html-minifer
+10 verbose lock html-minifer /Users/josh/.npm/1ed7d3cd-html-minifer.lock
+11 silly lockFile 1ed7d3cd-html-minifer html-minifer
+12 silly lockFile 1ed7d3cd-html-minifer html-minifer
+13 verbose addNamed [ 'html-minifer', '' ]
+14 verbose addNamed [ null, '*' ]
+15 silly lockFile ed2a9cf4-html-minifer html-minifer@
+16 verbose lock html-minifer@ /Users/josh/.npm/ed2a9cf4-html-minifer.lock
+17 silly addNameRange { name: 'html-minifer', range: '*', hasData: false }
+18 verbose request where is /html-minifer
+19 verbose request registry https://registry.npmjs.org/
+20 verbose request id 52ba0ebc8350c5c9
+21 verbose url raw /html-minifer
+22 verbose url resolving [ 'https://registry.npmjs.org/', './html-minifer' ]
+23 verbose url resolved https://registry.npmjs.org/html-minifer
+24 verbose request where is https://registry.npmjs.org/html-minifer
+25 info trying registry request attempt 1 at 10:48:21
+26 http GET https://registry.npmjs.org/html-minifer
+27 http 404 https://registry.npmjs.org/html-minifer
+28 silly registry.get cb [ 404,
+28 silly registry.get   { 'content-type': 'application/json',
+28 silly registry.get     'cache-control': 'max-age=0',
+28 silly registry.get     'content-length': '2',
+28 silly registry.get     'accept-ranges': 'bytes',
+28 silly registry.get     date: 'Fri, 15 Jan 2016 16:48:21 GMT',
+28 silly registry.get     via: '1.1 varnish',
+28 silly registry.get     age: '0',
+28 silly registry.get     connection: 'keep-alive',
+28 silly registry.get     'x-served-by': 'cache-dfw1830-DFW',
+28 silly registry.get     'x-cache': 'MISS',
+28 silly registry.get     'x-cache-hits': '0',
+28 silly registry.get     'x-timer': 'S1452876501.261496,VS0,VE53' } ]
+29 silly lockFile ed2a9cf4-html-minifer html-minifer@
+30 silly lockFile ed2a9cf4-html-minifer html-minifer@
+31 error 404 Not Found
+31 error 404
+31 error 404 'html-minifer' is not in the npm registry.
+31 error 404 You should bug the author to publish it
+31 error 404 It was specified as a dependency of 'Ibex'
+31 error 404
+31 error 404 Note that you can also install from a
+31 error 404 tarball, folder, or http url, or git url.
+32 error System Darwin 15.2.0
+33 error command "/Users/josh/.nvm/v0.10.32/bin/node" "/Users/josh/.nvm/v0.10.32/bin/npm" "install" "--save" "html-minifer"
+34 error cwd /code/ibex
+35 error node -v v0.10.32
+36 error npm -v 1.4.28
+37 error code E404
+38 verbose exit [ 1, true ]

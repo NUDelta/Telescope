@@ -2,8 +2,11 @@ define([],
   function () {
     return function () {
       window.unravelAgent.reWritePage = function () {
+
+        //todo revisit https://developer.mozilla.org/en-US/docs/Web/API/Window
         var keepKeys = [
           "applicationCache",
+          "btoa",
           "caches",
           "closed",
           "Components",
@@ -100,6 +103,7 @@ define([],
           "print",
           "prompt",
           "releaseEvents",
+          "requestAnimationFrame",
           "removeEventListener",
           "requestIdleCallback",
           "resizeBy",
@@ -171,11 +175,16 @@ define([],
                 window.localStorage.clear();
               }
 
+              var interval_id = window.setInterval("", 9999); // Get a reference to the last
+              for (var i = 1; i < interval_id; i++) {
+                window.clearInterval(i);
+              }
+              window.clearInterval(interval_id);
+
               document.open('text/html');
               document.write("<html><head></head><body></body></html>");
               document.close();
 
-              debugger;
               document.open('text/html');
               document.write(http.responseText);
               document.close();
@@ -190,54 +199,54 @@ define([],
       };
 
 
-    //  window.unravelAgent.reWriteCallback = function (res) {
-    //    debugger;
-    //    try {
-    //      window.unravelAgent.response = http.responseText;
-    //
-    //      var deleteKeys = [];
-    //
-    //      for (var key in window) {
-    //        if (window.hasOwnProperty(key)) {
-    //          if (!window.unravelAgent._(keepKeys).contains(key)) {
-    //            deleteKeys.push(key);
-    //          }
-    //        }
-    //      }
-    //
-    //      console.log("Deleting", JSON.stringify(deleteKeys));
-    //
-    //      var wontDeleteKeys = [];
-    //      window.unravelAgent._(deleteKeys).each(function (key) {
-    //        var wasDeleted = delete window[key];
-    //        if (!wasDeleted) {
-    //          wontDeleteKeys.push(key);
-    //        }
-    //      });
-    //
-    //      window.unravelAgent._(wontDeleteKeys).each(function (key) {
-    //        window[key] = undefined;
-    //        delete window[key];
-    //        if (window[key]) {
-    //          console.log("Secondary delete didn't work:", key);
-    //        }
-    //      });
-    //
-    //      if (window.localStorage && window.localStorage.clear) {
-    //        window.localStorage.clear();
-    //      }
-    //
-    //      document.open('text/html');
-    //      document.write("<html><head></head><body></body></html>");
-    //      document.close();
-    //
-    //      document.open('text/html');
-    //      document.write(http.responseText);
-    //      document.close();
-    //    } catch (err) {
-    //      debugger;
-    //    }
-    //  };
+      //  window.unravelAgent.reWriteCallback = function (res) {
+      //    debugger;
+      //    try {
+      //      window.unravelAgent.response = http.responseText;
+      //
+      //      var deleteKeys = [];
+      //
+      //      for (var key in window) {
+      //        if (window.hasOwnProperty(key)) {
+      //          if (!window.unravelAgent._(keepKeys).contains(key)) {
+      //            deleteKeys.push(key);
+      //          }
+      //        }
+      //      }
+      //
+      //      console.log("Deleting", JSON.stringify(deleteKeys));
+      //
+      //      var wontDeleteKeys = [];
+      //      window.unravelAgent._(deleteKeys).each(function (key) {
+      //        var wasDeleted = delete window[key];
+      //        if (!wasDeleted) {
+      //          wontDeleteKeys.push(key);
+      //        }
+      //      });
+      //
+      //      window.unravelAgent._(wontDeleteKeys).each(function (key) {
+      //        window[key] = undefined;
+      //        delete window[key];
+      //        if (window[key]) {
+      //          console.log("Secondary delete didn't work:", key);
+      //        }
+      //      });
+      //
+      //      if (window.localStorage && window.localStorage.clear) {
+      //        window.localStorage.clear();
+      //      }
+      //
+      //      document.open('text/html');
+      //      document.write("<html><head></head><body></body></html>");
+      //      document.close();
+      //
+      //      document.open('text/html');
+      //      document.write(http.responseText);
+      //      document.close();
+      //    } catch (err) {
+      //      debugger;
+      //    }
+      //  };
     };
 
   });
