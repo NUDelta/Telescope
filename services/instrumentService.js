@@ -8,7 +8,16 @@ var fondueService = require("./fondueService");
 
 module.exports = {
   instrumentHTML: function (url, basePath, callback) {
-    request({url: url, method: "GET", rejectUnauthorized: false}, function (err, subRes, body) {
+    request({url: url, method: "GET", rejectUnauthorized: false, headers: {
+      //"Host": "interfacelift.com",
+      //"Connection": "keep-alive",
+      //"Pragma": "no-cache",
+      "Cache-Control": "no-cache",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36",
+      //"DNT": "1",
+      "Accept-Language": "en-US,en;q=0.8"
+    }}, function (err, subRes, body) {
       if (err) throw err;
 
       body = util.beautifyHTML(body);  //Remove crap that breaks fondue
@@ -38,10 +47,17 @@ module.exports = {
         include_prefix: false
       };
 
-      fondueService.instrumentHTML($.html(), fondueOptions, function (src) {
+      var cleanedSrc = $.html();
+      fondueService.instrumentHTML(cleanedSrc, fondueOptions, function (src) {
         var $ = cheerio.load(src);
         $("html > head").prepend($("script")[0]);
-        callback($.html());
+
+        var html = $.html();
+
+        //var fs = require("fs");
+        //fs.writeFileSync("foo.html", html, "utf8");
+
+        callback(html);
       });
     });
 
@@ -52,7 +68,8 @@ module.exports = {
       url: url,
       fileName: basePath,
       method: "GET",
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      gzip: true
     }, function (err, subRes, body) {
       if (err) throw err;
 

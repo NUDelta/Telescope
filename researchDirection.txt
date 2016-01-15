@@ -1,0 +1,54 @@
+Lit review
+	The barriers to entry in open source
+	Wu Yu penn state
+		Github awesome-ios
+	Consuming open source
+	Cyber learning
+		Rich examples resource
+		Iron curtain to learners
+			example difficulties of joining a community and understanding what's going on
+		Unlock the curtain, now what
+
+Scratch environment
+	mako hill, andreas shaw, mitch resnick scratch
+
+how do people learn by resharing
+
+what is the state of the art in pro examples
+	maybe we never have 
+	curated cases
+
+
+organizational methods
+
+
+
+
+
+- Identify research questions
+
+
+
+- Identify target contributions
+
+
+- Pilot study - inform the design
+
+    3 developers talk-aloud
+    Create a learning fiddle with Ibex
+        http://www.ted.com/
+        https://www.dropbox.com/guide/business/highlights/getting-started/
+        http://www.squarespace.com/seven/interface
+
+    Observe, quote
+    What tools used?
+
+
+https://localhost:3001/instrument?url=https%3A%2F%2Fwww.tumblr.com%2F&html=true&basePath=https%3A%2F%2Fwww.tumblr.com%2F
+https://localhost:3001/instrument?url=http%3A%2F%2Fwww.squarespace.com%2Fse…ce&html=true&basePath=http%3A%2F%2Fwww.squarespace.com%2Fseven%2Finterface
+
+
+
+WRite down user problems and design arguments
+	Do the test look back and refer to them
+	Develop research questions

@@ -13,6 +13,9 @@ module.exports = function (app) {
     if (html === "true") {
       instrumentService.instrumentHTML(url, basePath, function (html) {
         res.send(html);
+        //res.jsonp({
+        //  html:html
+        //});
       });
     } else if (js === "true") {
       instrumentService.instrumentJS(url, basePath, function (js) {

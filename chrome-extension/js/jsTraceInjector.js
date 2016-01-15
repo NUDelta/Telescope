@@ -125,11 +125,15 @@ define([],
         ];
 
         var http = new XMLHttpRequest();
-        var instrumentedURL = "https://localhost:3001/instrument?url=" + encodeURIComponent(window.location.href) + "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname);
+        var instrumentedURL = "https://localhost:3001/instrument?url=" + encodeURIComponent(window.location.href) + "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname) + "&callback=window.unravelAgent.reWriteCallback";
         http.open("GET", instrumentedURL, true);
         var complete = false;
 
-        http.onreadystatechange = function () {
+        //var script = document.createElement('script');
+        //script.src = instrumentedURL;
+        //document.getElementsByTagName('head')[0].appendChild(script);
+
+        var callback = function () {
           if (http.readyState == 4 && http.status == 200 && !complete) {
             complete = true;
             try {
@@ -171,6 +175,7 @@ define([],
               document.write("<html><head></head><body></body></html>");
               document.close();
 
+              debugger;
               document.open('text/html');
               document.write(http.responseText);
               document.close();
@@ -180,9 +185,59 @@ define([],
           }
         };
 
+        http.onreadystatechange = window.unravelAgent.$.proxy(callback, this);
         http.send();
       };
 
+
+    //  window.unravelAgent.reWriteCallback = function (res) {
+    //    debugger;
+    //    try {
+    //      window.unravelAgent.response = http.responseText;
+    //
+    //      var deleteKeys = [];
+    //
+    //      for (var key in window) {
+    //        if (window.hasOwnProperty(key)) {
+    //          if (!window.unravelAgent._(keepKeys).contains(key)) {
+    //            deleteKeys.push(key);
+    //          }
+    //        }
+    //      }
+    //
+    //      console.log("Deleting", JSON.stringify(deleteKeys));
+    //
+    //      var wontDeleteKeys = [];
+    //      window.unravelAgent._(deleteKeys).each(function (key) {
+    //        var wasDeleted = delete window[key];
+    //        if (!wasDeleted) {
+    //          wontDeleteKeys.push(key);
+    //        }
+    //      });
+    //
+    //      window.unravelAgent._(wontDeleteKeys).each(function (key) {
+    //        window[key] = undefined;
+    //        delete window[key];
+    //        if (window[key]) {
+    //          console.log("Secondary delete didn't work:", key);
+    //        }
+    //      });
+    //
+    //      if (window.localStorage && window.localStorage.clear) {
+    //        window.localStorage.clear();
+    //      }
+    //
+    //      document.open('text/html');
+    //      document.write("<html><head></head><body></body></html>");
+    //      document.close();
+    //
+    //      document.open('text/html');
+    //      document.write(http.responseText);
+    //      document.close();
+    //    } catch (err) {
+    //      debugger;
+    //    }
+    //  };
     };
 
   });
