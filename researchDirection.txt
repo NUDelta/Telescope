@@ -26,10 +26,12 @@ organizational methods
 
 
 - Identify research questions
-
-
+    Can learning examples be generated from professional websites?
+    How can relationships between the DOM and JS be better visualized?
+    What affordances can provide better understanding of runtime JS info?
 
 - Identify target contributions
+
 
 
 - Pilot study - inform the design
@@ -49,6 +51,133 @@ https://localhost:3001/instrument?url=http%3A%2F%2Fwww.squarespace.com%2Fse…ce
 
 
 
-WRite down user problems and design arguments
-	Do the test look back and refer to them
-	Develop research questions
+
+
+
+User problem
+    Professional websites serve the pinnacle of examples: working maintained production code customized for its context
+    Unravel's pilot study showed us that users copy and paste code from finished websites to recreate their functionality.
+    The context of web tutorials doesn't clearly translate to teaching about customized examples on cool websites.
+    Users desire to learn how to create functionality they encounter across the web, but inspection and reverse engineering is too overwhelming
+    Unravel showed success in giving a starting point to users, but wasn't clear about the rest of the implementation
+    Existing debugging inspection tools, and even unravel show either too much or too little of the picture
+
+Research Questions (pre test 1)
+    How can we extract JS/HTML/CSS examples from professional websites?
+    How can we display information in extrated examples to aid learning for intermediate users?
+    How do the extracted examples affect user understanding of a page compared to CDT or Unravel?
+    Does Ibex alter an intermediate user's example-creation strategy for a professional website?
+
+Ibex Proto 1 Design
+
+    Design a proto that can extract source trace info from any public website (whether it requires auth or not)
+        --> tutorial context problem
+    Create a platform to highlight all code executed, showing more than just the starting point.
+        Provide the whole JS/CSS/HTML context together for clear inspection
+        --> inefficient copy paste all code problem
+    Use platform agnostic techniques to cater to the expansive web
+        --> user's desire to learn everywhere problem
+    Provide reduction affordances to whittle away obvious library and dead code to help the user overcome entry barriers
+        --> overcome too much / too little info barriers
+
+Test: 3 devs with more xp than novice and less than experts
+    https://getbootstrap.com/examples/carousel/
+    twitter.com/y3sh
+
+Research Video Analysis: Bootstrap Carousel, and Twitter's Autocomplete
+    UX
+        Henry:
+            Installing tracer is odd workflow
+            Interface takes a lot of explaining
+            Why is code highlighted yellow after hiding inactive code?
+            Even in the active code, there is still a lot to go through
+            User didn't hide jQuery or holder.js, very distracting, hid them later
+
+
+            "there's tens of thousands of lines of code, i'm not going to scroll through it all to find what i need"
+            "i wish the JS wasn't obfuscated; in the html it's pretty simple to see functionality"
+            "difficult to understand compressed uglification expressions"
+                ternary
+                !0 for true
+                !1 for false
+                void 0
+
+            Not confident enough to delete lines of code
+            "It's not really useful to show jquery at all, the common web developer doesn't care about library internals"
+        Sarah:
+            Started from HTML, wanted to see links between the two
+            Hide inactive code is confusing, just show the relevant code
+            We can't just a pull a component out and reuse it yet
+        Kevin:
+            A lot here that I'm not sure what it means
+            None of the variable names mean anything
+            Gives part of the picture (e.g. gets the item for something, manipulates the object some other way)
+            Want to see actions attached to HTML
+            Want to fold/hide functions I've already looked at
+            Want to get to core of what the interaction is
+
+    UI
+        Henry:
+            Identify what's modifying the DOM
+            Identify where event handlers are registered
+            Identify triggers from JS and from HTML
+
+        Sarah:
+            Keep it to a few hundred lines max
+            The functions I care about were called way fewer times than util functions (may be more relevant)
+            Want IDE functionality, as its hard to keep track of where I am
+        Kevin:
+    Goals
+        A - identified responsible sources
+        B - understand what's happening
+        C - create an example
+
+    I wish
+        Henry:
+            I could see links between the HTML and JS, want to begin from HTML because I understand it
+            I could see calls populate live when I interact on the web page
+            Library/Infrastructure code was hidden for me
+            I could see what was going on when installing the tracing
+        Sarah:
+            I could bookmark interesting parts, mark relevance in the gutter
+            I could see functions of interest related to HTML
+            I could click on something and see all other references
+            I could play with the code that alters the existing web page, delete and modify
+            I could whittle this down to only the relevant bits
+            I could trace the order of things happening
+            I could see realtime routes through the code
+        Kevin
+            ditto
+
+    Externalities
+        Show lib authors how their toolkits are being used
+
+    Ideas
+        Make ibex into remote debugging server
+
+Ibex Proto 1 wins
+    I can finally see everything that happened, but I don't know what it means
+
+Ibex Proto 1 New Problems
+    Users couldn't clearly find entry points to inspection (as in Unravel)
+    The amount of active code is still overwhelming with internal library sources displayed
+    The links between the DOM and JS were not clear
+    CSS display is not helpful (maybe on animation styles should be displayed?)
+    Output display is not helpful
+    Minification techniques cause confusion (e.g. void 0 or !0)
+    Need more UI affordances to tell me what is most important
+        folding to hide not important
+        bookmarks to remember spots (e.g. ide overhead)
+
+Research Questions (post test 1)
+    How can relationships between the DOM and JS be better visualized?
+    What affordances aid an intermediate user's reverse engineering process for a pro site?
+    Which extraction techniques help intermediate users overcome the limitations of minified code?
+
+Design (post test 1)
+    Interactive links between dom and js
+    Bring back unravel entry points
+    Default hide inactive and lib code
+    Hide CSS & output for now
+    Vote up/down sections of code
+    Streamline tracing infra (auto trace and live feed as remote debugger)
