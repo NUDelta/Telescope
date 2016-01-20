@@ -24,7 +24,6 @@ organizational methods
 
 
 
-
 - Identify research questions
     Can learning examples be generated from professional websites?
     How can relationships between the DOM and JS be better visualized?
@@ -64,7 +63,7 @@ User problem
 
 Research Questions (pre test 1)
     How can we extract JS/HTML/CSS examples from professional websites?
-    How can we display information in extrated examples to aid learning for intermediate users?
+    How can we display information in extracted examples to aid learning for intermediate users?
     How do the extracted examples affect user understanding of a page compared to CDT or Unravel?
     Does Ibex alter an intermediate user's example-creation strategy for a professional website?
 
@@ -82,7 +81,7 @@ Ibex Proto 1 Design
 
 Test: 3 devs with more xp than novice and less than experts
     https://getbootstrap.com/examples/carousel/
-    twitter.com/y3sh
+    twitter.com/y3sh autocomplete
 
 Research Video Analysis: Bootstrap Carousel, and Twitter's Autocomplete
     UX
@@ -156,23 +155,28 @@ Research Video Analysis: Bootstrap Carousel, and Twitter's Autocomplete
         Make ibex into remote debugging server
 
 Ibex Proto 1 wins
-    I can finally see everything that happened, but I don't know what it means
+    "I can finally see everything that happened, but I don't know what it means"
 
 Ibex Proto 1 New Problems
     Users couldn't clearly find entry points to inspection (as in Unravel)
     The amount of active code is still overwhelming with internal library sources displayed
     The links between the DOM and JS were not clear
     CSS display is not helpful (maybe on animation styles should be displayed?)
+        jquery toggle classes, JS modification of CSS attributes
+        possible solution: tagging system, visualization linking effects through the output
     Output display is not helpful
+        HTML --- JS
     Minification techniques cause confusion (e.g. void 0 or !0)
     Need more UI affordances to tell me what is most important
         folding to hide not important
         bookmarks to remember spots (e.g. ide overhead)
 
 Research Questions (post test 1)
-    How can relationships between the DOM and JS be better visualized?
-    What affordances aid an intermediate user's reverse engineering process for a pro site?
-    Which extraction techniques help intermediate users overcome the limitations of minified code?
+    How can we determine what source code was used during a UI behavior on a web page?
+        Which extraction techniques help intermediate users overcome the limitations of minified code?
+    How can we derive meaning from UI trace information while not introducing more barriers to learning?
+        How can relationships between the DOM and JS be better visualized?
+        What affordances aid an intermediate user's reverse engineering process for a pro site?
 
 Design (post test 1)
     Interactive links between dom and js
@@ -181,3 +185,8 @@ Design (post test 1)
     Hide CSS & output for now
     Vote up/down sections of code
     Streamline tracing infra (auto trace and live feed as remote debugger)
+
+Questions
+    What are some ways to generate low fi protos?
+        Test feature ideas w/out dev effort
+        Sketch and storyboard interactions, broadly on paper
