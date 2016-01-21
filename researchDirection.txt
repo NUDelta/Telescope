@@ -190,3 +190,48 @@ Questions
     What are some ways to generate low fi protos?
         Test feature ideas w/out dev effort
         Sketch and storyboard interactions, broadly on paper
+
+Unravel Timeline (adjust -2 days)
+    Feb 2 - Mar 21
+        BUILD
+    March 21 - 25
+        User Recruiting
+        Study Design
+    March 25
+        Code Complete
+    March 28 - Apr 4
+        User Testing
+        Data Collection
+        Video Coding
+    Apr 4 - Apr 11 (12-14 hour days)
+        Data Statistics
+        Related Work
+        Paper
+    Apr 12 - 13 (Who needs sleep)
+        Video Demo
+        Paper Revisions
+
+Ibex Plan
+    Jan. 20-30
+        MAKE DESIGN
+    Feb
+        BUILD
+    Mar 1-5
+        Recruit
+    Mar 6-19
+        User Testing
+        Paper Intro & related works
+    Mar 20-26
+        Video Coding
+        Data Analysis
+    Mar 27- April 8
+        Write paper
+    April 8- 13
+        Revise Paper
+        Video Demo
+        Submit
+
+
+
+
+
