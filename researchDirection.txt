@@ -170,6 +170,12 @@ Ibex Proto 1 New Problems
     Need more UI affordances to tell me what is most important
         folding to hide not important
         bookmarks to remember spots (e.g. ide overhead)
+    Why does the rest of the page show up when all I care about is the carousel?
+    Could we help the user know what variable names mean? (both obfuscated or defined)
+        Variable evaluations over time (like debugging)
+    Relating callcounts to handlers
+    Could we work through the obfuscated variables to rename and define them?
+        Variable name counts - as more clues
 
 Research Questions (post test 1)
     How can we determine what source code was used during a UI behavior on a web page?
