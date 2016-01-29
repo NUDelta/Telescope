@@ -222,11 +222,12 @@ Ibex Plan
         MAKE DESIGN
     Feb
         BUILD
+        Paper Intro
     Mar 1-5
         Recruit
-    Mar 6-19
+    Mar 6-19 hq away
         User Testing
-        Paper Intro & related works
+         & related works
     Mar 20-26
         Video Coding
         Data Analysis
@@ -237,7 +238,66 @@ Ibex Plan
         Video Demo
         Submit
 
+Prototype Feasibility Analysis
 
+    User Problem Ties: High/Med/low
+    Tech: Easy/Hard/Very Hard
+    Wow: High/Med/Low
 
+    Auto Hide unimportant code
+        User Problem Ties: High
+        Tech: Easy
+        Wow: Low
 
+    HTML/JS Bi-Directional Linking & Filtering
+        User Problem Ties: High
+        Tech: Hard
+        Wow: Medium
 
+    Unravel Trace Integration (e.g. highlight relevant points)
+        User Problem Ties: High
+        Tech: Easy
+        Wow: Low
+        Priority: provide a walkthrough -- wow there
+
+    Live Theseus From Pro Page to Fiddle
+        User Problem Ties: Med
+        Tech: Hard
+        Wow: Med
+
+    Timeline Playback of Effect
+        Without visual outcome
+            User Problem Ties: High
+            Tech: Hard
+            Wow: Med
+
+        With visual outcome
+            User Problem Ties: High
+            Tech: Very Hard
+            Wow: Very High
+                Q: how much can we do with remote debugging in Chrome?
+
+    HTML Tutorons
+        User Problem Ties: Med
+        Tech: Easy
+        Wow: Low
+
+    Code Behavior Decomposition Tagging
+        (e.g. click handler, callback, dom change)
+        User Problem Ties: Low
+        Tech: Hard
+        Wow: Med
+
+    CSS Animation Effects
+        User Problem Ties: Low
+        Tech: Very Hard
+        Wow: Low
+        Priority: Backburner
+
+    Vote up/down significant portions
+        User Problem Ties: Med
+        Tech: Hard
+        Wow: Low
+        Priority:
+
+    Better Unminification Strategy
