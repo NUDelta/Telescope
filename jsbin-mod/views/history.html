@@ -1,0 +1,44 @@
+<div id="history">
+  <div class="header">
+    <h2>Open previously saved <em>bins</em>{{by_user}} or <a href="#" data-toggle="history">continue with current one</a>:</h2>
+    <div class="menu">
+      <input type="checkbox" name="toggle_archive" id="toggleArchive" class="toggle_archive"> <label for="toggleArchive">Archive view</label>
+    </div>
+  </div>
+  <table>
+    {{#bins}}
+    <tbody>
+      {{#.}}
+      <tr class="{{#if archive}}archived{{/if}} {{#unless is_first}}snapshot snapshot{{@index}}{{/unless}}" data-url="{{url}}" data-edit-url="{{edit_url}}">
+        <td class="url">
+          <a href="{{edit_url}}">
+            {{#if is_first}}
+            <span class="first">{{code}}</span>
+            {{else}}
+            <span class="snapshot">{{revision}}</span>
+            {{/if}}
+          </a>
+        </td>
+        <td class="last_updated">
+          <a pubdate="{{last_updated}}" href="{{edit_url}}">{{pretty_last_updated}}</a>
+        </td>
+        <td class="action">
+          <!-- <a href="{{url}}/edit" class="edit"><span>Edit</span></a> -->
+          <a href="{{url}}/archive" class="archive"><span>Archive</span></a>
+          <a href="{{url}}/unarchive" class="unarchive"><span>Un-archive</span></a>
+        </td>
+        <td class="title">
+          <a href="{{edit_url}}">{{summary}}</a>
+        </td>
+      </tr>
+      {{/.}}
+      <tr class="spacer"><td colspan="4"></td></tr>
+    </tbody>
+    {{/bins}}
+  </table>
+  <div class="preview">
+    <h2>Preview</h2>
+    <p id="viewing"></p>
+    <iframe id="iframe" hidden></iframe>
+  </div>
+</div>

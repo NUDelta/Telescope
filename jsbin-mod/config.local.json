@@ -1,0 +1,12 @@
+{
+  "url": {
+    "host": "localhost:8080"
+  },
+  "max-request-size": "100MB",
+  "security": {
+    "allowAnonymousPreview": true
+  },
+  "api": {
+    "allowAnonymousReadWrite": true
+  }
+}

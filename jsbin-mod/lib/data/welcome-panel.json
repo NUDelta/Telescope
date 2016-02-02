@@ -1,0 +1,73 @@
+{
+  "features": {
+    "title": "JS Bin features",
+    "link": "http://jsbin.com/help/features",
+    "data": [
+      {
+        "title": "Getting started",
+        "link": "http://jsbin.com/help/getting-started"
+      },
+      {
+        "title": "Keyboard Shortcuts",
+        "link": "http://jsbin.com/help/keyboard-shortcuts"
+      },
+      {
+        "title": "Exporting/importing gist",
+        "link": "http://jsbin.com/help/export-gist"
+      }
+    ]
+  },
+  "pro-features": {
+    "title": "Pro features",
+    "//link": "/account/upgrade",
+    "data": [
+      {
+        "title": "Private bins",
+        "link": "http://jsbin.com/help/private-bins"
+      },
+      {
+        "title": "Dropbox backup",
+        "link": "http://jsbin.com/help/dropbox"
+      },
+      {
+        "title": "Vanity URLs",
+        "link": "http://jsbin.com/help/vanity-urls"
+      }
+    ]
+  },
+  "blog": {
+    "title": "Blog",
+    "link": "http://jsbin.com/blog",
+    "data": [
+      {
+        "title": "JSHint, line highlighting and more",
+        "link": "http://jsbin.com/blog/twdtw-10-jshint-highlighting-pro"
+      }
+    ]
+  },
+  "help": {
+    "title": "Help",
+    "link": "http://jsbin.com/help",
+    "data": [
+      {
+        "title": "Versions: processors & more",
+        "link": "http://jsbin.com/help/versions"
+      },
+      {
+        "title": "Delete a bin",
+        "link": "http://jsbin.com/help/delete-a-bin"
+      }
+    ]
+  },
+  "twitter": {
+    "title": "Recently on Twitter",
+    "link": "http://twitter.com/js_bin",
+    "data": [
+      {
+        "title": "Additional linters for HTML, CSS & CoffeeScript, changing output permission for anon users & SSL for pro users!",
+        "link": "https://twitter.com/js_bin"
+      }
+    ]
+  },
+  "quote": "&ldquo;Everyone should learn how to program a computer because it teaches you how to think&rdquo; &mdash; <span class=\"toppanel-quote-author\">Steve Jobs</span>"
+}
