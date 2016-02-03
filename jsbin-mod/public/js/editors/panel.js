@@ -578,7 +578,11 @@ function populateEditor(editor, panel) {
 
     if(panel === "javascript"){
        if (secondTime) {
-         fonduePopulate(editor);
+         req([
+           "ibex"
+         ], function(ibex){
+           ibex(editor);
+         })
        } else {
          secondTime = true;
        }
@@ -598,104 +602,4 @@ function populateEditor(editor, panel) {
   if (changed) {
     $document.trigger('codeChange', [ { revert: false, onload: true } ]);
   }
-}
-
-function fonduePopulate(editor) {
-  var codeMirror = editor.editor;
-
-  var fondue = JSON.parse(template.fondue);
-
-  var sourceHeader = "// Don't remove this line: Begin Source File: ";
-  var sourceFooter = "// Don't remove this line: End Source File: ";
-
-  fondue.scripts = _(fondue.scripts).sortBy(function(script){
-    return script.order;
-  }).reject("builtIn").value();
-
-  var extractedHeadJS = _(fondue.scripts).reduce(function(memo, scriptObj){
-    if(scriptObj.domPath.indexOf("body") > -1){
-      return memo;
-    }
-
-    var startJS = sourceHeader + scriptObj.path + "\n";
-    var endJS = sourceFooter + scriptObj.path + "\n\n\n";
-    memo += startJS + scriptObj.js + endJS;
-    return memo;
-  }, "");
-
-  var extractedBodyJS = _(fondue.scripts).reduce(function(memo, scriptObj){
-    if(scriptObj.domPath.indexOf("body") === -1){
-      return memo;
-    }
-
-    var startJS = sourceHeader + scriptObj.path + "\n";
-    var endJS = sourceFooter + scriptObj.path + "\n\n\n";
-
-    memo += startJS + scriptObj.js + endJS;
-    return memo;
-  }, "");
-
-  if (extractedBodyJS) {
-    extractedBodyJS = "//Begin DOM Ready Section\n" +
-      "document.onreadystatechange = function () {\n" +
-      "if (document.readyState == 'complete') {\n" +
-      extractedBodyJS +
-      "}}; //End DOM Ready Section\n";
-  }
-
-  codeMirror.setCode(extractedHeadJS + extractedBodyJS);
-
-  var scriptObj;
-  codeMirror.eachLine(function(line) {
-    var arr = line.text.split(sourceHeader);
-    if (arr.length > 1){
-      scriptObj = _(fondue.scripts).find(function(script){
-        if (script.path === arr[1]){
-          return true;
-        }
-      });
-
-      if (scriptObj) {
-        scriptObj.binStartLine = line.lineNo();
-      }
-    }
-
-    arr = line.text.split(sourceFooter);
-    if (arr.length > 1){
-      scriptObj = _(fondue.scripts).find(function(script){
-        if (script.path === arr[1]){
-          return true;
-        }
-      });
-
-      if (scriptObj) {
-        scriptObj.binEndLine = line.lineNo() - 1;
-      }
-    }
-  });
-
-  window.fondueMirror = codeMirror;
-  window.fondue = fondue;
-
-  fondue.activeLineColorMarks = [];
-  fondue.activeLineHideMarks = [];
-  fondue.activeLines = [];
-  fondue.fileHideLines = {};
-  fondue.fileHideMarks = {};
-  fondue.allHiddenLines = [];
-
-  annotateSourceTraces();
-
-  req([
-    "ActiveCodePanelView"
-  ], function (ActiveCodePanelView) {
-    var activeCodePanelView = new ActiveCodePanelView();
-    activeCodePanelView.render();
-  });
-
-
-  window.setTimeout(function () {
-    fondueMirror.scrollTo({line: 0, ch:0});
-    fondueMirror.setCursor({line:0})
-  }, 1)
 }
