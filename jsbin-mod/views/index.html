@@ -26,6 +26,75 @@
   <meta property="og:description" content="A live pastebin for HTML, CSS & JavaScript and a range of processors, including SCSS, CoffeeScript, Jade and more..." />
   {{/if}}
   <meta property="og:image" content="{{static}}/images/logo.png" />
+
+  <script>
+    var require = {
+      baseUrl:"/js/ibex",
+      // paths configuration
+      paths: {
+        jquery: 'lib/reqMod-jquery-2.2.0',
+        underscore: 'lib/reqMod-underscore',
+        backbone: 'lib/reqMod-backbone',
+        text: 'lib/reqMod-text',
+      },
+      // non-amd library loaders
+      shim: {
+        'jquery': {
+          exports: '$'
+        },
+        'underscore': {
+          exports: '_'
+        },
+        'backbone': {
+          deps: ['underscore', 'jquery'],
+          init: function () {
+            // exports
+            return this.Backbone.noConflict();
+          }
+        },
+        'bootstrap': {
+          deps: ['jquery']
+        },
+        'handlebars_original': {
+          deps: ['bootstrap'], // automatically require bootstrap when requiring an handlebars template
+          exports: 'Handlebars'
+        },
+        'handlebars': { // handlebars with custom block helpers
+          deps: ['handlebars_original'],
+          exports: 'Handlebars'
+        }
+      }
+    };
+  </script>
+  <script src="/js/ibex/lib/require.js"></script>
+  <script>
+    (function(){
+      var loadClosuredRequire;
+
+      (function () {
+        var req = require;
+        var def = define;
+        var rjs = requirejs;
+
+        loadClosuredRequire = function () {
+          return {
+            req: req,
+            def: def,
+            rjs: rjs
+          }
+        };
+      })();
+
+      window.require = undefined;
+      window.requirejs = undefined;
+      window.define = undefined;
+
+      var r = loadClosuredRequire();
+      window.req = r.req;
+      window.def = r.def;
+      window.rjs = r.rjs;
+    })();
+  </script>
 </head>
 <!--[if lt IE 7]>  <body class="source ie ie6"> <![endif]-->
 <!--[if IE 7]>     <body class="source ie ie7"> <![endif]-->

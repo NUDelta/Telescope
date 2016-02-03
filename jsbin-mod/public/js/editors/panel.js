@@ -685,7 +685,15 @@ function fonduePopulate(editor) {
   fondue.allHiddenLines = [];
 
   annotateSourceTraces();
-  createFonduePanel();
+
+  req([
+    "ActiveCodePanelView"
+  ], function (ActiveCodePanelView) {
+    var activeCodePanelView = new ActiveCodePanelView();
+    activeCodePanelView.render();
+  });
+
+
   window.setTimeout(function () {
     fondueMirror.scrollTo({line: 0, ch:0});
     fondueMirror.setCursor({line:0})

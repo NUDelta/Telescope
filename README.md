@@ -5,6 +5,7 @@ A platform for extracting UI behaviors into learning examples.
 #To install:
     #install nvm or node
     #use nodeJS version 0.10.32
+    #install redis 3
 
     cd fondue-api
     npm install
