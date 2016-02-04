@@ -17,17 +17,12 @@ def([
    */
 
   return Backbone.Model.extend({
-    initialize:function(){
+    initialize: function () {
       this.traceCollection = this.collection.traceCollection;
     },
 
-    getCode: function (activeCodeOnly) {
-      if (activeCodeOnly) {
-        return this.get("js");
-
-      } else {
-        return this.get("js");
-      }
+    getCode: function () {
+      return this.get("js");
     },
 
     hide: function () {
@@ -64,40 +59,18 @@ def([
       };
     },
 
-    markActiveCodeMirrorLines: function () {
-      _(fondue.traces).each(function (trace) {
-        var script = _(fondue.scripts).find(function (scriptObj) {
-          return scriptObj.path === trace.path;
-        });
+    getActiveLines: function () {
+      var traces = this.traceCollection.where({path: this.get("path")});
 
-        var lineOffset = script.binStartLine;
+      var arr = [];
+      _(traces).each(function (trace) {
+        var startLine = this.startLine + parseInt(trace.get("startLine")) - 1; //minus 1 codemirror lines are 0 based
+        var endLine = this.startLine + parseInt(trace.get("endLine")) -1;
 
-        var startLine = lineOffset + parseInt(trace.startLine);
-        var endLine = lineOffset + parseInt(trace.endLine);
-        var marker = this.jsMirror.markText(
-          {
-            line: startLine,
-            ch: parseInt(trace.startColumn)
-          },
-          {
-            line: endLine,
-            ch: parseInt(trace.endColumn)
-          },
-          {
-            css: "background-color:#fffcbd"
-          }
-        );
-
-        var addedActiveLines = _.range(startLine, endLine + 1);
-        marker.activeLines = addedActiveLines;
-        fondue.activeLineColorMarks.push(marker);
-        fondue.activeLines = fondue.activeLines.concat(addedActiveLines);
-
-        if (trace.type === "function") {
-          var pill = new GutterPillView(this.jsMirror, startLine, trace);
-          pill.setCount(trace.hits);
-        }
+        arr = arr.concat(_.range(startLine, endLine + 1));
       }, this);
+
+      return arr;
     }
   });
 });

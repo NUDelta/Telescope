@@ -25,10 +25,20 @@ def([
           return;
         }
 
-        var sourceCode = sourceModel.getCode(this.activeCodeOnly);
+        var sourceCode = sourceModel.getCode();
         var mirrorPosition = this.insertLines(sourceCode);
         sourceModel.setMirrorPos(mirrorPosition);
+
+        if (this.activeCodeOnly) {
+          this.deleteInactiveLines(sourceModel);
+        }
+
       }, this);
+
+      //if (trace.type === "function") {
+      //  var pill = new GutterPillView(this.jsMirror, startLine, trace);
+      //  pill.setCount(trace.hits);
+      //}
 
       this.scrollTop();
     },
@@ -86,11 +96,41 @@ def([
         ch: -1
       };
       var endPos = {
-        line: endLine,
-        ch: doc.getLine(endLine - 1).length - 1
+        line: endLine + 1,
+        ch: -1
       };
 
       doc.replaceRange("", startPos, endPos);
+    },
+
+    deleteInactiveLines: function (sourceModel) {
+      var pos = sourceModel.getMirrorPos();
+      var activeLines = sourceModel.getActiveLines();
+      var allLines = _.range(pos.startLine, pos.endLine); //inclusive, exclusive
+      var linesToDelete = _.difference(allLines, activeLines);
+      _(linesToDelete).sortBy(function (num) {
+        return num
+      });
+
+      var ranges = [];
+      for (var i = 0; i < linesToDelete.length; i++) {
+        var currentNum = linesToDelete[i];
+        while (linesToDelete[i + 1] - linesToDelete[i] <= 1) {
+          i++;
+        }
+
+        ranges.push({
+          start: currentNum,
+          end: linesToDelete[i]
+        });
+      }
+
+      var lastDiff = 0;  //as we delete lines, subtract the line numbers from future ranges
+      _(ranges).each(function (range) {
+        this.deleteLines(range.start - lastDiff, range.end - lastDiff);
+
+        lastDiff += (range.end - range.start) + 1;
+      }, this);
     },
 
     scrollToSourceModel: function (sourceModel) {
@@ -103,8 +143,10 @@ def([
     scrollTop: function () {
       window.setTimeout(_.bind(function () {
         this.jsMirror.scrollTo({line: 0, ch: 0});
-        this.jsMirror.setCursor({line: 0})
+        this.jsMirror.setCursor({line: 0});
       }, this), 1);
-    }
+    },
+
+
   });
 });
