@@ -1,0 +1,19 @@
+<div class="fondue-panel">
+  <div class="group-wrap">
+    <ul id="fondue-toggle-group">
+      <li>
+        <input type="checkbox" id="fondue-toggle-inactive" checked="checked"/> Hide Inactive Code
+      </li>
+
+      {{#each sources}}
+      <li>
+        <input type="checkbox" class="fondue-toggle-file" data="{{sourceCID}}"/> Hide
+        <a href="javascript:;" class="fondue-file-link" data="{{sourceCID}}">{{path}}</a>
+      </li>
+      {{/each}}
+
+    </ul>
+  </div>
+</div>
+
+

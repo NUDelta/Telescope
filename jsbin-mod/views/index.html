@@ -35,7 +35,8 @@
         jquery: 'lib/reqMod-jquery-2.2.0',
         underscore: 'lib/reqMod-underscore',
         backbone: 'lib/reqMod-backbone',
-        text: 'lib/reqMod-text',
+        handlebars: 'lib/reqMod-handlebars',
+        text: 'lib/reqMod-text'
       },
       // non-amd library loaders
       shim: {
@@ -55,12 +56,12 @@
         'bootstrap': {
           deps: ['jquery']
         },
-        'handlebars_original': {
-          deps: ['bootstrap'], // automatically require bootstrap when requiring an handlebars template
-          exports: 'Handlebars'
-        },
+//        'handlebars_original': {
+//          deps: ['bootstrap'], // automatically require bootstrap when requiring an handlebars template
+//          exports: 'Handlebars'
+//        },
         'handlebars': { // handlebars with custom block helpers
-          deps: ['handlebars_original'],
+//          deps: ['handlebars_original'],
           exports: 'Handlebars'
         }
       }
