@@ -8,5 +8,8 @@
   },
   "api": {
     "allowAnonymousReadWrite": true
+  },
+  "server": {
+    "logger": "none"
   }
 }
