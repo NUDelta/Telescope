@@ -20,6 +20,14 @@ window.addEventListener("DOMObserve", function (event) {
   });
 }, false);
 
+window.addEventListener("JSTrace", function (event) {
+  chrome.extension.sendMessage({
+    target: "page",
+    name: "JSTrace",
+    data: event.detail
+  });
+}, false);
+
 // Sends a message to the background when the DOM of the inspected page is ready
 // (typically used by the panel to check if the backbone agent is on the page).
 window.addEventListener('DOMContentLoaded', function () {

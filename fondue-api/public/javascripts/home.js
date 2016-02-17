@@ -7,8 +7,6 @@ var eventHandlerFn = function (e) {
   } else {
     effect1.setAttribute("style", "display: none;")
   }
-
-  console.log(e);
 };
 
 testElement.addEventListener("click", eventHandlerFn);

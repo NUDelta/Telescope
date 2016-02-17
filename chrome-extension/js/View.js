@@ -5,8 +5,9 @@ define([
   "datatables",
   "handlebars",
   "UnravelAgent",
-  "text!templates/view.html"
-], function (Backbone, _, $, datatables, Handlebars, UnravelAgent, viewTemplate) {
+  "text!templates/view.html",
+  "CallStackCollection"
+], function (Backbone, _, $, datatables, Handlebars, UnravelAgent, viewTemplate, CallStackCollection) {
   return Backbone.View.extend({
     template: Handlebars.compile(viewTemplate),
 
@@ -42,6 +43,8 @@ define([
       this.parseFondue = _.bind(this.parseFondue, this);
       this.fiddle = _.bind(this.fiddle, this);
       this.whittle = _.bind(this.whittle, this);
+
+      this.callStackCollection = new CallStackCollection();
     },
 
     render: function (unravelAgentActive) {
@@ -82,6 +85,10 @@ define([
           activeHTML: activeHTML
         };
       }, _.bind(whittleCallback, this), this.domPathsToKeep);
+    },
+
+    handleJSTrace: function (traceEventObj) {
+      this.callStackCollection.add(traceEventObj);
     },
 
     corsGet: function (url, callback) {
@@ -293,7 +300,8 @@ define([
       var path = this.constrainToPath ? this.currentPath : "";
 
       UnravelAgent.runInPage(function (path) {
-        unravelAgent.startObserving(path);
+        //unravelAgent.startObserving(path);
+        unravelAgent.traceJsOn();
         unravelAgent.fondueBridge.startTracking();
       }, callback, path);
 
@@ -309,7 +317,8 @@ define([
 
     stop: function () {
       UnravelAgent.runInPage(function () {
-        unravelAgent.stopObserving();
+        //unravelAgent.stopObserving();
+        unravelAgent.traceJsOff();
       }, function () {
         this.$("#record .active").hide();
         this.$("#record .inactive").show();
@@ -336,6 +345,7 @@ define([
       this.pathsJSRows = [];
       this.activeHTML = "";
       this.activeCSS = "";
+      this.callStackCollection.reset(null, {});
       this.stop();
     },
 
