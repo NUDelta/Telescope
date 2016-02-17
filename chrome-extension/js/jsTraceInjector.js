@@ -239,10 +239,15 @@ define([],
               }
               window.clearInterval(interval_id);
 
+              //Send async request to re-init the content script after we nuke the page
+              window.dispatchEvent(new CustomEvent("ReloadContentListeners"));
+
+              //Nuke the page
               document.open('text/html');
               document.write("<html><head></head><body></body></html>");
               document.close();
 
+              //Rewrite with fondue
               document.open('text/html');
               document.write(http.responseText);
               document.close();
