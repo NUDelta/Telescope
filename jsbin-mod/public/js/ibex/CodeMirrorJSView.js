@@ -10,10 +10,11 @@ def([
     mirrorLastLine: 0,
     activeCodeOnly: true,
 
-    initialize: function (codeMirror, sourceCollection) {
+    initialize: function (codeMirror, sourceCollection, traceCollection) {
       this.jsMirror = codeMirror;
       this.jsMirror.setOption("lineNumbers", true);
       this.sourceCollection = sourceCollection;
+      this.traceCollection = traceCollection;
     },
 
     showSources: function () {
@@ -35,12 +36,22 @@ def([
 
       }, this);
 
-      //if (trace.type === "function") {
-      //  var pill = new GutterPillView(this.jsMirror, startLine, trace);
-      //  pill.setCount(trace.hits);
-      //}
-
+      this.addGutterPills();
       this.scrollTop();
+    },
+
+    addGutterPills: function () {
+      var functionTraceModels = this.traceCollection.where({type:"function"});
+      _(functionTraceModels).each(function (traceModel) {
+        var trace = traceModel.toJSON();
+
+        var sourceModel = this.sourceCollection.findWhere({path: trace.path});
+        var mirrorPos = sourceModel.getMirrorPos();
+        var startLine = mirrorPos.startLine + trace.startLine;
+
+        var pill = new GutterPillView(this.jsMirror, startLine, trace, this.sourceCollection);
+        pill.setCount(trace.hits);
+      }, this);
     },
 
     showInactive: function () {
@@ -125,12 +136,43 @@ def([
         });
       }
 
-      var lastDiff = 0;  //as we delete lines, subtract the line numbers from future ranges
+      //as we delete lines, subtract the line numbers from future ranges
+      var lastDiff = 0;
       _(ranges).each(function (range) {
         this.deleteLines(range.start - lastDiff, range.end - lastDiff);
 
         lastDiff += (range.end - range.start) + 1;
       }, this);
+
+      //update traces with line diffs
+      var functionTraceModels = this.traceCollection.where({type:"function"});
+      _(functionTraceModels).each(function (traceModel) {
+        var startLine = parseInt(traceModel.get("startLine"));
+        var endLine = parseInt(traceModel.get("endLine"));
+
+        var lineDiff = this.sumRanges(ranges, startLine);
+
+        traceModel.set("startLine", startLine - lineDiff);
+        traceModel.set("endLine", endLine - lineDiff);
+      }, this);
+    },
+
+    sumRanges: function (ranges, lessThanNum) {
+      var sum = 0;
+
+      for (var i = 0; i < ranges.length; i++) {
+        var range = ranges[i];
+        if (range.start < lessThanNum && range.end < lessThanNum) {
+          sum += (range.end - range.start) + 1;
+          if(range.start === 0){
+            sum += 1;
+          }
+        } else {
+          break;
+        }
+      }
+
+      return sum;
     },
 
     scrollToSourceModel: function (sourceModel) {
@@ -149,4 +191,5 @@ def([
 
 
   });
-});
+})
+;

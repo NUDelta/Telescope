@@ -16,7 +16,7 @@ def([
       traceCollection: traceCollection
     });
 
-    var codeMirrorJSView = new CodeMirrorJSView(codeMirror, sourceCollection);
+    var codeMirrorJSView = new CodeMirrorJSView(codeMirror, sourceCollection, traceCollection);
     codeMirrorJSView.showSources();
 
     var activeCodePanelView = new ActiveCodePanelView(sourceCollection, codeMirrorJSView);

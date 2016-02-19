@@ -4,18 +4,6 @@ def([
   "underscore"
 ], function ($, Backbone, _) {
 
-  /*
-   var mockModel = {
-   builtIn: false,
-   domPath: "html>head>script:eq(1)",
-   inline: true,
-   js: "window.bimBazz={};",
-   order: 1,
-   path: "https://localhost:3001/-script-0",
-   url: "https://localhost:3001/"
-   };
-   */
-
   return Backbone.Model.extend({
     initialize: function () {
       this.traceCollection = this.collection.traceCollection;
@@ -62,6 +50,7 @@ def([
     getActiveLines: function () {
       var traces = this.traceCollection.where({path: this.get("path")});
 
+      //Determine a list of line numbers to keep based on trace activity
       var arr = [];
       _(traces).each(function (trace) {
         var startLine = this.startLine + parseInt(trace.get("startLine")) - 1; //minus 1 codemirror lines are 0 based

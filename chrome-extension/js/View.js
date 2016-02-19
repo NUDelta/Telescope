@@ -350,8 +350,6 @@ define([
 
       this.nodeCollection.add(nodeActivity);
       this.nodeCollection.markDomManipulatingNodes();
-
-      debugger;
     },
 
     parseSelector: function (htmlString) {
