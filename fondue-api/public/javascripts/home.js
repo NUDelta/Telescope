@@ -9,6 +9,12 @@ var eventHandlerFn = function (e) {
   }
 };
 
+var intervalFoo = function(){
+  var a = 2;
+};
+
+window.setInterval(intervalFoo, 500);
+
 testElement.addEventListener("click", eventHandlerFn);
 
 $("#test2").click(function () {

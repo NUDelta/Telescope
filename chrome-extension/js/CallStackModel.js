@@ -3,9 +3,12 @@ define([
   "underscore"
 ], function (Backbone, _) {
   return Backbone.Model.extend({
+    initialize: function(){
+      //this.parseTraceEvent();
+    },
 
     parseTraceEvent: function () {
-      var callStack = this.parseError(this.get("stack"));
+      var callStack = this.parseError();
 
       var formattedArgs = traceEvent.args.replace("[", "");
       formattedArgs = formattedArgs.replace("]", "");
@@ -27,7 +30,8 @@ define([
 
     },
 
-    parseError: function (error) {
+    parseError: function () {
+      var error = this.get("stack");
       var frames = error.split('|||').slice(1).map(function (line) {
         var tokens = line.replace(/^\s+/, '').split(/\s+/).slice(1);
 
@@ -53,13 +57,6 @@ define([
           locationParts = [locationParts.join(':'), lastNumber, undefined];
         }
 
-        if (tokens[0]) {
-          tokens[0] = tokens[0].replace("<anonymous>", "&lt;anonymous&gt;");
-        }
-
-        if (locationParts[0]) {
-          locationParts[0] = locationParts[0].replace("<anonymous>", "&lt;anonymous&gt;");
-        }
 
         var functionName = (!tokens[0] || tokens[0] === 'Anonymous') ? undefined : tokens[0];
 
