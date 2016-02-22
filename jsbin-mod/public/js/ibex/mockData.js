@@ -1,4 +1,4 @@
-var traceCollection = new TraceCollection([
+var activeNodeCollection = new ActiveNodeCollection([
   {startLine: 2, endLine: 2, path: "a"},
   {startLine: 3, endLine: 4, path: "a"},
   {startLine: 2, endLine: 5, path: "b"},
@@ -35,5 +35,5 @@ var sourceCollection = new SourceCollection(null, {
       url: "https://localhost:3001/"
     }
   ],
-  traceCollection: traceCollection
+  activeNodeCollection: activeNodeCollection
 });

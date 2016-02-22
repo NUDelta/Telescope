@@ -10,11 +10,12 @@ def([
     mirrorLastLine: 0,
     activeCodeOnly: true,
 
-    initialize: function (codeMirror, sourceCollection, traceCollection) {
+    initialize: function (codeMirror, sourceCollection, activeNodeCollection) {
       this.jsMirror = codeMirror;
       this.jsMirror.setOption("lineNumbers", true);
       this.sourceCollection = sourceCollection;
-      this.traceCollection = traceCollection;
+      this.activeNodeCollection = activeNodeCollection;
+      this.activeNodeCollection.markDomManipulatingNodes();
     },
 
     showSources: function () {
@@ -41,9 +42,9 @@ def([
     },
 
     addGutterPills: function () {
-      var functionTraceModels = this.traceCollection.where({type:"function"});
-      _(functionTraceModels).each(function (traceModel) {
-        var trace = traceModel.toJSON();
+      var activeNodeModels = this.activeNodeCollection.where({type:"function"});
+      _(activeNodeModels).each(function (activeNodeModel) {
+        var trace = activeNodeModel.toJSON();
 
         var sourceModel = this.sourceCollection.findWhere({path: trace.path});
         var mirrorPos = sourceModel.getMirrorPos();
@@ -145,15 +146,15 @@ def([
       }, this);
 
       //update traces with line diffs
-      var functionTraceModels = this.traceCollection.where({type:"function"});
-      _(functionTraceModels).each(function (traceModel) {
-        var startLine = parseInt(traceModel.get("startLine"));
-        var endLine = parseInt(traceModel.get("endLine"));
+      var activeNodeModels = this.activeNodeCollection.where({type:"function"});
+      _(activeNodeModels).each(function (activeNodeModel) {
+        var startLine = parseInt(activeNodeModel.get("startLine"));
+        var endLine = parseInt(activeNodeModel.get("endLine"));
 
         var lineDiff = this.sumRanges(ranges, startLine);
 
-        traceModel.set("startLine", startLine - lineDiff);
-        traceModel.set("endLine", endLine - lineDiff);
+        activeNodeModel.set("startLine", startLine - lineDiff);
+        activeNodeModel.set("endLine", endLine - lineDiff);
       }, this);
     },
 

@@ -6,7 +6,7 @@ def([
 
   return Backbone.Model.extend({
     initialize: function () {
-      this.traceCollection = this.collection.traceCollection;
+      this.activeNodeCollection = this.collection.activeNodeCollection;
     },
 
     getCode: function () {
@@ -48,7 +48,7 @@ def([
     },
 
     getActiveLines: function () {
-      var traces = this.traceCollection.where({path: this.get("path")});
+      var traces = this.activeNodeCollection.where({path: this.get("path")});
 
       //Determine a list of line numbers to keep based on trace activity
       var arr = [];

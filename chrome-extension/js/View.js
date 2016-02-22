@@ -349,7 +349,6 @@ define([
       }
 
       this.nodeCollection.add(nodeActivity);
-      this.nodeCollection.markDomManipulatingNodes();
     },
 
     parseSelector: function (htmlString) {
