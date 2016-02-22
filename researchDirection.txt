@@ -244,7 +244,7 @@ Prototype Feasibility Analysis
     Tech: Easy/Hard/Very Hard
     Wow: High/Med/Low
 
-    Auto Hide unimportant code
+    (DONE) Auto Hide unimportant code
         User Problem Ties: High
         Tech: Easy
         Wow: Low
@@ -254,7 +254,7 @@ Prototype Feasibility Analysis
         Tech: Hard
         Wow: Medium
 
-    Unravel Trace Integration (e.g. highlight relevant points)
+    (DONE) Unravel Trace Integration (e.g. highlight relevant points)
         User Problem Ties: High
         Tech: Easy
         Wow: Low
@@ -301,3 +301,32 @@ Prototype Feasibility Analysis
         Priority:
 
     Better Unminification Strategy
+
+Ibex in a nutshell
+    Helps developers who know at least the basics of JS/HTML/CSS recreate the UI behaviors they see.
+        Features that enable the above:
+            Showing them the relevant JS behind the interaction
+                Hiding unexecuted JS
+                Unravel++
+                    Difference: Unravel showed sortable list of code line pointers (hand off to chrome)
+                    Ibex: Shows all the code in context, where you can inspect in the midst of all JS that was run, constrainable
+                        all JS is imported and constrainable
+                            Perhaps assume experts can/have identified library sections of minified bundle
+                        Follow-up study: what do users want to see (then ignore everything else)
+                Additional constraints to hide libraries / sub functions
+
+            Show relevant HTML/CSS
+                Constrain to only relevant (hide all the crap)
+                Drawing lines
+
+            Showing them how the JS manipulates the HTML
+                Drawing lines between JS and HTML nodes
+
+            (Punt) Giving them a sandbox to play and modify the page
+
+            Giving them navigable playback through JS exec with hiding features
+
+Evaluation: Not binary
+    Don't prove the statement
+    How did it work? (Time difference) (Feasibility) (Quality)
+    Tradeoff between time/cost
