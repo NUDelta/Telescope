@@ -10,15 +10,17 @@ def([
     mirrorLastLine: 0,
     activeCodeOnly: true,
 
-    initialize: function (codeMirror, sourceCollection, activeNodeCollection) {
-      this.jsMirror = codeMirror;
-      this.jsMirror.setOption("lineNumbers", true);
+    initialize: function (codeMirrors, sourceCollection, activeNodeCollection) {
+      this.codeMirrors = codeMirrors;
       this.sourceCollection = sourceCollection;
       this.activeNodeCollection = activeNodeCollection;
       this.activeNodeCollection.markDomManipulatingNodes();
     },
 
     showSources: function () {
+      this.jsMirror = this.codeMirrors.js;
+      this.jsMirror.setOption("lineNumbers", true);
+
       this.deleteAllLines();
 
       //Write the source and delete its lines in each iteration
