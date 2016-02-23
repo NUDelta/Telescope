@@ -187,8 +187,8 @@ function nodeTag(node) {
 	} else if (node.type === 'WithStatement') {
 		return decorate({ name: 'statement', classes: ['with'] });
 	}
-	// console.error(node);
-	// console.error(node.source());
+
+	//TODO tag: DebuggerStatement
 	throw new Error('tag not found for ' + node.type);
 
 	function decorate(tag) {

@@ -1,8 +1,13 @@
-var traceCollection = new TraceCollection([
-  {startLine: 2, endLine: 2, path: "a"},
-  {startLine: 3, endLine: 4, path: "a"},
-  {startLine: 2, endLine: 5, path: "b"},
-  {startLine: 1, endLine: 1, path: "c"}
+var activeNodeCollection = new ActiveNodeCollection([
+  //Active
+  // a 2 3 4
+  // b 2 3 4 5
+  // c 1
+
+  {startLine: 2, endLine: 2, path: "a", hits: 1, type: "function"},
+  {startLine: 3, endLine: 4, path: "a", hits: 2, type: "function"},
+  {startLine: 2, endLine: 5, path: "b", hits: 3, type: "function"},
+  {startLine: 1, endLine: 1, path: "c", hits: 4, type: "function"},
 ]);
 
 var sourceCollection = new SourceCollection(null, {
@@ -35,5 +40,5 @@ var sourceCollection = new SourceCollection(null, {
       url: "https://localhost:3001/"
     }
   ],
-  traceCollection: traceCollection
+  activeNodeCollection: activeNodeCollection
 });

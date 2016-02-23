@@ -1,9 +1,71 @@
 define([],
   function () {
     return function () {
+      window.unravelAgent.traceJsOn = function () {
+        window.unravelAgent.storedCalls = {};
+
+        if (window.unravelAgent.traceJsActive) {
+          window.unravelAgent.traceJsOff();
+        }
+        window.unravelAgent.traceJsActive = true;
+
+        if (!window.unravelAgent.functionPool) {
+          window.unravelAgent.functionPool = {};
+        }
+
+        for (var func in document) {
+          if (typeof(document[func]) === 'function') {
+            window.unravelAgent.functionPool[func] = document[func];
+            (function () {
+              var functionName = func;  //closure in the func reference
+              document[functionName] = function () {
+                var args = [].splice.call(arguments, 0);
+
+                if (functionName.indexOf("createEvent") < 0) {
+                  var error = new Error();
+                  var strArgs;
+                  try {
+                    strArgs = JSON.stringify(args);
+                  } catch (ignored) {
+                  }
+
+                  var stackTrace = error.stack.replace(/(?:\r\n|\r|\n)/g, '|||');
+                  if (stackTrace.indexOf("getPath") < 0) {
+                    var traceObj = {
+                      "detail": {
+                        stack: error.stack.replace(/(?:\r\n|\r|\n)/g, '|||'),
+                        functionName: functionName,
+                        args: strArgs
+                      }
+                    };
+                    window.dispatchEvent(new CustomEvent("JSTrace", traceObj));
+                  }
+                }
+
+                return window.unravelAgent.functionPool[functionName].apply(document, args);
+              }
+            })();
+          }
+        }
+      };
+
+      window.unravelAgent.traceJsOff = function () {
+        if (!window.unravelAgent.functionPool) {
+          return;
+        }
+
+        for (var func in window.document) {
+          if (typeof(window.document[func]) === 'function') {
+            window.document[func] = window.unravelAgent.functionPool[func];
+          }
+        }
+
+        window.unravelAgent.traceJsActive = false;
+      };
+
       window.unravelAgent.reWritePage = function () {
 
-        //todo revisit https://developer.mozilla.org/en-US/docs/Web/API/Window
+        //https://developer.mozilla.org/en-US/docs/Web/API/Window
         var keepKeys = [
           "applicationCache",
           "btoa",
@@ -133,10 +195,6 @@ define([],
         http.open("GET", instrumentedURL, true);
         var complete = false;
 
-        //var script = document.createElement('script');
-        //script.src = instrumentedURL;
-        //document.getElementsByTagName('head')[0].appendChild(script);
-
         var callback = function () {
           if (http.readyState == 4 && http.status == 200 && !complete) {
             complete = true;
@@ -181,10 +239,15 @@ define([],
               }
               window.clearInterval(interval_id);
 
+              //Send async request to re-init the content script after we nuke the page
+              window.dispatchEvent(new CustomEvent("ReloadContentListeners"));
+
+              //Nuke the page
               document.open('text/html');
               document.write("<html><head></head><body></body></html>");
               document.close();
 
+              //Rewrite with fondue
               document.open('text/html');
               document.write(http.responseText);
               document.close();
@@ -198,55 +261,6 @@ define([],
         http.send();
       };
 
-
-      //  window.unravelAgent.reWriteCallback = function (res) {
-      //    debugger;
-      //    try {
-      //      window.unravelAgent.response = http.responseText;
-      //
-      //      var deleteKeys = [];
-      //
-      //      for (var key in window) {
-      //        if (window.hasOwnProperty(key)) {
-      //          if (!window.unravelAgent._(keepKeys).contains(key)) {
-      //            deleteKeys.push(key);
-      //          }
-      //        }
-      //      }
-      //
-      //      console.log("Deleting", JSON.stringify(deleteKeys));
-      //
-      //      var wontDeleteKeys = [];
-      //      window.unravelAgent._(deleteKeys).each(function (key) {
-      //        var wasDeleted = delete window[key];
-      //        if (!wasDeleted) {
-      //          wontDeleteKeys.push(key);
-      //        }
-      //      });
-      //
-      //      window.unravelAgent._(wontDeleteKeys).each(function (key) {
-      //        window[key] = undefined;
-      //        delete window[key];
-      //        if (window[key]) {
-      //          console.log("Secondary delete didn't work:", key);
-      //        }
-      //      });
-      //
-      //      if (window.localStorage && window.localStorage.clear) {
-      //        window.localStorage.clear();
-      //      }
-      //
-      //      document.open('text/html');
-      //      document.write("<html><head></head><body></body></html>");
-      //      document.close();
-      //
-      //      document.open('text/html');
-      //      document.write(http.responseText);
-      //      document.close();
-      //    } catch (err) {
-      //      debugger;
-      //    }
-      //  };
     };
 
   });

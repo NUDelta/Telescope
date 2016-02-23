@@ -29,6 +29,10 @@ define([
           router.homeView.handleMutations(mutations);
         }, router);
 
+        router.on("JSTrace", function (data) {
+          router.homeView.handleJSTrace(data);
+        }, router);
+
         router.on("TabUpdate", function (data) {
           UnravelAgent.checkActive(function (isActive) {
             if (!isActive) {

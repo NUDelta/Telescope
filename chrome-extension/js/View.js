@@ -5,8 +5,12 @@ define([
   "datatables",
   "handlebars",
   "UnravelAgent",
-  "text!templates/view.html"
-], function (Backbone, _, $, datatables, Handlebars, UnravelAgent, viewTemplate) {
+  "text!templates/view.html",
+  "CallStackCollection",
+  "NodeCollection"
+], function (Backbone, _, $, datatables, Handlebars, UnravelAgent, viewTemplate,
+             CallStackCollection,
+             NodeCollection) {
   return Backbone.View.extend({
     template: Handlebars.compile(viewTemplate),
 
@@ -26,8 +30,6 @@ define([
 
     domPathsToKeep: [],
 
-    arrHitLines: [],
-
     arrDomHitLines: [],
 
     filterSVG: true,
@@ -39,9 +41,12 @@ define([
     activeHTML: "",
 
     initialize: function () {
-      this.parseFondue = _.bind(this.parseFondue, this);
+      this.storeNodeActivity = _.bind(this.storeNodeActivity, this);
       this.fiddle = _.bind(this.fiddle, this);
       this.whittle = _.bind(this.whittle, this);
+
+      this.callStackCollection = new CallStackCollection();
+      this.nodeCollection = new NodeCollection();
     },
 
     render: function (unravelAgentActive) {
@@ -82,6 +87,10 @@ define([
           activeHTML: activeHTML
         };
       }, _.bind(whittleCallback, this), this.domPathsToKeep);
+    },
+
+    handleJSTrace: function (traceEventObj) {
+      this.callStackCollection.add(traceEventObj);
     },
 
     corsGet: function (url, callback) {
@@ -140,7 +149,7 @@ define([
         return;
       }
 
-      var hitScripts = _.chain(this.tracerNodes).pluck("path").unique().map(function (path) {
+      var hitScripts = _.chain(this.nodeCollection.getActiveNodeArr()).pluck("path").unique().map(function (path) {
         var meta = _.find(this.metaScripts, function (s) {
           return s.path === path;
         }, this);
@@ -168,10 +177,9 @@ define([
         };
       }, this).value();
 
-
       var jsBinCallback = _.bind(function (response) {
         var binUrl = response.url;
-        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?html,css,js,output";
+        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?js";
         console.log(tabUrl);
         window.open(tabUrl);
         this.activeHTML = "";
@@ -188,7 +196,7 @@ define([
               css: this.activeCSS,
               javascript: "",
               fondue: {
-                traces: JSON.stringify(this.arrHitLines),
+                traces: JSON.stringify(this.nodeCollection.getActiveNodeArr()),
                 scripts: JSON.stringify(hitScripts)
               }
             },
@@ -293,7 +301,8 @@ define([
       var path = this.constrainToPath ? this.currentPath : "";
 
       UnravelAgent.runInPage(function (path) {
-        unravelAgent.startObserving(path);
+        //unravelAgent.startObserving(path);
+        //unravelAgent.traceJsOn();
         unravelAgent.fondueBridge.startTracking();
       }, callback, path);
 
@@ -309,67 +318,37 @@ define([
 
     stop: function () {
       UnravelAgent.runInPage(function () {
-        unravelAgent.stopObserving();
+        //unravelAgent.stopObserving();
+        //unravelAgent.traceJsOff();
       }, function () {
         this.$("#record .active").hide();
         this.$("#record .inactive").show();
       });
 
       UnravelAgent.runInPage(function () {
-        var tracerNodes = unravelAgent.fondueBridge.getTracerNodes();
-        var hitsAndInvokes = unravelAgent.fondueBridge.getHitsAndInvokes();
-        hitsAndInvokes = JSON.parse(hitsAndInvokes);
-
-        return {
-          tracerNodes: tracerNodes,
-          nodeHits: hitsAndInvokes.nodeHits,
-          nodeLogs: hitsAndInvokes.nodeLogs
-        };
-      }, this.parseFondue);
+        return unravelAgent.fondueBridge.getNodeActivity();
+      }, this.storeNodeActivity);
     },
 
     reset: function () {
       this.domPathsToKeep = [];
-      this.arrHitLines = [];
       this.arrDomHitLines = [];
       this.pathsDomRows = [];
       this.pathsJSRows = [];
       this.activeHTML = "";
       this.activeCSS = "";
+      this.callStackCollection.reset(null, {});
+      this.nodeCollection.reset(null, {});
       this.stop();
     },
 
-    parseFondue: function (o) {
-      if (!o) {
-        console.warn("Fondue not active. JS Capturing disabled.");
+    storeNodeActivity: function (nodeActivity) {
+      if (!nodeActivity) {
+        console.warn("Fondue injector is broken or not injected yet. JS Capturing disabled.");
         return;
       }
 
-      var nodeHits = o.nodeHits;
-      var nodeLogs = o.nodeLogs;
-      var tracerNodes = o.tracerNodes;
-      this.tracerNodes = tracerNodes;
-
-      this.arrHitLines = _(tracerNodes).reduce(function (memo, node) {
-        var idArr = node.id.split("-");
-
-        if (nodeHits[node.id] > 0 && idArr.length > 5) {
-          var hit = {
-            path: node.path,
-            type: node.type,
-            startLine: node.start.line,
-            startColumn: node.start.column,
-            endLine: node.end.line,
-            endColumn: node.end.column,
-            hits: nodeHits[node.id],
-            invokes: nodeLogs[node.id]
-          };
-
-          memo.push(hit);
-        }
-
-        return memo;
-      }, []);
+      this.nodeCollection.add(nodeActivity);
     },
 
     parseSelector: function (htmlString) {

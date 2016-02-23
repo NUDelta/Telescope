@@ -7,9 +7,13 @@ var eventHandlerFn = function (e) {
   } else {
     effect1.setAttribute("style", "display: none;")
   }
-
-  console.log(e);
 };
+
+var intervalFoo = function(){
+  var a = 2;
+};
+
+window.setInterval(intervalFoo, 500);
 
 testElement.addEventListener("click", eventHandlerFn);
 

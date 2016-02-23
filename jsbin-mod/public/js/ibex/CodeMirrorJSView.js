@@ -10,15 +10,18 @@ def([
     mirrorLastLine: 0,
     activeCodeOnly: true,
 
-    initialize: function (codeMirror, sourceCollection) {
+    initialize: function (codeMirror, sourceCollection, activeNodeCollection) {
       this.jsMirror = codeMirror;
       this.jsMirror.setOption("lineNumbers", true);
       this.sourceCollection = sourceCollection;
+      this.activeNodeCollection = activeNodeCollection;
+      this.activeNodeCollection.markDomManipulatingNodes();
     },
 
     showSources: function () {
       this.deleteAllLines();
 
+      //Write the source and delete its lines in each iteration
       var sourceModels = this.sourceCollection.getOrdered();
       _(sourceModels).each(function (sourceModel) {
         if (!sourceModel.isVisible()) {
@@ -27,20 +30,29 @@ def([
 
         var sourceCode = sourceModel.getCode();
         var mirrorPosition = this.insertLines(sourceCode);
+        //By iterating through, the mirror position will stay correct
+        // as we append sources
         sourceModel.setMirrorPos(mirrorPosition);
+        this.addGutterPills(sourceModel);
 
         if (this.activeCodeOnly) {
           this.deleteInactiveLines(sourceModel);
         }
-
       }, this);
 
-      //if (trace.type === "function") {
-      //  var pill = new GutterPillView(this.jsMirror, startLine, trace);
-      //  pill.setCount(trace.hits);
-      //}
-
       this.scrollTop();
+    },
+
+    addGutterPills: function (sourceModel) {
+      var activeNodeModels = this.activeNodeCollection.where({type:"function", path:sourceModel.get("path")});
+      _(activeNodeModels).each(function (activeNodeModel) {
+        var activeNode = activeNodeModel.toJSON();
+
+        //subtract one, because the mirror start line === node.startLine
+        var startLine = sourceModel.getMirrorPos().startLine + activeNode.startLine - 1;
+        var pill = new GutterPillView(this.jsMirror, startLine, activeNode, this.sourceCollection);
+        pill.setCount(activeNode.hits);
+      }, this);
     },
 
     showInactive: function () {
@@ -125,7 +137,8 @@ def([
         });
       }
 
-      var lastDiff = 0;  //as we delete lines, subtract the line numbers from future ranges
+      //as we delete lines, subtract the line numbers from future ranges
+      var lastDiff = 0;
       _(ranges).each(function (range) {
         this.deleteLines(range.start - lastDiff, range.end - lastDiff);
 
@@ -149,4 +162,5 @@ def([
 
 
   });
-});
+})
+;
