@@ -73,6 +73,8 @@ def([
         this.$activeLine.prepend(this.$invokeNode);
         this.$activeLine.prepend(this.$expander);
 
+        console.log("Gutter: Expanding trace", this.trace);
+
         if (this.trace.invokes) {
           _(this.trace.invokes).each(function (invocation, i) {
             var callStack = invocation.callStack || [];

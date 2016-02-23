@@ -1,8 +1,10 @@
 define([], function () {
   return function () {
     var FondueBridge = function () {
-
     };
+
+    FondueBridge.MAX_LOG_COUNT = 2000;
+    FondueBridge.MAX_STACK_DEPTH = 20;
 
     FondueBridge.prototype = {
       constructor: FondueBridge,
@@ -34,14 +36,14 @@ define([], function () {
 
       getNodeActivity: function () {
         try {
-          //Get the last 500 javascript calls logged
-          var _tracerInvocations = unravelAgent._(window.__tracer.logDelta(this.logHandle, 500));
+          //Get the last n javascript calls logged
+          var _tracerInvocations = unravelAgent._(window.__tracer.logDelta(this.logHandle, FondueBridge.MAX_LOG_COUNT));
 
           //For each one, get its callStack, up to 10 deep
           _tracerInvocations.each(function (invocation) {
             invocation.callStack = unravelAgent._(__tracer.backtrace({
               invocationId: invocation.invocationId,
-              range: [0, 10]
+              range: [0, FondueBridge.MAX_STACK_DEPTH]
             })).reverse();
 
             //Remove the last item on the stack, === the invocation

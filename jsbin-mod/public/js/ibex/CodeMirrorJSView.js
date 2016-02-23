@@ -21,6 +21,7 @@ def([
     showSources: function () {
       this.deleteAllLines();
 
+      //Write the source and delete its lines in each iteration
       var sourceModels = this.sourceCollection.getOrdered();
       _(sourceModels).each(function (sourceModel) {
         if (!sourceModel.isVisible()) {
@@ -29,29 +30,28 @@ def([
 
         var sourceCode = sourceModel.getCode();
         var mirrorPosition = this.insertLines(sourceCode);
+        //By iterating through, the mirror position will stay correct
+        // as we append sources
         sourceModel.setMirrorPos(mirrorPosition);
+        this.addGutterPills(sourceModel);
 
         if (this.activeCodeOnly) {
           this.deleteInactiveLines(sourceModel);
         }
-
       }, this);
 
-      this.addGutterPills();
       this.scrollTop();
     },
 
-    addGutterPills: function () {
-      var activeNodeModels = this.activeNodeCollection.where({type:"function"});
+    addGutterPills: function (sourceModel) {
+      var activeNodeModels = this.activeNodeCollection.where({type:"function", path:sourceModel.get("path")});
       _(activeNodeModels).each(function (activeNodeModel) {
-        var trace = activeNodeModel.toJSON();
+        var activeNode = activeNodeModel.toJSON();
 
-        var sourceModel = this.sourceCollection.findWhere({path: trace.path});
-        var mirrorPos = sourceModel.getMirrorPos();
-        var startLine = mirrorPos.startLine + trace.startLine;
-
-        var pill = new GutterPillView(this.jsMirror, startLine, trace, this.sourceCollection);
-        pill.setCount(trace.hits);
+        //subtract one, because the mirror start line === node.startLine
+        var startLine = sourceModel.getMirrorPos().startLine + activeNode.startLine - 1;
+        var pill = new GutterPillView(this.jsMirror, startLine, activeNode, this.sourceCollection);
+        pill.setCount(activeNode.hits);
       }, this);
     },
 
@@ -144,36 +144,6 @@ def([
 
         lastDiff += (range.end - range.start) + 1;
       }, this);
-
-      //update traces with line diffs
-      var activeNodeModels = this.activeNodeCollection.where({type:"function"});
-      _(activeNodeModels).each(function (activeNodeModel) {
-        var startLine = parseInt(activeNodeModel.get("startLine"));
-        var endLine = parseInt(activeNodeModel.get("endLine"));
-
-        var lineDiff = this.sumRanges(ranges, startLine);
-
-        activeNodeModel.set("startLine", startLine - lineDiff);
-        activeNodeModel.set("endLine", endLine - lineDiff);
-      }, this);
-    },
-
-    sumRanges: function (ranges, lessThanNum) {
-      var sum = 0;
-
-      for (var i = 0; i < ranges.length; i++) {
-        var range = ranges[i];
-        if (range.start < lessThanNum && range.end < lessThanNum) {
-          sum += (range.end - range.start) + 1;
-          if(range.start === 0){
-            sum += 1;
-          }
-        } else {
-          break;
-        }
-      }
-
-      return sum;
     },
 
     scrollToSourceModel: function (sourceModel) {

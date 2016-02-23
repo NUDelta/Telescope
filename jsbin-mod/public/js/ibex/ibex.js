@@ -16,6 +16,7 @@ def([
       activeNodeCollection: activeNodeCollection
     });
 
+
     var codeMirrorJSView = new CodeMirrorJSView(codeMirror, sourceCollection, activeNodeCollection);
     codeMirrorJSView.showSources();
 
