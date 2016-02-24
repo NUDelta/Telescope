@@ -42,6 +42,8 @@ def([
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, template.html);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors, template.css);
+
+      this.codeMirrorJSView.on("jsView:linkHTML", this.codeMirrorHTMLView.drawRelatedHTML);
     },
 
     nav: function (panelType, codeMirrorInstance) {

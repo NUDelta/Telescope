@@ -67,6 +67,8 @@ def([
 
     expandTrace: function (e) {
       if (!this.$activeLine) {
+        this.trigger("pill:expand", this.trace);
+
         this.$activeLine = $(e.currentTarget).parent().parent().parent();
         this.$expander = $('<div class="expander-node"></div>');
         this.$invokeNode = $('<div class="invoke-node"></div>');
