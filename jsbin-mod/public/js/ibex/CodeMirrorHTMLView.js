@@ -28,8 +28,10 @@ def([
 
     drawRelatedHTML: function (activeNode) {
       if (!activeNode.domQueries || activeNode.domQueries.length < 1) {
-        return;
+        return [];
       }
+
+      var arrPos = [];
 
       //translate query into jquery search
       _(activeNode.domQueries).each(function (domQuery) {
@@ -43,29 +45,47 @@ def([
 
           try {
             if (queryFn(queryString, codeLine)) {
-              this.highlightLines(i, codeLine.length);
+              var marker = this.highlightLines(i, codeLine.length);
+              if (activeNode.markers) {
+                activeNode.markers.push(marker);
+              } else {
+                activeNode.markers = [marker];
+              }
+
+              var pos = $($(".CodeMirror-code")[0]).find("div:nth-child(" + i + ")")[0].getBoundingClientRect();
+              arrPos.push(pos);
             }
           } catch (ig) {
           }
         }
 
       }, this);
+
+      return arrPos;
+    },
+
+    undrawRelatedHTML: function (activeNode) {
+       _(activeNode.markers || []).each(function (marker) {
+        marker.clear();
+      });
     },
 
     highlightLines: function (lineNumber, length) {
-      this.markers.push(this.htmlMirror.markText(
+      var marker = this.htmlMirror.markText(
         {
           line: lineNumber,
           ch: 0
         },
         {
           line: lineNumber,
-          ch: length-1
+          ch: length - 1
         },
         {
           css: "background-color:#fffcbd"
         }
-      ));
+      );
+
+      return marker;
     },
 
     getjQueryFn: function (expression) {

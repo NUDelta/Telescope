@@ -51,8 +51,8 @@ def([
       this.$el.toggleClass("none", count === 0);
     },
 
-    setDomModifier: function(){
-      if (this.trace.domModifier){
+    setDomModifier: function () {
+      if (this.trace.domModifier) {
         this.$el.attr("style", "background-color: yellow !important;");
       }
     },
@@ -67,15 +67,11 @@ def([
 
     expandTrace: function (e) {
       if (!this.$activeLine) {
-        this.trigger("pill:expand", this.trace);
-
         this.$activeLine = $(e.currentTarget).parent().parent().parent();
         this.$expander = $('<div class="expander-node"></div>');
         this.$invokeNode = $('<div class="invoke-node"></div>');
         this.$activeLine.prepend(this.$invokeNode);
         this.$activeLine.prepend(this.$expander);
-
-        console.log("Gutter: Expanding trace", this.trace);
 
         if (this.trace.invokes) {
           _(this.trace.invokes).each(function (invocation, i) {
@@ -185,7 +181,13 @@ def([
         }
       }
 
+      var expandCallback = _.bind(function(){
+        this.trigger("pill:expand", this);
+      }, this);
+
       if (this.expanded) {
+        this.trigger("pill:collapse", this);
+
         this.$invokeNode.animate({
           height: 0
         }, 200);
@@ -196,7 +198,7 @@ def([
       } else {
         this.$invokeNode.animate({
           height: 200
-        }, 200);
+        }, 200, expandCallback);
         this.$expander.animate({
           height: 200
         }, 200);
