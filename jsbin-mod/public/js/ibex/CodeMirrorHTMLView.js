@@ -34,6 +34,8 @@ def([
         this.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
           var pill = new GutterPillView(this.htmlMirror, lineNumber, activeNodes, this.sourceCollection);
           pill.setCount(activeNodes.length);
+          pill.on("pill:expand", this.drawLinksToJS, this);
+          pill.on("pill:collapse", this.eraseLinksToJS, this);
           this.gutterPills.push(pill);
         }, this);
       }, this);
@@ -58,6 +60,14 @@ def([
         } catch (ig) {
         }
       }, this);
+    },
+
+    drawLinksToJS:function(gutterPillView){
+      this.htmlJSLinksView.drawLineFromHTMLToJS(gutterPillView);
+    },
+
+    eraseLinksToJS:function(gutterPillView){
+      this.htmlJSLinksView.removeHTMLToJSLine(gutterPillView);
     },
 
     scrollTop: function () {
@@ -90,12 +100,28 @@ def([
       this.nodeMarkers[node.id].push(marker);
     },
 
+    addNodesMarker: function (nodesArr, marker) {
+      var key = _(nodesArr).pluck("id").join("");
+      this.nodeMarkers[key] = this.nodeMarkers[key] || [];
+      this.nodeMarkers[key].push(marker);
+    },
+
     clearMarkersForNode: function (node) {
       _(this.nodeMarkers[node.id]).each(function (marker) {
         marker.clear();
       });
 
       delete this.nodeMarkers[node.id];
+    },
+
+    clearMarkersForNodes: function (nodesArr) {
+      var key = _(nodesArr).pluck("id").join("");
+
+      _(this.nodeMarkers[key]).each(function (marker) {
+        marker.clear();
+      });
+
+      delete this.nodeMarkers[key];
     },
 
     getjQueryFn: function (expression) {

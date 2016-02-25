@@ -40,9 +40,11 @@ def([
 
     initialize: function (codeMirror, line, traces, sourceCollection) {
       this.sourceCollection = sourceCollection;
+      this.line = line;
+
       codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
 
-      if(traces.length){
+      if (traces.length) {
         this.traces = traces;
       } else {
         this.trace = traces;
@@ -71,16 +73,12 @@ def([
       this.setActive(!this._active);
     },
 
-    htmlGutterHandle: function(e){
+    htmlGutterHandle: function (e) {
       this.trigger("", this);
     },
 
     expandTrace: function (e) {
-      if(this.traces){
-        return this.htmlGutterHandle(e);
-      }
-
-      if (!this.$activeLine) {
+      if (!this.$activeLine && !this.traces) {
         this.$activeLine = $(e.currentTarget).parent().parent().parent();
         this.$expander = $('<div class="expander-node"></div>');
         this.$invokeNode = $('<div class="invoke-node"></div>');
@@ -195,12 +193,17 @@ def([
         }
       }
 
-      var expandCallback = _.bind(function(){
+      var expandCallback = _.bind(function () {
         this.trigger("pill:expand", this);
       }, this);
 
       if (this.expanded) {
         this.trigger("pill:collapse", this);
+        this.expanded = false;
+
+        if (this.traces) {
+          return;
+        }
 
         this.$invokeNode.animate({
           height: 0
@@ -208,15 +211,20 @@ def([
         this.$expander.animate({
           height: 0
         }, 200);
-        this.expanded = false;
       } else {
+        this.expanded = true;
+
+        if (this.traces) {
+          expandCallback();
+          return;
+        }
+
         this.$invokeNode.animate({
           height: 200
         }, 200, expandCallback);
         this.$expander.animate({
           height: 200
         }, 200);
-        this.expanded = true;
       }
     }
   });
