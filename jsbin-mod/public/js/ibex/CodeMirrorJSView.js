@@ -55,10 +55,10 @@ def([
         var pill = new GutterPillView(this.jsMirror, startLine, activeNode, this.sourceCollection);
         pill.setCount(activeNode.hits);
         pill.on("pill:expand", function(gutterPillView){
-          this.trigger("jsView:linkHTML", gutterPillView);
+          this.htmlJSLinksView.drawLineFromJSToHTML(gutterPillView);
         }, this);
         pill.on("pill:collapse", function(gutterPillView){
-          this.trigger("jsView:unlinkHTML", gutterPillView);
+          this.htmlJSLinksView.removeJSToHTMLLine(gutterPillView);
         }, this);
       }, this);
     },

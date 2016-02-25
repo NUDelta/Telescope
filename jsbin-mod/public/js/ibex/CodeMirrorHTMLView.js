@@ -7,13 +7,12 @@ def([
   return Backbone.View.extend({
     htmlMirror: null,
     htmlSource: "",
-    markers: [],
+    nodeMarkers: {},
 
     initialize: function (codeMirrors, htmlSource, activeNodeCollection) {
       this.codeMirrors = codeMirrors;
       this.htmlSource = htmlSource;
       this.activeNodeCollection = activeNodeCollection;
-      this.drawRelatedHTML = _.bind(this.drawRelatedHTML, this);
     },
 
     render: function () {
@@ -25,30 +24,39 @@ def([
     addGutterPills: function () {
       var queryNodeMap = this.activeNodeCollection.getDomQueryNodes();
 
+      this.gutterPills = [];
+      var domQueries = _(queryNodeMap).keys();
+      _(domQueries).each(function (domFnQueryStr) {
+        var domFnName = domFnQueryStr.split("|")[0];
+        var queryString = domFnQueryStr.split("|")[1];
+        var activeNodes = queryNodeMap[domFnQueryStr];
+
+        this.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
+          var pill = new GutterPillView(this.htmlMirror, lineNumber, activeNodes, this.sourceCollection);
+          pill.setCount(activeNodes.length);
+          this.gutterPills.push(pill);
+        }, this);
+      }, this);
+    },
+
+    whereLines: function (domFnName, queryString, iterFn, context) {
+      if (context) {
+        iterFn = _.bind(iterFn, context);
+      }
+
       var htmlLineArr = [];
       for (var i = 0; i < this.htmlMirror.lineCount(); i++) {
         htmlLineArr.push(this.htmlMirror.getLine(i));
       }
+      _(htmlLineArr).each(function (codeLine, lineNumber) {
+        var queryFn = this.getjQueryFn(domFnName);
 
-      this.gutterPills = [];
-      var domQueries = _(queryNodeMap).keys();
-      _(domQueries).each(function (domQueryPair) {
-        var queryKey = domQueryPair.split("|")[0];
-        var queryString = domQueryPair.split("|")[1];
-        var activeNodes = queryNodeMap[domQueryPair];
-
-        _(htmlLineArr).each(function (codeLine, lineNumber) {
-          var queryFn = this.getjQueryFn(queryKey);
-
-          try {
-            if (queryFn(queryString, codeLine)) {
-              var pill = new GutterPillView(this.htmlMirror, lineNumber, activeNodes, this.sourceCollection);
-              pill.setCount(activeNodes.length);
-              this.gutterPills.push(pill);
-            }
-          } catch (ig) {
+        try {
+          if (queryFn(queryString, codeLine)) {
+            iterFn(codeLine, lineNumber);
           }
-        }, this);
+        } catch (ig) {
+        }
       }, this);
     },
 
@@ -57,50 +65,6 @@ def([
         this.jsMirror.scrollTo({line: 0, ch: 0});
         this.jsMirror.setCursor({line: 0});
       }, this), 1);
-    },
-
-    drawRelatedHTML: function (activeNode) {
-      if (!activeNode.relatedDomQueries || activeNode.relatedDomQueries.length < 1) {
-        return [];
-      }
-
-      var arrPos = [];
-
-      //translate query into jquery search
-      _(activeNode.relatedDomQueries).each(function (relatedDomQuery) {
-        var domQueryKey = relatedDomQuery.domQueryKey;
-        var queryString = relatedDomQuery.queryString;
-
-        var queryFn = this.getjQueryFn(domQueryKey);
-
-        for (var i = 0; i < this.htmlMirror.lineCount(); i++) {
-          var codeLine = this.htmlMirror.getLine(i);
-
-          try {
-            if (queryFn(queryString, codeLine)) {
-              var marker = this.highlightLines(i, codeLine.length);
-              if (activeNode.markers) {
-                activeNode.markers.push(marker);
-              } else {
-                activeNode.markers = [marker];
-              }
-
-              var pos = $($(".CodeMirror-code")[0]).find("div:nth-child(" + i + ")")[0].getBoundingClientRect();
-              arrPos.push(pos);
-            }
-          } catch (ig) {
-          }
-        }
-
-      }, this);
-
-      return arrPos;
-    },
-
-    undrawRelatedHTML: function (activeNode) {
-      _(activeNode.markers || []).each(function (marker) {
-        marker.clear();
-      });
     },
 
     highlightLines: function (lineNumber, length) {
@@ -119,6 +83,19 @@ def([
       );
 
       return marker;
+    },
+
+    addNodeMarker: function (node, marker) {
+      this.nodeMarkers[node.id] = this.nodeMarkers[node.id] || [];
+      this.nodeMarkers[node.id].push(marker);
+    },
+
+    clearMarkersForNode: function (node) {
+      _(this.nodeMarkers[node.id]).each(function (marker) {
+        marker.clear();
+      });
+
+      delete this.nodeMarkers[node.id];
     },
 
     getjQueryFn: function (expression) {
@@ -177,6 +154,5 @@ def([
           }
       }
     }
-
   });
 });

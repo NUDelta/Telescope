@@ -72,7 +72,7 @@ def([
     },
 
     htmlGutterHandle: function(e){
-      debugger;
+      this.trigger("", this);
     },
 
     expandTrace: function (e) {

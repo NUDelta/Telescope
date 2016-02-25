@@ -7,7 +7,7 @@ def([
   "CodeMirrorJSView",
   "CodeMirrorHTMLView",
   "CodeMirrorCSSView",
-  "CurveLineView",
+  "HTMLJSLinksView",
   "SourceCollection",
   "ActiveNodeCollection"
 ], function ($, Backbone, _,
@@ -16,7 +16,7 @@ def([
              CodeMirrorJSView,
              CodeMirrorHTMLView,
              CodeMirrorCSSView,
-             CurveLineView,
+             HTMLJSLinksView,
              SourceCollection,
              ActiveNodeCollection) {
   var instance = null;
@@ -41,31 +41,13 @@ def([
       });
 
       this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection);
-      this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, template.html, this.activeNodeCollection);
+      this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors, template.css);
 
-      this.codeMirrorJSView.on("jsView:linkHTML", function (gutterPillView) {
-        var pillPos = gutterPillView.$el[0].getBoundingClientRect();
-        var arrHTMLPos = this.codeMirrorHTMLView.drawRelatedHTML(gutterPillView.trace);
-        var arrLines = [];
-
-        _(arrHTMLPos).each(function (htmlPos) {
-          var lineView = new CurveLineView(htmlPos, pillPos);
-          lineView.draw();
-          arrLines.push(lineView);
-        });
-
-        gutterPillView.arrLines = arrLines;
-      }, this);
-
-      this.codeMirrorJSView.on("jsView:unlinkHTML", function (gutterPillView) {
-        this.codeMirrorHTMLView.undrawRelatedHTML(gutterPillView.trace);
-
-        _(gutterPillView.arrLines || []).each(function (lineView) {
-          lineView.undraw();
-        });
-      }, this);
+      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
+      this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
+      this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
     },
 
     nav: function (panelType, codeMirrorInstance) {

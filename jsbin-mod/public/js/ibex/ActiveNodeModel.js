@@ -4,7 +4,7 @@ def([
   "underscore"
 ], function ($, Backbone, _) {
   return Backbone.Model.extend({
-    _domQueryKeys: _([
+    _domFnNames: _([
       "getElementsByTagName",
       "getElementsByTagNameNS",
       "getElementsByClassName",
@@ -21,38 +21,40 @@ def([
         return [];
       }
 
-      var domQueryKey = this._domQueryKeys.find(function (partialKey) {
-        if (nodeName.indexOf(partialKey) > -1) {
+      var domFnName = this._domFnNames.find(function (fnName) {
+        if (nodeName.indexOf(fnName) > -1) {
           return true;
         }
       });
 
-      if (domQueryKey) {
+      if (domFnName) {
         var invokes = this.get("invokes") || [];
-        var arrDomItems = [];
+        var arrDomQueryObjs = [];
 
         _(invokes).each(function (invoke) {
-          var domQueryFromInvoke = this.getDomQueryFromInvoke(invoke, domQueryKey);
-          if (domQueryFromInvoke) {
-            arrDomItems.push(domQueryFromInvoke);
+          var queryObj = this.getQueryFromInvoke(invoke, domFnName);
+          if (queryObj) {
+            if (!(queryObj.domFnName === "getElementsByTagName" && queryObj.queryString === "script")) {
+              arrDomQueryObjs.push(queryObj);
+            }
           }
         }, this);
 
-        arrDomItems = _(arrDomItems).uniq(false, function (o) {
-          return o.domQueryKey + o.queryString;
+        arrDomQueryObjs = _(arrDomQueryObjs).uniq(false, function (o) {
+          return o.domFnName + o.queryString;
         });
 
-        return arrDomItems;
+        return arrDomQueryObjs;
       }
 
       return [];
     },
 
-    getDomQueryFromInvoke: function (invoke, domQueryKey) {
+    getQueryFromInvoke: function (invoke, domFnName) {
       try {
         if (invoke.arguments[0].value.type === "string") {
           return {
-            domQueryKey: domQueryKey,
+            domFnName: domFnName,
             queryString: invoke.arguments[0].value.value
           };
         }

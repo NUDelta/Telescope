@@ -11,14 +11,14 @@ def([
       var queryNodeMap = {};
 
       this.each(function (nodeModel) {
-        var domQueries = nodeModel.getDomQueries();
+        var arrDomQueryObjs = nodeModel.getDomQueries();
 
-        if (!domQueries.length) {
+        if (!arrDomQueryObjs.length) {
           return;
         }
 
-        _(domQueries).each(function (domQuery) {
-          var key = domQuery.domQueryKey + "|" + domQuery.queryString;
+        _(arrDomQueryObjs).each(function (domQueryObj) {
+          var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
           if (queryNodeMap[key]) {
             queryNodeMap[key].push(nodeModel);
           } else {
