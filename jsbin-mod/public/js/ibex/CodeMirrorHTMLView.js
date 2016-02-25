@@ -2,21 +2,54 @@ def([
   "jquery",
   "backbone",
   "underscore",
-], function ($, Backbone, _) {
+  "GutterPillView"
+], function ($, Backbone, _, GutterPillView) {
   return Backbone.View.extend({
     htmlMirror: null,
     htmlSource: "",
     markers: [],
 
-    initialize: function (codeMirrors, htmlSource) {
+    initialize: function (codeMirrors, htmlSource, activeNodeCollection) {
       this.codeMirrors = codeMirrors;
       this.htmlSource = htmlSource;
+      this.activeNodeCollection = activeNodeCollection;
       this.drawRelatedHTML = _.bind(this.drawRelatedHTML, this);
     },
 
     render: function () {
       this.htmlMirror = this.codeMirrors.html;
       this.htmlMirror.setCode(this.htmlSource);
+      this.addGutterPills();
+    },
+
+    addGutterPills: function () {
+      var queryNodeMap = this.activeNodeCollection.getDomQueryNodes();
+
+      var htmlLineArr = [];
+      for (var i = 0; i < this.htmlMirror.lineCount(); i++) {
+        htmlLineArr.push(this.htmlMirror.getLine(i));
+      }
+
+      this.gutterPills = [];
+      var domQueries = _(queryNodeMap).keys();
+      _(domQueries).each(function (domQueryPair) {
+        var queryKey = domQueryPair.split("|")[0];
+        var queryString = domQueryPair.split("|")[1];
+        var activeNodes = queryNodeMap[domQueryPair];
+
+        _(htmlLineArr).each(function (codeLine, lineNumber) {
+          var queryFn = this.getjQueryFn(queryKey);
+
+          try {
+            if (queryFn(queryString, codeLine)) {
+              var pill = new GutterPillView(this.htmlMirror, lineNumber, activeNodes, this.sourceCollection);
+              pill.setCount(activeNodes.length);
+              this.gutterPills.push(pill);
+            }
+          } catch (ig) {
+          }
+        }, this);
+      }, this);
     },
 
     scrollTop: function () {
@@ -27,16 +60,16 @@ def([
     },
 
     drawRelatedHTML: function (activeNode) {
-      if (!activeNode.domQueries || activeNode.domQueries.length < 1) {
+      if (!activeNode.relatedDomQueries || activeNode.relatedDomQueries.length < 1) {
         return [];
       }
 
       var arrPos = [];
 
       //translate query into jquery search
-      _(activeNode.domQueries).each(function (domQuery) {
-        var domQueryKey = domQuery.domQueryKey;
-        var queryString = domQuery.queryString;
+      _(activeNode.relatedDomQueries).each(function (relatedDomQuery) {
+        var domQueryKey = relatedDomQuery.domQueryKey;
+        var queryString = relatedDomQuery.queryString;
 
         var queryFn = this.getjQueryFn(domQueryKey);
 
@@ -65,7 +98,7 @@ def([
     },
 
     undrawRelatedHTML: function (activeNode) {
-       _(activeNode.markers || []).each(function (marker) {
+      _(activeNode.markers || []).each(function (marker) {
         marker.clear();
       });
     },

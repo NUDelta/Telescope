@@ -42,7 +42,7 @@ def([
 
       this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection);
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
-      this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, template.html);
+      this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, template.html, this.activeNodeCollection);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors, template.css);
 
       this.codeMirrorJSView.on("jsView:linkHTML", function (gutterPillView) {

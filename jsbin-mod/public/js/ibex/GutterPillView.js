@@ -38,10 +38,16 @@ def([
       "click": "expandTrace"
     },
 
-    initialize: function (codeMirror, line, trace, sourceCollection) {
+    initialize: function (codeMirror, line, traces, sourceCollection) {
       this.sourceCollection = sourceCollection;
       codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
-      this.trace = trace;
+
+      if(traces.length){
+        this.traces = traces;
+      } else {
+        this.trace = traces;
+      }
+
       this.setDomModifier();
     },
 
@@ -52,7 +58,7 @@ def([
     },
 
     setDomModifier: function () {
-      if (this.trace.domModifier) {
+      if (this.trace && this.trace.relatedDomModifier) {
         this.$el.attr("style", "background-color: yellow !important;");
       }
     },
@@ -65,7 +71,15 @@ def([
       this.setActive(!this._active);
     },
 
+    htmlGutterHandle: function(e){
+      debugger;
+    },
+
     expandTrace: function (e) {
+      if(this.traces){
+        return this.htmlGutterHandle(e);
+      }
+
       if (!this.$activeLine) {
         this.$activeLine = $(e.currentTarget).parent().parent().parent();
         this.$expander = $('<div class="expander-node"></div>');
@@ -174,8 +188,8 @@ def([
               var margin = $(window).height() / 2;
               lineNo = parseInt(lineNo);
               colNo = parseInt(colNo);
-              fondueMirror.scrollIntoView({line: lineNo, ch: colNo}, margin);
-              fondueMirror.setCursor({line: lineNo});
+              //fondueMirror.scrollIntoView({line: lineNo, ch: colNo}, margin);
+              //fondueMirror.setCursor({line: lineNo});
             }, this);
           }, this);
         }
