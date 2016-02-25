@@ -12,8 +12,8 @@ def([
       this.toPos = toPos;
     },
 
-    undraw: function(){
-      if(!this.r){
+    undraw: function () {
+      if (!this.r) {
         return;
       }
       $(this.r.canvas).remove();
@@ -31,21 +31,21 @@ def([
 
       var leftAbsolutePosition, topAbsolutePosition;
 
-      var x, y,zx,zy;
+      var x, y, zx, zy;
       if (this.fromPos.top >= this.toPos.top) {
         leftAbsolutePosition = this.fromPos.right - 15;
         topAbsolutePosition = this.toPos.bottom;
         x = 0;
-        y = this.fromPos.top - topAbsolutePosition;
+        y = this.fromPos.top - topAbsolutePosition + this.fromPos.height + 7;
         zx = this.toPos.left - leftAbsolutePosition;
-        zy = 0;
+        zy = -this.toPos.height / 2;
       } else {
         leftAbsolutePosition = this.fromPos.right - 15;
         topAbsolutePosition = this.fromPos.bottom;
         x = 0;
-        y = 0;
+        y = this.fromPos.height / 2;
         zx = this.toPos.left - leftAbsolutePosition;
-        zy = this.toPos.top - topAbsolutePosition;
+        zy = this.toPos.top - topAbsolutePosition + this.toPos.height / 2;
       }
 
       var ax = x + (zx - x) * (2 / 5);

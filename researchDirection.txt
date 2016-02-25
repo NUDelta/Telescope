@@ -254,12 +254,12 @@ Prototype Feasibility Analysis
         Tech: Hard
         Wow: Medium
 
-    Highlight JS based on HTML traces
+    (DONE) Highlight JS based on HTML traces
         User Problem Ties: High
         Tech: Hard
         Wow: Medium
 
-    Highlight/ filter active HTML
+    (Punt) Highlight/ filter active HTML
         User Problem Ties: High
         Tech: Hard
         Wow: Medium

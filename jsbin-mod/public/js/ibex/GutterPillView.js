@@ -32,7 +32,7 @@ def([
   var preTemplate = '<pre class="fondue-pre"><a href="javascript:;" class="fondue-object-toggle">(-)</a></pre>';
 
   return Backbone.View.extend({
-    el: "<span class='theseus-call-count none'><span class='counts'>0 calls</span></span>",
+    el: "<span class='theseus-call-count none'><span class='counts'></span></span>",
 
     events: {
       "click": "expandTrace"
@@ -54,7 +54,12 @@ def([
     },
 
     setCount: function (count) {
-      var html = count + " call" + (count === 1 ? "" : "s");
+      var txt = " call" + (count === 1 ? "" : "s");
+      if(this.traces){
+        txt = count === 1 ? " query" : " queries";
+      }
+
+      var html = count + txt;
       this.$el.find(".counts").html(html);
       this.$el.toggleClass("none", count === 0);
     },
