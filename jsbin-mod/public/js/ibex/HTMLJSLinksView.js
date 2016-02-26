@@ -15,14 +15,14 @@ def([
     },
 
     drawLineFromJSToHTML: function (gutterPillView) {
-      var pillPos = gutterPillView.$el[0].getBoundingClientRect();
+      var pillEl = gutterPillView.$el[0];
       var activeNode = gutterPillView.trace;
 
       if (!activeNode.relatedDomQueries || activeNode.relatedDomQueries.length < 1) {
         return;
       }
 
-      var arrHTMLPos = [];
+      var arrEls = [];
 
       _(activeNode.relatedDomQueries).each(function (relatedDomQuery) {
         var domFnName = relatedDomQuery.domFnName;
@@ -32,18 +32,23 @@ def([
           var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
           this.codeMirrorHTMLView.addNodeMarker(gutterPillView.trace, marker);
 
-          var pos = $($(".CodeMirror-code")[0]).find("div:nth-child(" + lineNumber + ")")[0].getBoundingClientRect();
-          arrHTMLPos.push(pos);
+          var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + lineNumber + ")")[0];
+          arrEls.push(el);
         }, this);
       }, this);
 
       var arrLines = [];
 
-      _(arrHTMLPos).each(function (htmlPos) {
-        var lineView = new CurveLineView(htmlPos, pillPos);
+      _(arrEls).each(function (el) {
+        var lineView = new CurveLineView({
+          fromEl: el,
+          toEl: pillEl,
+          jsMirror: this.codeMirrorHTMLView.htmlMirror,
+          htmlMirror: this.codeMirrorJSView.jsMirror
+        });
         lineView.draw();
         arrLines.push(lineView);
-      });
+      }, this);
 
       gutterPillView.arrLines = arrLines;
     },
@@ -73,10 +78,10 @@ def([
       var lineNumber = gutterPillView.line;
       var codeLine = this.codeMirrorHTMLView.htmlMirror.getLine(lineNumber);
       var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
-      var htmlPos = $($(".CodeMirror-code")[0]).find("div:nth-child(" + lineNumber + ")")[0].getBoundingClientRect();
+      var htmlEl = $($(".CodeMirror-code")[0]).find("div:nth-child(" + lineNumber + ")")[0];
       this.codeMirrorHTMLView.addNodesMarker(gutterPillView.traces, marker);
 
-      var arrJSPos = [];
+      var arrJSPillEl = [];
 
       _(activeNodes).each(function (activeNode) {
         var invokes = activeNode.get("invokes");
@@ -88,23 +93,23 @@ def([
               return;
             }
 
-            var pos = jsPill.$el[0].getBoundingClientRect();
-            arrJSPos.push(pos);
+            arrJSPillEl.push(jsPill.$el[0]);
           }, this);
         }, this);
       }, this);
 
       var arrLines = [];
 
-      arrJSPos = _(arrJSPos).filter(function (pos) {
-        return pos.height > 0 && pos.width > 0;
-      });
-
-      _(arrJSPos).each(function (jsPos) {
-        var lineView = new CurveLineView(htmlPos, jsPos);
+      _(arrJSPillEl).each(function (el) {
+        var lineView = new CurveLineView({
+          fromEl:htmlEl,
+          toEl:el,
+          jsMirror: this.codeMirrorHTMLView.htmlMirror,
+          htmlMirror: this.codeMirrorJSView.jsMirror
+        });
         lineView.draw();
         arrLines.push(lineView);
-      });
+      }, this);
 
       gutterPillView.arrLines = arrLines;
     }

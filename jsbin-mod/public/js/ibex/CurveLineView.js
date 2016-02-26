@@ -7,9 +7,20 @@ def([
   return Backbone.View.extend({
     events: {},
 
-    initialize: function (fromPos, toPos) {
-      this.fromPos = fromPos;
-      this.toPos = toPos;
+    initialize: function (o) {
+      this.fromEl = o.fromEl;
+      this.toEl = o.toEl;
+      this.htmlMirror = o.htmlMirror;
+      this.jsMirror = o.jsMirror;
+
+      var reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
+      this.htmlMirror.on("scroll", reDrawDebounce);
+      this.jsMirror.on("scroll", reDrawDebounce);
+    },
+
+    reDraw:function(){
+      this.undraw();
+      this.draw();
     },
 
     undraw: function () {
@@ -31,21 +42,28 @@ def([
 
       var leftAbsolutePosition, topAbsolutePosition;
 
+      var fromPos = $(this.fromEl)[0].getBoundingClientRect();
+      var toPos = $(this.toEl)[0].getBoundingClientRect();
+
+      if(fromPos.height < 1 || fromPos.height < 1 || toPos.height < 1 || toPos.width < 1){
+        return;
+      }
+
       var x, y, zx, zy;
-      if (this.fromPos.top >= this.toPos.top) {
-        leftAbsolutePosition = this.fromPos.right - 15;
-        topAbsolutePosition = this.toPos.bottom;
+      if (fromPos.top >= toPos.top) {
+        leftAbsolutePosition = fromPos.right - 15;
+        topAbsolutePosition = toPos.bottom;
         x = 0;
-        y = this.fromPos.top - topAbsolutePosition + this.fromPos.height + 7;
-        zx = this.toPos.left - leftAbsolutePosition;
-        zy = -this.toPos.height / 2;
+        y = fromPos.top - topAbsolutePosition + fromPos.height + 7;
+        zx = toPos.left - leftAbsolutePosition;
+        zy = -toPos.height / 2;
       } else {
-        leftAbsolutePosition = this.fromPos.right - 15;
-        topAbsolutePosition = this.fromPos.bottom;
+        leftAbsolutePosition = fromPos.right - 15;
+        topAbsolutePosition = fromPos.bottom;
         x = 0;
-        y = this.fromPos.height / 2;
-        zx = this.toPos.left - leftAbsolutePosition;
-        zy = this.toPos.top - topAbsolutePosition + this.toPos.height / 2;
+        y = fromPos.height / 2;
+        zx = toPos.left - leftAbsolutePosition;
+        zy = toPos.top - topAbsolutePosition + toPos.height / 2;
       }
 
       var ax = x + (zx - x) * (2 / 5);
