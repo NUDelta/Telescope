@@ -22,7 +22,7 @@ def([
         return;
       }
 
-      var arrEls = [];
+      var arrLineNumbers = [];
 
       _(activeNode.relatedDomQueries).each(function (relatedDomQuery) {
         var domFnName = relatedDomQuery.domFnName;
@@ -32,16 +32,16 @@ def([
           var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
           this.codeMirrorHTMLView.addNodeMarker(gutterPillView.trace, marker);
 
-          var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + lineNumber + ")")[0];
-          arrEls.push(el);
+          arrLineNumbers.push(lineNumber);
         }, this);
       }, this);
 
       var arrLines = [];
 
-      _(arrEls).each(function (el) {
+      _(arrLineNumbers).each(function (lineNumber) {
         var lineView = new CurveLineView({
-          fromEl: el,
+          fromHTMLLine: lineNumber,
+          fromEl: null,
           toEl: pillEl,
           jsMirror: this.codeMirrorHTMLView.htmlMirror,
           htmlMirror: this.codeMirrorJSView.jsMirror
@@ -78,7 +78,6 @@ def([
       var lineNumber = gutterPillView.line;
       var codeLine = this.codeMirrorHTMLView.htmlMirror.getLine(lineNumber);
       var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
-      var htmlEl = $($(".CodeMirror-code")[0]).find("div:nth-child(" + lineNumber + ")")[0];
       this.codeMirrorHTMLView.addNodesMarker(gutterPillView.traces, marker);
 
       var arrJSPillEl = [];
@@ -102,7 +101,8 @@ def([
 
       _(arrJSPillEl).each(function (el) {
         var lineView = new CurveLineView({
-          fromEl:htmlEl,
+          fromHTMLLine: lineNumber,
+          fromEl:null,
           toEl:el,
           jsMirror: this.codeMirrorHTMLView.htmlMirror,
           htmlMirror: this.codeMirrorJSView.jsMirror

@@ -8,6 +8,7 @@ def([
     events: {},
 
     initialize: function (o) {
+      this.fromHTMLLine = o.fromHTMLLine;
       this.fromEl = o.fromEl;
       this.toEl = o.toEl;
       this.htmlMirror = o.htmlMirror;
@@ -16,9 +17,10 @@ def([
       var reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
       this.htmlMirror.on("scroll", reDrawDebounce);
       this.jsMirror.on("scroll", reDrawDebounce);
+      $(window).resize(reDrawDebounce);
     },
 
-    reDraw:function(){
+    reDraw: function () {
       this.undraw();
       this.draw();
     },
@@ -42,10 +44,21 @@ def([
 
       var leftAbsolutePosition, topAbsolutePosition;
 
-      var fromPos = $(this.fromEl)[0].getBoundingClientRect();
+      var fromPos;
+      if (!this.fromEl && this.fromHTMLLine !== undefined) {
+        var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + this.fromHTMLLine + ")")[0];
+        var fromEl = $(el)[0];
+        if(fromEl){
+          fromPos = fromEl.getBoundingClientRect();
+        } else {
+          //code mirror hid the line
+        }
+      } else {
+        fromPos = $(this.fromEl)[0].getBoundingClientRect();
+      }
       var toPos = $(this.toEl)[0].getBoundingClientRect();
 
-      if(fromPos.height < 1 || fromPos.height < 1 || toPos.height < 1 || toPos.width < 1){
+      if (fromPos.height < 1 || fromPos.height < 1 || toPos.height < 1 || toPos.width < 1) {
         return;
       }
 
