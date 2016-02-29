@@ -24,6 +24,29 @@ def([
         }
         return '<span class="' + cls + '">' + match + '</span>';
       });
+    },
+
+    getAllDOMFns: function () {
+      var partialKeys = [];
+
+      //Gather all fn's in HTML Document that modify
+      for (var key in HTMLDocument.prototype) {
+        if (typeof document[key] === "function") {
+          partialKeys.push(key);
+        }
+      }
+
+      //Gather all fn's in the Element prototype that modify
+      for (var key in HTMLElement.prototype) {
+        try {
+          if (typeof HTMLElement.prototype[key] === "function") {
+            partialKeys.push(key);
+          }
+        } catch (ignored) {
+        }
+      }
+
+      return _(partialKeys).unique();
     }
   };
 });

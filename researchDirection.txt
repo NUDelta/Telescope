@@ -249,7 +249,17 @@ Prototype Feasibility Analysis
         Tech: Easy
         Wow: Low
 
-    HTML/JS Bi-Directional Linking & Filtering
+    (DONE) Highlight HTML based on JS traces
+        User Problem Ties: High
+        Tech: Hard
+        Wow: Medium
+
+    (DONE) Highlight JS based on HTML traces
+        User Problem Ties: High
+        Tech: Hard
+        Wow: Medium
+
+    (Punt) Highlight/ filter active HTML
         User Problem Ties: High
         Tech: Hard
         Wow: Medium

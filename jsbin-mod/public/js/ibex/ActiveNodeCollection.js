@@ -7,49 +7,38 @@ def([
   return Backbone.Collection.extend({
     model: ActiveNodeModel,
 
-    markDomManipulatingNodes: function () {
-      var partialKeys = [];
+    getDomQueryNodes: function () {
+      var queryNodeMap = {};
 
-      //Gather all fn's in HTML Document that modify
-      for (var key in HTMLDocument.prototype) {
-        if (typeof document[key] === "function") {
-          partialKeys.push(key);
-        }
-      }
-
-      //Gather all fn's in the Element prototype that modify
-      for (var key in HTMLElement.prototype) {
-        try {
-          if (typeof HTMLElement.prototype[key] === "function") {
-            partialKeys.push(key);
-          }
-        } catch (ignored) {
-        }
-      }
-
-      var _partialKeys = _(partialKeys);
-
-      //Run a check against each active node to see if it modifies the dom
-      //  If so, mark it and all of its callers
-      var arrNodeIds = [];
       this.each(function (nodeModel) {
-        nodeModel.set("domModifier", false);
+        var arrDomQueryObjs = nodeModel.getDomQueries();
 
-        var nodeName = nodeModel.get("name");
-
-        if(!nodeName){
+        if (!arrDomQueryObjs.length) {
           return;
         }
 
-        var elementModifier = !!_partialKeys.find(function (partialKey) {
-          if (nodeName.indexOf(partialKey) > -1) {
-            return true;
+        _(arrDomQueryObjs).each(function (domQueryObj) {
+          var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
+          if (queryNodeMap[key]) {
+            queryNodeMap[key].push(nodeModel);
+          } else {
+            queryNodeMap[key] = [nodeModel];
           }
         });
+      }, this);
 
-        if (elementModifier) {
+      return queryNodeMap;
+    },
+
+    markDomManipulatingNodes: function () {
+      //Run a check against each active node to see if it modifies the dom
+      //  If so, mark it and all of its callers
+      this.each(function (nodeModel) {
+        var arrNodeIds = [];
+        var domQueries = nodeModel.getDomQueries();
+
+        if (domQueries.length) {
           var invokes = nodeModel.get("invokes") || [];
-
           _(invokes).each(function (invoke) {
             arrNodeIds.push(invoke.nodeId);
 
@@ -58,14 +47,19 @@ def([
             });
           });
         }
-      });
 
-      _(arrNodeIds).each(function (nodeId) {
-        var nodeModel = this.get(nodeId);
-        if (nodeModel) {
-          nodeModel.set("domModifier", true);
-        }
+        arrNodeIds = _(arrNodeIds).uniq();
+        _(arrNodeIds).each(function (nodeId) {
+          var nodeModel = this.get(nodeId);
+          if (nodeModel) {
+            nodeModel.set("relatedDomModifier", true);
+
+            var relatedDomQueries = nodeModel.get("relatedDomQueries") || [];
+            nodeModel.set("relatedDomQueries", relatedDomQueries.concat(domQueries));
+          }
+        }, this);
       }, this);
     }
+
   })
 });

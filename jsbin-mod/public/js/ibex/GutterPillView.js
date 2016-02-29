@@ -32,27 +32,40 @@ def([
   var preTemplate = '<pre class="fondue-pre"><a href="javascript:;" class="fondue-object-toggle">(-)</a></pre>';
 
   return Backbone.View.extend({
-    el: "<span class='theseus-call-count none'><span class='counts'>0 calls</span></span>",
+    el: "<span class='theseus-call-count none'><span class='counts'></span></span>",
 
     events: {
       "click": "expandTrace"
     },
 
-    initialize: function (codeMirror, line, trace, sourceCollection) {
+    initialize: function (codeMirror, line, traces, sourceCollection) {
       this.sourceCollection = sourceCollection;
+      this.line = line;
+
       codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
-      this.trace = trace;
+
+      if (traces.length) {
+        this.traces = traces;
+      } else {
+        this.trace = traces;
+      }
+
       this.setDomModifier();
     },
 
     setCount: function (count) {
-      var html = count + " call" + (count === 1 ? "" : "s");
+      var txt = " call" + (count === 1 ? "" : "s");
+      if(this.traces){
+        txt = count === 1 ? " query" : " queries";
+      }
+
+      var html = count + txt;
       this.$el.find(".counts").html(html);
       this.$el.toggleClass("none", count === 0);
     },
 
-    setDomModifier: function(){
-      if (this.trace.domModifier){
+    setDomModifier: function () {
+      if (this.trace && this.trace.relatedDomModifier) {
         this.$el.attr("style", "background-color: yellow !important;");
       }
     },
@@ -65,15 +78,17 @@ def([
       this.setActive(!this._active);
     },
 
+    htmlGutterHandle: function (e) {
+      this.trigger("", this);
+    },
+
     expandTrace: function (e) {
-      if (!this.$activeLine) {
+      if (!this.$activeLine && !this.traces) {
         this.$activeLine = $(e.currentTarget).parent().parent().parent();
         this.$expander = $('<div class="expander-node"></div>');
         this.$invokeNode = $('<div class="invoke-node"></div>');
         this.$activeLine.prepend(this.$invokeNode);
         this.$activeLine.prepend(this.$expander);
-
-        console.log("Gutter: Expanding trace", this.trace);
 
         if (this.trace.invokes) {
           _(this.trace.invokes).each(function (invocation, i) {
@@ -176,29 +191,45 @@ def([
               var margin = $(window).height() / 2;
               lineNo = parseInt(lineNo);
               colNo = parseInt(colNo);
-              fondueMirror.scrollIntoView({line: lineNo, ch: colNo}, margin);
-              fondueMirror.setCursor({line: lineNo});
+              //fondueMirror.scrollIntoView({line: lineNo, ch: colNo}, margin);
+              //fondueMirror.setCursor({line: lineNo});
             }, this);
           }, this);
         }
       }
 
+      var expandCallback = _.bind(function () {
+        this.trigger("pill:expand", this);
+      }, this);
+
       if (this.expanded) {
-        this.$invokeNode.animate({
-          height: 0
-        }, 200);
-        this.$expander.animate({
-          height: 0
-        }, 200);
+        this.trigger("pill:collapse", this);
         this.expanded = false;
+
+        if (this.traces) {
+          return;
+        }
+
+        this.$invokeNode.animate({
+          height: 0
+        }, 200);
+        this.$expander.animate({
+          height: 0
+        }, 200);
       } else {
+        this.expanded = true;
+
+        if (this.traces) {
+          expandCallback();
+          return;
+        }
+
         this.$invokeNode.animate({
           height: 200
-        }, 200);
+        }, 200, expandCallback);
         this.$expander.animate({
           height: 200
         }, 200);
-        this.expanded = true;
       }
     }
   });

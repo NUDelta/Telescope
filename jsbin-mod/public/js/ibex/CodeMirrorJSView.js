@@ -9,16 +9,19 @@ def([
     sources: null,
     mirrorLastLine: 0,
     activeCodeOnly: true,
+    nodeIdGutterPill: {},
 
-    initialize: function (codeMirror, sourceCollection, activeNodeCollection) {
-      this.jsMirror = codeMirror;
-      this.jsMirror.setOption("lineNumbers", true);
+    initialize: function (codeMirrors, sourceCollection, activeNodeCollection) {
+      this.codeMirrors = codeMirrors;
       this.sourceCollection = sourceCollection;
       this.activeNodeCollection = activeNodeCollection;
       this.activeNodeCollection.markDomManipulatingNodes();
     },
 
     showSources: function () {
+      this.jsMirror = this.codeMirrors.js;
+      this.jsMirror.setOption("lineNumbers", true);
+
       this.deleteAllLines();
 
       //Write the source and delete its lines in each iteration
@@ -44,7 +47,7 @@ def([
     },
 
     addGutterPills: function (sourceModel) {
-      var activeNodeModels = this.activeNodeCollection.where({type:"function", path:sourceModel.get("path")});
+      var activeNodeModels = this.activeNodeCollection.where({type: "function", path: sourceModel.get("path")});
       _(activeNodeModels).each(function (activeNodeModel) {
         var activeNode = activeNodeModel.toJSON();
 
@@ -52,6 +55,13 @@ def([
         var startLine = sourceModel.getMirrorPos().startLine + activeNode.startLine - 1;
         var pill = new GutterPillView(this.jsMirror, startLine, activeNode, this.sourceCollection);
         pill.setCount(activeNode.hits);
+        pill.on("pill:expand", function (gutterPillView) {
+          this.htmlJSLinksView.drawLineFromJSToHTML(gutterPillView);
+        }, this);
+        pill.on("pill:collapse", function (gutterPillView) {
+          this.htmlJSLinksView.removeJSToHTMLLine(gutterPillView);
+        }, this);
+        this.nodeIdGutterPill[activeNodeModel.get("id")] = pill;
       }, this);
     },
 
@@ -158,9 +168,7 @@ def([
         this.jsMirror.scrollTo({line: 0, ch: 0});
         this.jsMirror.setCursor({line: 0});
       }, this), 1);
-    },
-
-
+    }
   });
 })
 ;

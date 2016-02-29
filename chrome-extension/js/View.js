@@ -179,7 +179,7 @@ define([
 
       var jsBinCallback = _.bind(function (response) {
         var binUrl = response.url;
-        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?js";
+        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?html,js";
         console.log(tabUrl);
         window.open(tabUrl);
         this.activeHTML = "";
