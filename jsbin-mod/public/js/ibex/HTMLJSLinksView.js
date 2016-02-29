@@ -57,16 +57,20 @@ def([
       this.codeMirrorHTMLView.clearMarkersForNode(gutterPillView.trace);
 
       _(gutterPillView.arrLines || []).each(function (lineView) {
-        lineView.undraw();
+        lineView.destroy();
       });
+
+      gutterPillView.arrLines = [];
     },
 
     removeHTMLToJSLine: function (gutterPillView) {
       this.codeMirrorHTMLView.clearMarkersForNodes(gutterPillView.traces);
 
       _(gutterPillView.arrLines || []).each(function (lineView) {
-        lineView.undraw();
+        lineView.destroy();
       });
+
+      gutterPillView.arrLines = [];
     },
 
     drawLineFromHTMLToJS: function (gutterPillView) {

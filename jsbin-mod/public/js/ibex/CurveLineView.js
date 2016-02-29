@@ -7,6 +7,14 @@ def([
   return Backbone.View.extend({
     events: {},
 
+    colors: [
+      "hsb(0, .75, .75)",  //red
+      "hsb(.8, .75, .75)", //purple
+      "hsb(.3, .75, .75)", // green
+      "hsb(.6, .75, .75)", // blue
+      "hsb(.1, .75, .75)" // orange
+    ],
+
     initialize: function (o) {
       this.fromHTMLLine = o.fromHTMLLine;
       this.fromEl = o.fromEl;
@@ -14,10 +22,10 @@ def([
       this.htmlMirror = o.htmlMirror;
       this.jsMirror = o.jsMirror;
 
-      var reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
-      this.htmlMirror.on("scroll", reDrawDebounce);
-      this.jsMirror.on("scroll", reDrawDebounce);
-      $(window).resize(reDrawDebounce);
+      this.reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
+      this.htmlMirror.on("scroll", this.reDrawDebounce);
+      this.jsMirror.on("scroll", this.reDrawDebounce);
+      $(window).on("resize", this.reDrawDebounce);
     },
 
     reDraw: function () {
@@ -33,22 +41,23 @@ def([
       this.r = null;
     },
 
-    draw: function () {
-      var colors = [
-        "hsb(0, .75, .75)",  //red
-        "hsb(.8, .75, .75)", //purple
-        "hsb(.3, .75, .75)", // green
-        "hsb(.6, .75, .75)", // blue
-        "hsb(.1, .75, .75)" // orange
-      ];
+    destroy: function () {
+      this.undraw();
+      this.htmlMirror.off("scroll", this.reDrawDebounce);
+      this.jsMirror.off("scroll", this.reDrawDebounce);
+      $(window).off("resize", this.reDrawDebounce);
 
+      this.remove();
+    },
+
+    draw: function () {
       var leftAbsolutePosition, topAbsolutePosition;
 
       var fromPos;
       if (!this.fromEl && this.fromHTMLLine !== undefined) {
         var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + this.fromHTMLLine + ")")[0];
         var fromEl = $(el)[0];
-        if(fromEl){
+        if (fromEl) {
           fromPos = fromEl.getBoundingClientRect();
         } else {
           //code mirror hid the line
@@ -84,44 +93,24 @@ def([
       var bx = x + (zx - x) * (3 / 5);
       var by = zy;
 
-      var color = colors[_.random(0, 4)];
+      this.color = this.color || this.colors[_.random(0, 4)];
 
       var $div = $("div");
 
       var r = Raphael($div, 1, 1);
       this.r = r;
-      var discattr = {};
 
       $(r.canvas).attr("style", "overflow: visible; position: absolute; z-index: 3;" +
         "left: " + leftAbsolutePosition + "px;" +
         "top: " + topAbsolutePosition + "px;"
       );
-      function curve() {
-        var path = [["M", x, y], ["C", ax, ay, bx, by, zx, zy]];
+      var path = [["M", x, y], ["C", ax, ay, bx, by, zx, zy]];
 
-        var curve = r.path(path).attr({
-          stroke: color || Raphael.getColor(),
-          "stroke-width": 1,
-          "stroke-linecap": "round"
-        });
-
-        var controls = r.set(
-          //r.circle(x, y, 5).attr(discattr),
-          //r.circle(zx, zy, 5).attr(discattr)
-        );
-      }
-
-      function move(dx, dy) {
-        this.update(dx - (this.dx || 0), dy - (this.dy || 0));
-        this.dx = dx;
-        this.dy = dy;
-      }
-
-      function up() {
-        this.dx = this.dy = 0;
-      }
-
-      curve();
+      r.path(path).attr({
+        stroke: this.color,
+        "stroke-width": 1,
+        "stroke-linecap": "round"
+      });
     }
   });
 });
