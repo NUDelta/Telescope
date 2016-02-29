@@ -8,7 +8,7 @@ def([
     model: SourceModel,
 
     initialize: function (ignored, o) {
-      this.traceCollection = o.traceCollection;
+      this.activeNodeCollection = o.activeNodeCollection; //used in sourceModel
       this.add(o.scripts);
     },
 

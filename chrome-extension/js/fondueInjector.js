@@ -1,38 +1,74 @@
 define([], function () {
   return function () {
     var FondueBridge = function () {
-      this.hitsHandle = null;
-      this.logHandle = null;
     };
+
+    FondueBridge.MAX_LOG_COUNT = 2000;
+    FondueBridge.MAX_STACK_DEPTH = 20;
 
     FondueBridge.prototype = {
       constructor: FondueBridge,
-
-      getTracerNodes: function () {
-        var nodesHandle = window.__tracer.trackNodes();
-        return window.__tracer.newNodes(nodesHandle)
-      },
 
       startTracking: function () {
         window.__tracer.resetTrace();
         this.hitsHandle = null;
         this.logHandle = null;
-        this.trackHits();
-        this.trackLogs();
-      },
+        this._nodeArr = null;
 
-      trackHits: function () {
+        //Track Hits
         if (!this.hitsHandle) {
           this.hitsHandle = window.__tracer.trackHits();
         }
         window.__tracer.hitCountDeltas(this.hitsHandle); //Reset the deltas counter
+
+        //Gather Nodes
+        if (!this._nodeArr) {
+          var nodesHandle = window.__tracer.trackNodes();
+          this._nodeArr = unravelAgent._(window.__tracer.newNodes(nodesHandle));
+        }
+
+        //Track Logs
+        if (!this.logHandle) {
+          var ids = this._nodeArr.pluck("id");
+          this.logHandle = window.__tracer.trackLogs({ids: ids});
+        }
       },
 
-      getHitsAndInvokes: function () {
+      getNodeActivity: function () {
         try {
-          var nodeHits = window.__tracer.hitCountDeltas(this.hitsHandle);
-          var invokes = this.getNodeInvocations();
-          var nodeLogs = window.unravelAgent._(invokes).reduce(function (memo, invoke) {
+          //Get the last n javascript calls logged
+          var _tracerInvocations = unravelAgent._(window.__tracer.logDelta(this.logHandle, FondueBridge.MAX_LOG_COUNT));
+
+          //For each one, get its callStack, up to 10 deep
+          _tracerInvocations.each(function (invocation) {
+            invocation.callStack = unravelAgent._(__tracer.backtrace({
+              invocationId: invocation.invocationId,
+              range: [0, FondueBridge.MAX_STACK_DEPTH]
+            })).reverse();
+
+            //Remove the last item on the stack, === the invocation
+            if (invocation.callStack.length > 0) {
+              invocation.callStack.pop();
+            }
+
+            //Add the node name to each call in the callstack
+            unravelAgent._(invocation.callStack).each(function (call) {
+              var node = this._nodeArr.find(function (node) {
+                return node.id === call.nodeId;
+              });
+
+              call.nodeName = node && node.name ? node.name : "";
+            }, this);
+
+            //Give this invocation a nodename too
+            var node = this._nodeArr.find(function (node) {
+              return node.id === invocation.nodeId;
+            });
+            invocation.nodeName = node && node.name ? node.name : "";
+          }, this);
+
+          //Create hash for efficient lookups
+          var nodeInvocations = _tracerInvocations.reduce(function (memo, invoke) {
             if (memo[invoke.nodeId]) {
               memo[invoke.nodeId].push(invoke);
             } else {
@@ -41,44 +77,25 @@ define([], function () {
             return memo;
           }, {});
 
-          return JSON.stringify({
-            nodeHits: nodeHits,
-            nodeLogs: nodeLogs
+          //Populate a node DTO with everything we need all at once
+          var nodeHits = window.__tracer.hitCountDeltas(this.hitsHandle);
+          return this._nodeArr.map(function (node) {
+            return {
+              id: node.id,
+              type: node.type,
+              name: node.name,
+              path: node.path,
+              params: node.params,
+              parentId: node.parentId,
+              startLine: node.start.line,
+              startColumn: node.start.column,
+              endLine: node.end.line,
+              endColumn: node.end.column,
+              childrenIds: node.childrenIds,
+              hits: nodeHits[node.id] || 0,  //hitCount
+              invokes: nodeInvocations[node.id] || []
+            };
           });
-        } catch (e) {
-          debugger;
-        }
-      },
-
-      trackLogs: function () {
-        if (!this.logHandle) {
-          var nodeList = this.getTracerNodes();
-          var ids = window.unravelAgent._(nodeList).pluck("id");
-          this.logHandle = window.__tracer.trackLogs({ids: ids});
-        }
-      },
-
-      getNodeInvocations: function () {
-        try {
-          var _tracerNodes = unravelAgent._(this.getTracerNodes());
-
-          var invocations = window.__tracer.logDelta(this.logHandle, 500);
-          unravelAgent._(invocations).each(function (invocation) {
-            invocation.callStack = unravelAgent._(__tracer.backtrace({
-              invocationId: invocation.invocationId,
-              range: [0, 10]
-            })).reverse();
-
-            unravelAgent._(invocation.callStack).each(function (call) {
-              var node = _tracerNodes.find(function (node) {
-                return node.id === call.nodeId;
-              });
-
-              call.nodeName = node && node.name ? node.name : "";
-            });
-          });
-
-          return invocations;
         } catch (err) {
           debugger;
         }

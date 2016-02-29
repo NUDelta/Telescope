@@ -38,32 +38,73 @@ def([
 
         this.$el.append(html);
         this.$(".fondue-panel").css("height", this.panelHeight + "px");
+
+        this.hideKnownLibs();
       }
+    },
+
+    _blockLibs: _([
+      "jquery",
+      "moment",
+      "underscore",
+      "backbone",
+      "require"
+    ]),
+
+    hideKnownLibs: function () {
+      _($(".fondue-file-link")).each(function (el) {
+        var $el = this.$(el);
+        var text = $el.text();
+
+        var blockedLib = this._blockLibs.find(function (lib) {
+          if (text.toLowerCase().indexOf(lib) > -1) {
+            return true;
+          }
+        }, this);
+
+        if (blockedLib) {
+          $el.parent().find("input").attr("checked", "checked");
+          this.hideSource(this.getModelFromEl($el));
+        }
+      }, this);
     },
 
     scrollFileClicked: function (e) {
       var sourceCID = $(e.currentTarget).attr("data");
       var foundModel = this.sourceCollection.getByCid(sourceCID);
 
-      if(foundModel){
+      if (foundModel) {
         this.codeMirrorJSView.scrollToSourceModel(foundModel);
       }
     },
 
     toggleFileClicked: function (e) {
-      var $toggle = $(e.currentTarget);
-      var sourceCID = $toggle.attr("data");
-      var foundModel = this.sourceCollection.getByCid(sourceCID);
+      var foundModel = this.getModelFromEl(e.currentTarget);
 
-      if(!foundModel){
+      if (!foundModel) {
         return;
       }
 
-      if ($toggle.is(':checked')) {
-        this.codeMirrorJSView.hideSourceModel(foundModel);
+      if (this.$(e.currentTarget).is(':checked')) {
+        this.hideSource(foundModel);
       } else {
-        this.codeMirrorJSView.showSourceModel(foundModel);
+        this.showSource(foundModel);
       }
+    },
+
+    getModelFromEl: function (el) {
+      var sourceCID = this.$(el).attr("data");
+      var foundModel = this.sourceCollection.getByCid(sourceCID);
+
+      return foundModel || null;
+    },
+
+    hideSource: function (sourceModel) {
+      this.codeMirrorJSView.hideSourceModel(sourceModel);
+    },
+
+    showSource: function (sourceModel) {
+      this.codeMirrorJSView.showSourceModel(sourceModel);
     },
 
     toggleInactiveClicked: function (e) {
@@ -74,7 +115,6 @@ def([
         this.codeMirrorJSView.showInactive();
       }
     }
-
 
 
   });

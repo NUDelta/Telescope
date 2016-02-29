@@ -576,18 +576,23 @@ function populateEditor(editor, panel) {
       saveChecksum = false;
     }
 
-    if(panel === "javascript"){
-       if (secondTime) {
-         req([
-           "ibex"
-         ], function(ibex){
-           ibex(editor);
-         })
-       } else {
-         secondTime = true;
-       }
+    var startRequireIbex = function (panelType) {
+      req([
+        "IbexRouter"
+      ], function (IbexRouter) {
+        var ibexRouter = IbexRouter.getInstance();
+        ibexRouter.nav(panelType, editor.editor);
+      })
+    };
+
+    if (panel === "javascript") {
+      if (secondTime) {
+        startRequireIbex(panel);
+      } else {
+        secondTime = true;
+      }
     } else {
-      editor.setCode(template[panel]);
+      startRequireIbex(panel);
     }
 
     if (editor.editor && editor.editor.clearHistory) {

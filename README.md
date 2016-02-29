@@ -12,7 +12,9 @@ A platform for extracting UI behaviors into learning examples.
     
     cd jsbin-mod
     npm install
-
+    
+    #Update your chrome flags to allow localhost to spoof https certs
+    chrome://flags > Allow invalid certificates for resources loaded from localhost
 
 #To run:
 

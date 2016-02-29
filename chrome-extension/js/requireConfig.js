@@ -61,6 +61,8 @@ require([
     panelPort.onMessage.addListener(_.bind(function (message) {
       if (message && message.target == "page" && message.name == "mutation") {
         router.trigger("mutation", message.data);
+      } else if (message && message.target == "page" && message.name == "JSTrace") {
+        router.trigger("JSTrace", message.data);
       } else if (message && message.target == "page" && message.name == "TabUpdate") {
         router.trigger("TabUpdate", message.data);
       }
