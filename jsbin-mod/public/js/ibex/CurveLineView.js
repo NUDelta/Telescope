@@ -25,6 +25,8 @@ def([
       this.reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
       this.htmlMirror.on("scroll", this.reDrawDebounce);
       this.jsMirror.on("scroll", this.reDrawDebounce);
+      this.htmlMirror.on("viewportChange", this.reDrawDebounce);
+      this.jsMirror.on("viewportChange", this.reDrawDebounce);
       $(window).on("resize", this.reDrawDebounce);
     },
 
