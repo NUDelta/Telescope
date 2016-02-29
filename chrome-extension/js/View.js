@@ -7,10 +7,12 @@ define([
   "UnravelAgent",
   "text!templates/view.html",
   "CallStackCollection",
-  "NodeCollection"
+  "NodeCollection",
+  "IbexSocketRouter"
 ], function (Backbone, _, $, datatables, Handlebars, UnravelAgent, viewTemplate,
              CallStackCollection,
-             NodeCollection) {
+             NodeCollection,
+             IbexSocketRouter) {
   return Backbone.View.extend({
     template: Handlebars.compile(viewTemplate),
 
@@ -45,6 +47,7 @@ define([
       this.fiddle = _.bind(this.fiddle, this);
       this.whittle = _.bind(this.whittle, this);
 
+      this.ibexSocketRouter = IbexSocketRouter.getInstance();
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
     },

@@ -9,7 +9,8 @@ def([
   "CodeMirrorCSSView",
   "HTMLJSLinksView",
   "SourceCollection",
-  "ActiveNodeCollection"
+  "ActiveNodeCollection",
+  "JSBinSocketRouter"
 ], function ($, Backbone, _,
              GutterPillView,
              ActiveCodePanelView,
@@ -18,7 +19,8 @@ def([
              CodeMirrorCSSView,
              HTMLJSLinksView,
              SourceCollection,
-             ActiveNodeCollection) {
+             ActiveNodeCollection,
+             JSBinSocketRouter) {
   var instance = null;
 
   var IbexRouter = Backbone.Router.extend({
@@ -32,6 +34,8 @@ def([
       if (instance !== null) {
         throw new Error("Cannot instantiate more than one Singleton, use MySingleton.getInstance()");
       }
+
+      this.jSBinSocketRouter = JSBinSocketRouter.getInstance();
 
       var fondue = JSON.parse(template.fondue);
       this.activeNodeCollection = new ActiveNodeCollection(fondue.traces);
@@ -48,6 +52,7 @@ def([
       this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
+
     },
 
     nav: function (panelType, codeMirrorInstance) {
