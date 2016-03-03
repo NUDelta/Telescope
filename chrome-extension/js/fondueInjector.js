@@ -10,22 +10,25 @@ define([], function () {
       constructor: FondueBridge,
 
       startTracking: function () {
-        var domReady = !!unravelAgent.$("body").length;
+        var nodesHandle = window.__tracer.trackNodes();
+        var nodeArr = window.__tracer.newNodes(nodesHandle);
 
-        if (domReady) {
-          this.startTrackInterval();
-        } else {
-          setTimeout(unravelAgent._.bind(function () {
-            this.startTracking();
-          }, this), 100);
-        }
+        this.startTrackInterval(nodeArr);
+        return nodeArr;
       },
 
-      startTrackInterval: function () {
+      startTrackInterval: function (nodeArr) {
+        var domReady = !!unravelAgent.$("body").length;
+
+        if (!domReady) {
+          setTimeout(unravelAgent._.bind(function () {
+            this.startTrackInterval(nodeArr);
+          }, this), 100);
+        }
+
         window.__tracer.resetTrace();
-        var nodesHandle = window.__tracer.trackNodes();
         var hitsHandle = window.__tracer.trackHits();
-        var _nodeArr = unravelAgent._(window.__tracer.newNodes(nodesHandle));
+        var _nodeArr = unravelAgent._(nodeArr);
         var ids = _nodeArr.pluck("id");
         var logHandle = window.__tracer.trackLogs({ids: ids});
         this.emitNodeList(_nodeArr);

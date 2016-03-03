@@ -64,6 +64,12 @@ module.exports = function (httpServer) {
       emitToBin(data.binId, "fondueDTO:nodes", data);
     });
 
+    socket.on("fondueDTO:scripts", function (data) {
+      console.log("heard scripts destined for bin ", data.binId);
+
+      emitToBin(data.binId, "fondueDTO:scripts", data);
+    });
+
     socket.on("fondueDTO:css", function (data) {
       console.log("heard css destined for bin ", data.binId);
 

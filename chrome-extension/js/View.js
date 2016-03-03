@@ -17,40 +17,22 @@ define([
     template: Handlebars.compile(viewTemplate),
 
     events: {
-      "click #record": "record",
-      "click #reset": "reset",
-      "click #whittle": "whittle",
-      "click #reload": "reloadInjecting",
-      "click #fiddle": "fiddle",
-      "click #installTracer": "installTracer",
-      "click #redirectTraces": "redirectTraces"
+      "click #reload": "reloadInjecting"
     },
-
-    pathsDomRows: [],
-
-    pathsJSRows: [],
-
-    domPathsToKeep: [],
-
-    arrDomHitLines: [],
-
-    filterSVG: true,
-
-    whittled: false,
-
-    activeCSS: "",
-
-    activeHTML: "",
 
     initialize: function () {
       this.storeNodeActivity = _.bind(this.storeNodeActivity, this);
-      this.fiddle = _.bind(this.fiddle, this);
-      this.whittle = _.bind(this.whittle, this);
+      this.transportScriptData = _.bind(this.transportScriptData, this);
+      this.getScriptMetaData = _.bind(this.getScriptMetaData, this);
 
       this.ibexSocketRouter = IbexSocketRouter.getInstance();
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
-      this.ibexSocketRouter.on("connected", this.start, this);
+      this.ibexSocketRouter.on("connected", function () {
+        this.start();
+        this.getScriptMetaData(this.transportScriptData);
+      }, this);
+
     },
 
     render: function (unravelAgentActive) {
@@ -91,10 +73,8 @@ define([
       }).done(jsBinCallback);
     },
 
-    whittle: function (e, callback) {
-      this.whittled = true;
-
-      var whittleCallback = function (o) {
+    getScriptMetaData: function (callback) {
+      var metaCallback = function (o) {
         this.location = o.location;
         this.metaScripts = o.metaScripts;
 
@@ -103,15 +83,15 @@ define([
         }
       };
 
-      UnravelAgent.runInPage(function (safePaths) {
+      UnravelAgent.runInPage(function () {
         var location = unravelAgent.getLocation();
         var metaScripts = unravelAgent.metaScripts();
 
         return {
           location: location,
-          metaScripts: metaScripts,
+          metaScripts: metaScripts
         };
-      }, _.bind(whittleCallback, this), this.domPathsToKeep);
+      }, _.bind(metaCallback, this));
     },
 
     handleJSTrace: function (traceEventObj) {
@@ -172,70 +152,43 @@ define([
       }, this.redirectingSources);
     },
 
-    fiddle: function () {
-      return;
+    transportScriptData: function () {
+      var hitScripts = _.chain(this.nodeCollection.models)
+        .map(function (model) {
+          return model.toJSON()
+        })
+        .pluck("path")
+        .unique()
+        .map(function (path) {
+          var meta = _.find(this.metaScripts, function (s) {
+            return s.path === path;
+          }, this);
 
-      if (!this.whittled) {
-        this.whittle(null, this.fiddle);
-        return;
-      }
+          if (!meta) {
+            return {
+              path: path,
+              builtIn: true,
+              url: null,
+              inline: null,
+              domPath: null,
+              order: null,
+              js: ""
+            };
+          }
 
-      var hitScripts = _.chain(this.nodeCollection.getActiveNodeArr()).pluck("path").unique().map(function (path) {
-        var meta = _.find(this.metaScripts, function (s) {
-          return s.path === path;
-        }, this);
-
-        if (!meta) {
           return {
             path: path,
-            builtIn: true,
-            url: null,
-            inline: null,
-            domPath: null,
-            order: null,
+            url: meta.url.split("#")[0], //ignore hash parts
+            builtIn: false,
+            inline: meta.inline,
+            domPath: meta.domPath,
+            order: meta.order,
             js: ""
           };
-        }
+        }, this).value();
 
-        return {
-          path: path,
-          url: meta.url.split("#")[0], //ignore hash parts
-          builtIn: false,
-          inline: meta.inline,
-          domPath: meta.domPath,
-          order: meta.order,
-          js: ""
-        };
-      }, this).value();
-
-      var jsBinCallback = _.bind(function (response) {
-        var binUrl = response.url;
-        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?html,js";
-        console.log(tabUrl);
-        window.open(tabUrl);
-        this.activeHTML = "";
-        this.reloadInjecting();
-      }, this);
-
-      var postToBin = _.bind(function () {
-        try {
-          $.ajax({
-            url: "http://localhost:8080/api/save",
-            data: {
-              html: this.activeHTML,
-              css: this.activeCSS,
-              javascript: "",
-              fondue: {
-                traces: JSON.stringify(this.nodeCollection.getActiveNodeArr()),
-                scripts: JSON.stringify(hitScripts)
-              }
-            },
-            datatype: "json",
-            method: "post"
-          }).done(jsBinCallback);
-        } catch (err) {
-          debugger;
-        }
+      var emitToBin = _.bind(function () {
+        this.ibexSocketRouter.emit("fondueDTO:scripts", {scripts: hitScripts});
       }, this);
 
       var externalScripts = _(hitScripts).chain().where({
@@ -260,16 +213,16 @@ define([
         if (externalScripts.length > 0) {
           this.getScriptsFromInlineHTML(this.location.href, _.bind(function (arrJs) {
             scriptHTMLCallback(arrJs);
-            this.getScriptsFromExternal(externalScripts, postToBin);
+            this.getScriptsFromExternal(externalScripts, emitToBin);
           }, this));
         } else {
           this.getScriptsFromInlineHTML(this.location.href, _.bind(function (arrJs) {
             scriptHTMLCallback(arrJs);
-            postToBin();
+            emitToBin();
           }, this));
         }
       } else if (externalScripts.length > 0) {
-        this.getScriptsFromExternal(externalScripts, postToBin);
+        this.getScriptsFromExternal(externalScripts, emitToBin);
       }
     },
 
@@ -314,37 +267,19 @@ define([
       }, this);
     },
 
-    record: function () {
-      if (this.$("#record .active").is(":visible")) {
-        this.stop();
-      } else {
-        this.start();
-      }
-    },
-
     start: function () {
-      var callback = function () {
-        this.$("#record .inactive").hide();
-        this.$("#record .active").show();
-      };
+      var callback = _.bind(function (nodeArr) {
+        this.nodeCollection.add(nodeArr);
+      }, this);
 
-      var path = this.constrainToPath ? this.currentPath : "";
-
-      UnravelAgent.runInPage(function (path) {
-        unravelAgent.fondueBridge.startTracking();
+      UnravelAgent.runInPage(function () {
+        var nodeArr = unravelAgent.fondueBridge.startTracking();
 
         unravelAgent.emitCSS();
         unravelAgent.emitHTML();
-      }, callback, path);
 
-      var that = this;
-      var fondueCallback = function (functionMap) {
-        that.fondueFnMap = functionMap;
-      };
-
-      UnravelAgent.runInPage(function () {
-        return unravelAgent.fondueBridge.getFunctionMap();
-      }, fondueCallback);
+        return nodeArr;
+      }, callback);
     },
 
     stop: function () {
@@ -362,12 +297,6 @@ define([
     },
 
     reset: function () {
-      this.domPathsToKeep = [];
-      this.arrDomHitLines = [];
-      this.pathsDomRows = [];
-      this.pathsJSRows = [];
-      this.activeHTML = "";
-      this.activeCSS = "";
       this.callStackCollection.reset(null, {});
       this.nodeCollection.reset(null, {});
       this.stop();
@@ -380,57 +309,6 @@ define([
       }
 
       this.nodeCollection.add(nodeActivity);
-    },
-
-    parseSelector: function (htmlString) {
-      var $el = $(htmlString);
-
-      if (!$el.prop || !$el.prop("tagName")) {
-        return "";
-      }
-
-      var tagName = $el.prop("tagName").toLowerCase();
-      var idName = $el.attr("id") || "";
-      if (idName.length > 0) {
-        idName = "#" + idName;
-      }
-      var nameAttr = $el.attr("name") || "";
-      if (nameAttr.length > 0) {
-        nameAttr = '[name="' + nameAttr + '"]';
-      }
-
-      var className;
-      try {
-        className = "." + $el.attr("class").split(" ").join(".");
-      } catch (err) {
-        className = "";
-      }
-
-      return tagName + idName + className + nameAttr;
-    },
-
-    handleMutations: function (mutations) {
-      _(mutations).map(function (mutation) {
-        mutation.selector = this.parseSelector(mutation.target);
-        var path = (mutation.path || "");
-
-        if (this.filterSVG && mutation.path.toLowerCase().indexOf("svg") > -1) {
-          return;
-        }
-
-        if (!this.pathsDomRows[path]) {
-          var tags = path.split(">");
-          var paths = [];
-
-          for (var i = 0; i < tags.length; i++) {
-            var subPath = tags.slice(0, i + 1);
-            subPath = subPath.join(">");
-            paths.push(subPath);
-          }
-
-          this.domPathsToKeep = _.union(this.domPathsToKeep, paths);
-        }
-      }, this);
     },
 
     reloadInjecting: function () {

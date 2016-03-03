@@ -37,13 +37,16 @@ def([
 
       this.jSBinSocketRouter = JSBinSocketRouter.getInstance();
       this.jSBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
-        console.log(JSON.stringify(obj, null, 2));
+        console.log("fondueDTO:arrInvocations", obj);
       }, this);
       this.jSBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
         this.codeMirrorCSSView.setCode(obj.css);
       }, this);
       this.jSBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
         this.codeMirrorHTMLView.setCode(obj.html);
+      }, this);
+      this.jSBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
+        console.log("fondueDTO:scripts", obj);
       }, this);
 
       this.activeNodeCollection = new ActiveNodeCollection();
