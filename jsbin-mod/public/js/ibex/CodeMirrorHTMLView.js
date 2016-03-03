@@ -9,16 +9,19 @@ def([
     htmlSource: "",
     nodeMarkers: {},
 
-    initialize: function (codeMirrors, htmlSource, activeNodeCollection) {
+    initialize: function (codeMirrors, activeNodeCollection) {
       this.codeMirrors = codeMirrors;
-      this.htmlSource = htmlSource;
       this.activeNodeCollection = activeNodeCollection;
     },
 
     render: function () {
       this.htmlMirror = this.codeMirrors.html;
-      this.htmlMirror.setCode(this.htmlSource);
       this.addGutterPills();
+    },
+
+    setCode: function(strCode){
+      this.htmlMirror.setCode(strCode);
+      this.htmlSource = strCode;
     },
 
     addGutterPills: function () {

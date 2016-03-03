@@ -2,8 +2,14 @@
  This script is added to the web, but in its own context.
  */
 
-var addListeners = function () {
-
+var addListeners = function (notifyRouter) {
+  if (notifyRouter) {
+    chrome.extension.sendMessage({
+      target: "page",
+      name: "ContentScriptReloaded",
+      data: {}
+    });
+  }
 
   window.addEventListener("UnravelKeepAlive", function (event) {
     chrome.extension.sendMessage({
@@ -31,6 +37,14 @@ var addListeners = function () {
     });
   }, false);
 
+  window.addEventListener("fondueDTO", function (event) {
+    chrome.extension.sendMessage({
+      target: "page",
+      name: "fondueDTO",
+      data: event.detail
+    });
+  }, false);
+
 // Sends a message to the background when the DOM of the inspected page is ready
 // (typically used by the panel to check if the backbone agent is on the page).
   window.addEventListener('DOMContentLoaded', function () {
@@ -49,8 +63,8 @@ var addListeners = function () {
   }, false);
 
   window.addEventListener("ReloadContentListeners", function (event) {
-    setTimeout(function(){
-      addListeners();
+    setTimeout(function () {
+      addListeners(true);
     }, 0)
   }, false);
 

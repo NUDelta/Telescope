@@ -66,4 +66,4 @@ var eighthFunction = function () {
 var intervalFoo = function () {
   var a = 2;
 };
-window.setInterval(intervalFoo, 100);
+//window.setInterval(intervalFoo, 100);

@@ -7,14 +7,17 @@ def([
     cssMirror: null,
     cssSource: "",
 
-    initialize: function (codeMirrors, cssSource) {
+    initialize: function (codeMirrors) {
       this.codeMirrors = codeMirrors;
-      this.cssSource = cssSource;
     },
 
     render: function () {
       this.cssMirror = this.codeMirrors.css;
-      this.cssMirror.setCode(this.cssSource);
+    },
+
+    setCode: function (strCode) {
+      this.cssMirror.setCode(strCode);
+      this.cssSource = strCode;
     },
 
     scrollTop: function () {

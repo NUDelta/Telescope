@@ -36,18 +36,26 @@ def([
       }
 
       this.jSBinSocketRouter = JSBinSocketRouter.getInstance();
+      this.jSBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
+        console.log(JSON.stringify(obj, null, 2));
+      }, this);
+      this.jSBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
+        this.codeMirrorCSSView.setCode(obj.css);
+      }, this);
+      this.jSBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
+        this.codeMirrorHTMLView.setCode(obj.html);
+      }, this);
 
-      var fondue = JSON.parse(template.fondue);
-      this.activeNodeCollection = new ActiveNodeCollection(fondue.traces);
+      this.activeNodeCollection = new ActiveNodeCollection();
       this.sourceCollection = new SourceCollection(null, {
-        scripts: fondue.scripts,
+        scripts: [],
         activeNodeCollection: this.activeNodeCollection
       });
 
       this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection);
-      this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, template.html, this.activeNodeCollection);
+      this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection);
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
-      this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors, template.css);
+      this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
 
       this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;

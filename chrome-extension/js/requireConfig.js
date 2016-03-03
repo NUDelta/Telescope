@@ -62,6 +62,10 @@ require([
         router.trigger("mutation", message.data);
       } else if (message && message.target == "page" && message.name == "JSTrace") {
         router.trigger("JSTrace", message.data);
+      } else if (message && message.target == "page" && message.name == "fondueDTO") {
+        router.trigger("fondueDTO", message.data);
+      } else if (message && message.target == "page" && message.name == "ContentScriptReloaded") {
+        router.trigger("ContentScriptReloaded", message.data);
       } else if (message && message.target == "page" && message.name == "TabUpdate") {
         router.trigger("TabUpdate", message.data);
       }

@@ -49,7 +49,7 @@ define([],
         return metaScripts;
       };
 
-      window.unravelAgent.gatherCSS = function () {
+      window.unravelAgent.emitCSS = function () {
         var css = "";
         if (document.styleSheets && document.styleSheets.length) {
           for (var i = 0; i < document.styleSheets.length; i++) {
@@ -125,10 +125,16 @@ define([],
           }
         }
 
-        return css;
+        window.dispatchEvent(new CustomEvent("fondueDTO", {
+            detail: {
+              eventStr: "fondueDTO:css",
+              obj: {css: css}
+            }
+          })
+        );
       };
 
-      window.unravelAgent.whittle = function (safePaths) {
+      window.unravelAgent.emitHTML = function () {
         var trashEls = [];
         var allDescendants = function (parentEl) {
           for (var i = 0; i < parentEl.childNodes.length; i++) {
@@ -136,7 +142,7 @@ define([],
 
             try {
               if (el.nodeType === 8) {//comment node
-                trashEls.push(el);
+                el.remove();
               } else if (el.nodeType !== 3) {
                 if (el.src) {
                   unravelAgent.$(el).attr("src", el.src);
@@ -161,10 +167,16 @@ define([],
         allDescendants(document.getElementsByTagName("html")[0]);
 
         unravelAgent._(trashEls).each(function (el) {
-          el.remove();
+          unravelAgent.$(el).attr("data-unravel", "ignore");  //then in cheerio remove all of these
         });
 
-        return unravelAgent.$("html")[0].outerHTML;
+        window.dispatchEvent(new CustomEvent("fondueDTO", {
+            detail: {
+              eventStr: "fondueDTO:html",
+              obj: {html: unravelAgent.$("html")[0].outerHTML}
+            }
+          })
+        );
       };
     };
   })

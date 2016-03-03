@@ -50,6 +50,7 @@ define([
       this.ibexSocketRouter = IbexSocketRouter.getInstance();
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
+      this.ibexSocketRouter.on("connected", this.start, this);
     },
 
     render: function (unravelAgentActive) {
@@ -57,10 +58,37 @@ define([
 
       if (unravelAgentActive) {
         this.$(".active-mode").show();
+        this.createBin();
       } else {
         this.$(".restart-mode").show();
         return;
       }
+    },
+
+    createBin: function () {
+      var jsBinCallback = _.bind(function (response) {
+        var binUrl = response.url;
+        var tabUrl = "http://localhost:8080/" + binUrl + "/edit?html,js";
+        console.log(tabUrl);
+        window.open(tabUrl);
+        this.ibexSocketRouter.setBinId(binUrl);
+        this.installTracer();
+      }, this);
+
+      $.ajax({
+        url: "http://localhost:8080/api/save",
+        data: {
+          html: "",
+          css: "",
+          javascript: "",
+          fondue: {
+            traces: [],
+            scripts: []
+          }
+        },
+        datatype: "json",
+        method: "post"
+      }).done(jsBinCallback);
     },
 
     whittle: function (e, callback) {
@@ -68,8 +96,6 @@ define([
 
       var whittleCallback = function (o) {
         this.location = o.location;
-        this.activeHTML = o.activeHTML;
-        this.activeCSS = o.activeCSS;
         this.metaScripts = o.metaScripts;
 
         if (callback) {
@@ -80,20 +106,20 @@ define([
       UnravelAgent.runInPage(function (safePaths) {
         var location = unravelAgent.getLocation();
         var metaScripts = unravelAgent.metaScripts();
-        var activeCSS = unravelAgent.gatherCSS(safePaths);
-        var activeHTML = unravelAgent.whittle(safePaths); //important to run _after_ css
 
         return {
           location: location,
           metaScripts: metaScripts,
-          activeCSS: activeCSS,
-          activeHTML: activeHTML
         };
       }, _.bind(whittleCallback, this), this.domPathsToKeep);
     },
 
     handleJSTrace: function (traceEventObj) {
       this.callStackCollection.add(traceEventObj);
+    },
+
+    handleFondueDto: function (fondueDTO) {
+      this.ibexSocketRouter.emit(fondueDTO.eventStr, fondueDTO.obj);
     },
 
     corsGet: function (url, callback) {
@@ -118,7 +144,7 @@ define([
       this.redirectTraces();
       UnravelAgent.runInPage(function () {
         unravelAgent.reWritePage();
-      });
+      }); //fires event when done, picked up by content script
     },
 
     redirectTraces: function () {
@@ -147,6 +173,8 @@ define([
     },
 
     fiddle: function () {
+      return;
+
       if (!this.whittled) {
         this.whittle(null, this.fiddle);
         return;
@@ -186,7 +214,6 @@ define([
         console.log(tabUrl);
         window.open(tabUrl);
         this.activeHTML = "";
-        this.activeCSS = "";
         this.reloadInjecting();
       }, this);
 
@@ -304,9 +331,10 @@ define([
       var path = this.constrainToPath ? this.currentPath : "";
 
       UnravelAgent.runInPage(function (path) {
-        //unravelAgent.startObserving(path);
-        //unravelAgent.traceJsOn();
         unravelAgent.fondueBridge.startTracking();
+
+        unravelAgent.emitCSS();
+        unravelAgent.emitHTML();
       }, callback, path);
 
       var that = this;

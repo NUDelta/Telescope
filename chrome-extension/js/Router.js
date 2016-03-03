@@ -20,7 +20,6 @@ define([
         router.unravelAgent = new UnravelAgent();
         router.homeView.render(isActive);
         document.body.appendChild(router.homeView.el);
-
         if (!isActive) {
           return;
         }
@@ -31,6 +30,14 @@ define([
 
         router.on("JSTrace", function (data) {
           router.homeView.handleJSTrace(data);
+        }, router);
+
+        router.on("fondueDTO", function (data) {
+          router.homeView.handleFondueDto(data);
+        }, router);
+
+        router.on("ContentScriptReloaded", function (data) {
+          router.homeView.afterFondueReload();
         }, router);
 
         router.on("TabUpdate", function (data) {

@@ -5,6 +5,10 @@ define([
   var instance = null;
 
   var IbexSocketRouter = Backbone.Router.extend({
+    heardIds: [],
+
+    connected: false,
+
     initialize: function () {
       if (instance !== null) {
         throw new Error("Cannot instantiate more than one SocketRouter, use SocketRouter.getInstance()");
@@ -18,15 +22,51 @@ define([
         this.userId = obj.id;
         console.log("Storing socket user id in memory", this.userId);
       });
+      this.socket.on("jsbin:live", _.bind(function (obj) {
+        this.heardIds.push(obj.binId);
+        this.trySocketLock();
+      }, this));
+
+    },
+
+    trySocketLock(){
+      if (this.binId) {
+        if (this.heardIds.length) {
+          var foundId = _(this.heardIds).find(function (id) {
+            return id === this.binId;
+          }, this);
+          if (foundId) {
+            this.connected = true;
+            this.socket.off("jsbin:live");
+            this.trigger("connected");
+          }
+        }
+      }
+    },
+
+    setBinId: function (binId) {
+      if (!this.connected) {
+        this.binId = binId;
+        this.trySocketLock();
+      }
     },
 
     emit: function (eventStr, obj) {
+      if (!this.binId) {
+        throw new Error("No bin ID found to broadcast to.");
+      }
+
+      if (typeof obj !== "object" || _.isArray(obj)) {
+        throw new Error("Emit only objects please.")
+      }
+
+      obj.binId = this.binId;
       this.socket.emit(eventStr, obj);
 
       return this;
     },
 
-    on: function (eventStr, callback, context) {
+    onSocketData: function (eventStr, callback, context) {
       if (context) {
         callback = _.bind(callback, context);
       }
