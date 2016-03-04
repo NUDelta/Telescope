@@ -24,23 +24,21 @@ def([
     },
 
     render: function () {
-      //Append our code panel and set it to $el
-      if (this.$(".fondue-panel").length < 1) {
-        var sourceModels = this.sourceCollection.getOrdered();
-        var arr = _(sourceModels).map(function (model) {
-          var json = model.toJSON();
-          json.sourceCID = model.cid;
-          return json;
-        });
-        var html = this.template({
-          sources: arr
-        });
+      this.$(".fondue-panel").remove();
+      var sourceModels = this.sourceCollection.getOrdered();
+      var arr = _(sourceModels).map(function (model) {
+        var json = model.toJSON();
+        json.sourceCID = model.cid;
+        return json;
+      });
+      var html = this.template({
+        sources: arr
+      });
 
-        this.$el.append(html);
-        this.$(".fondue-panel").css("height", this.panelHeight + "px");
+      this.$el.append(html);
+      this.$(".fondue-panel").css("height", this.panelHeight + "px");
 
-        this.hideKnownLibs();
-      }
+      this.hideKnownLibs();
     },
 
     _blockLibs: _([

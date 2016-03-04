@@ -2,10 +2,34 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "ActiveNodeModel"
-], function ($, Backbone, _, ActiveNodeModel) {
+  "ActiveNodeModel",
+  "JSBinSocketRouter"
+], function ($, Backbone, _, ActiveNodeModel, JSBinSocketRouter) {
   return Backbone.Collection.extend({
     model: ActiveNodeModel,
+
+    idAttribute: "id",
+
+    initialize: function () {
+      this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
+      this.jsBinSocketRouter.onSocketData("fondueDTO:nodeBacktrace", function (obj) {
+        var model = this.get(obj.id);
+        if (model) {
+          model.set("callStack", obj.callStack);
+        }
+      }, this);
+    },
+
+    merge: function (arrNodes) {
+      _(arrNodes).each(function (node) {
+        var model = this.get(node.id);
+        if (model) {
+          model.set(node);
+        } else {
+          this.add(new ActiveNodeModel(node));
+        }
+      }, this)
+    },
 
     getDomQueryNodes: function () {
       var queryNodeMap = {};

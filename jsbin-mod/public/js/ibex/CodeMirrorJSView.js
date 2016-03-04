@@ -15,7 +15,6 @@ def([
       this.codeMirrors = codeMirrors;
       this.sourceCollection = sourceCollection;
       this.activeNodeCollection = activeNodeCollection;
-      this.activeNodeCollection.markDomManipulatingNodes();
     },
 
     showSources: function () {
@@ -23,6 +22,8 @@ def([
       this.jsMirror.setOption("lineNumbers", true);
 
       this.deleteAllLines();
+
+      this.activeNodeCollection.markDomManipulatingNodes();
 
       //Write the source and delete its lines in each iteration
       var sourceModels = this.sourceCollection.getOrdered();

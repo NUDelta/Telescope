@@ -35,20 +35,6 @@ def([
         throw new Error("Cannot instantiate more than one Singleton, use MySingleton.getInstance()");
       }
 
-      this.jSBinSocketRouter = JSBinSocketRouter.getInstance();
-      this.jSBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
-        console.log("fondueDTO:arrInvocations", obj);
-      }, this);
-      this.jSBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
-        this.codeMirrorCSSView.setCode(obj.css);
-      }, this);
-      this.jSBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
-        this.codeMirrorHTMLView.setCode(obj.html);
-      }, this);
-      this.jSBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
-        console.log("fondueDTO:scripts", obj);
-      }, this);
-
       this.activeNodeCollection = new ActiveNodeCollection();
       this.sourceCollection = new SourceCollection(null, {
         scripts: [],
@@ -64,6 +50,27 @@ def([
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
 
+      this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
+
+      var debouncedJSPaneUpdate = _.debounce(_.bind(function () {
+        this.codeMirrorJSView.showSources();
+      }, this), 100);
+      this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
+        this.activeNodeCollection.merge(obj.invocations);
+        this.codeMirrorJSView.showSources();
+        this.codeMirrorHTMLView.render();
+      }, this);
+      this.jsBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
+        this.codeMirrorCSSView.setCode(obj.css);
+      }, this);
+      this.jsBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
+        this.codeMirrorHTMLView.setCode(obj.html);
+      }, this);
+      this.jsBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
+        this.sourceCollection.add(obj.scripts);
+        this.codeMirrorJSView.showSources();
+        this.activeCodePanelView.render();
+      }, this);
     },
 
     nav: function (panelType, codeMirrorInstance) {
@@ -73,7 +80,6 @@ def([
     javascript: function (codeMirrorInstance) {
       this.codeMirrors.js = codeMirrorInstance;
       this.codeMirrorJSView.showSources();
-      this.activeCodePanelView.render();
     },
 
     html: function (codeMirrorInstance) {

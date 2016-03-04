@@ -6,7 +6,7 @@ module.exports = function (httpServer) {
   var beautify_css = require('js-beautify').css;
 
   var io = socketIO;
-  var binSockets = {};
+  var binSockets = {}; //supports multiple browsers
 
   io.use(function (socket, next) {
     next(null, true);  //Mock authentication success
@@ -51,12 +51,15 @@ module.exports = function (httpServer) {
       console.log("Bin [", binId, "] is listening on socket [", userId, "]");
     });
 
+    socket.on("fondueDTO:nodeBacktrace", function (data) {
+      emitToBin(data.binId, "fondueDTO:nodeBacktrace", data);
+    });
+
     socket.on("fondueDTO:arrInvocations", function (data) {
       console.log("heard invocations destined for bin ", data.binId);
 
       emitToBin(data.binId, "fondueDTO:arrInvocations", data);
     });
-
 
     socket.on("fondueDTO:nodes", function (data) {
       console.log("heard nodes destined for bin ", data.binId);

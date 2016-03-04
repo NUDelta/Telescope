@@ -60,6 +60,7 @@ define([
         throw new Error("Emit only objects please.")
       }
 
+      obj.userId = this.userId;
       obj.binId = this.binId;
       this.socket.emit(eventStr, obj);
 
