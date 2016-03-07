@@ -41,6 +41,7 @@ def([
     initialize: function (codeMirror, line, traces, sourceCollection) {
       this.sourceCollection = sourceCollection;
       this.line = line;
+      this.mirror = codeMirror;
 
       codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
 
@@ -53,9 +54,14 @@ def([
       this.setDomModifier();
     },
 
+    destroy: function () {
+      this.mirror.setGutterMarker(this.line, null, null);
+      this.remove();
+    },
+
     setCount: function (count) {
       var txt = " call" + (count === 1 ? "" : "s");
-      if(this.traces){
+      if (this.traces) {
         txt = count === 1 ? " query" : " queries";
       }
 

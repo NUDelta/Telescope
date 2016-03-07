@@ -17,7 +17,7 @@ define([
     template: Handlebars.compile(viewTemplate),
 
     events: {
-      "click #reload": "reloadInjecting"
+      "click #reload": "reloadInjecting",
     },
 
     initialize: function () {
@@ -28,11 +28,6 @@ define([
       this.ibexSocketRouter = IbexSocketRouter.getInstance();
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
-      this.ibexSocketRouter.on("connected", function () {
-        this.start();
-        this.getScriptMetaData(this.transportScriptData);
-      }, this);
-
     },
 
     render: function (unravelAgentActive) {
@@ -40,11 +35,52 @@ define([
 
       if (unravelAgentActive) {
         this.$(".active-mode").show();
-        this.createBin();
+
+        this.createBin(); //Right after chrome injection, before fondue installed
+
+        this.ibexSocketRouter.on("connected", this.onBinReady, this);
       } else {
         this.$(".restart-mode").show();
         return;
       }
+    },
+
+    onBinReady: function () {
+      UnravelAgent.runInPage(function () {
+        unravelAgent.emitCSS();
+        unravelAgent.emitHTML();
+      }, _.bind(this.installTracer, this));
+    },
+
+    onFondueReady: function () {
+      var that = this;
+      var transportFn = _.bind(function () {
+        var callback = _.bind(function (nodeArr) {
+          if (!nodeArr) {
+            setTimeout(transportFn, 100);
+          } else {
+            this.nodeCollection.add(nodeArr);
+            this.getScriptMetaData(_.bind(function () {
+              this.transportScriptData(function () {
+                UnravelAgent.runInPage(function () {
+                  unravelAgent.fondueBridge.startTracking();
+                });
+              });
+            }, this));
+          }
+        }, that);
+
+        UnravelAgent.runInPage(function () {
+          if (unravelAgent.$("body").length) {
+            return unravelAgent.fondueBridge.getNodes();
+          } else {
+            return false;
+          }
+        }, callback);
+
+      }, this);
+
+      transportFn();
     },
 
     createBin: function () {
@@ -54,7 +90,6 @@ define([
         console.log(tabUrl);
         window.open(tabUrl);
         this.ibexSocketRouter.setBinId(binUrl);
-        this.installTracer();
       }, this);
 
       $.ajax({
@@ -94,10 +129,6 @@ define([
       }, _.bind(metaCallback, this));
     },
 
-    handleJSTrace: function (traceEventObj) {
-      this.callStackCollection.add(traceEventObj);
-    },
-
     handleFondueDto: function (fondueDTO) {
       this.ibexSocketRouter.emit(fondueDTO.eventStr, fondueDTO.obj);
     },
@@ -111,7 +142,7 @@ define([
           try {
             callback(http);
           } catch (err) {
-            debugger;
+            console.warn("Err on http req: ", http);
           }
 
         }
@@ -120,11 +151,11 @@ define([
       http.send();
     },
 
-    installTracer: function () {
+    installTracer: function (callback) {
       this.redirectTraces();
       UnravelAgent.runInPage(function () {
         unravelAgent.reWritePage();
-      }); //fires event when done, picked up by content script
+      }, callback);
     },
 
     redirectTraces: function () {
@@ -152,7 +183,7 @@ define([
       }, this.redirectingSources);
     },
 
-    transportScriptData: function () {
+    transportScriptData: function (callback) {
       var hitScripts = _.chain(this.nodeCollection.models)
         .map(function (model) {
           return model.toJSON()
@@ -189,6 +220,7 @@ define([
 
       var emitToBin = _.bind(function () {
         this.ibexSocketRouter.emit("fondueDTO:scripts", {scripts: hitScripts});
+        callback();
       }, this);
 
       var externalScripts = _(hitScripts).chain().where({
@@ -204,8 +236,9 @@ define([
       }).value();
 
       var scriptHTMLCallback = function (arrJs) {
+        console.warn("IGNORING INLINE JS");
         _(arrJs).each(function (srcJS, i) {
-          internalScripts[i].js = srcJS; //need a better way to tie
+          //internalScripts[i].js = srcJS; //todo fix inline scripts
         });
       };
 
@@ -265,21 +298,6 @@ define([
           }
         }, this));
       }, this);
-    },
-
-    start: function () {
-      var callback = _.bind(function (nodeArr) {
-        this.nodeCollection.add(nodeArr);
-      }, this);
-
-      UnravelAgent.runInPage(function () {
-        var nodeArr = unravelAgent.fondueBridge.startTracking();
-
-        unravelAgent.emitCSS();
-        unravelAgent.emitHTML();
-
-        return nodeArr;
-      }, callback);
     },
 
     stop: function () {

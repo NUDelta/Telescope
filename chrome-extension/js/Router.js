@@ -24,20 +24,20 @@ define([
           return;
         }
 
-        router.on("mutation", function (mutations) {
-          router.homeView.handleMutations(mutations);
-        }, router);
+        //router.on("mutation", function (mutations) {
+          //router.homeView.handleMutations(mutations);
+        //}, router);
 
-        router.on("JSTrace", function (data) {
-          router.homeView.handleJSTrace(data);
-        }, router);
+        //router.on("JSTrace", function (data) {
+        //  router.homeView.handleJSTrace(data);
+        //}, router);
 
         router.on("fondueDTO", function (data) {
           router.homeView.handleFondueDto(data);
         }, router);
 
         router.on("ContentScriptReloaded", function (data) {
-          router.homeView.afterFondueReload();
+          router.homeView.onFondueReady();
         }, router);
 
         router.on("TabUpdate", function (data) {

@@ -16,12 +16,21 @@ def([
 
     render: function () {
       this.htmlMirror = this.codeMirrors.html;
+      this.removeAllGutterPills();
       this.addGutterPills();
     },
 
     setCode: function(strCode){
       this.htmlMirror.setCode(strCode);
       this.htmlSource = strCode;
+    },
+
+    removeAllGutterPills: function(){
+      _(this.gutterPills).each(function(pill){
+        pill.destroy();
+      }, this);
+
+      this.gutterPills = [];
     },
 
     addGutterPills: function () {

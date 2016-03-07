@@ -9,12 +9,18 @@ define([], function () {
     FondueBridge.prototype = {
       constructor: FondueBridge,
 
-      startTracking: function () {
-        var nodesHandle = window.__tracer.trackNodes();
-        var nodeArr = window.__tracer.newNodes(nodesHandle);
+      getNodes: function () {
+        if (!this.nodeArr) {
+          this.nodesHandle = window.__tracer.trackNodes();
+          this.nodeArr = window.__tracer.newNodes(this.nodesHandle);
+        }
 
+        return this.nodeArr;
+      },
+
+      startTracking: function () {
+        var nodeArr = this.getNodes();
         this.startTrackInterval(nodeArr);
-        return nodeArr;
       },
 
       startTrackInterval: function (nodeArr) {
@@ -48,7 +54,7 @@ define([], function () {
           }
 
           this.emitNodeActivity(logHandle, nodeMap, nodeHits);
-        }, this), 30);
+        }, this), 100);
       },
 
       emitNodeList: function (_nodeArr) {
