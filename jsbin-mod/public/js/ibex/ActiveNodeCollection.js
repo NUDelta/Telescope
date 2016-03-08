@@ -20,14 +20,34 @@ def([
       }, this);
     },
 
-    merge: function (arrNodes) {
-      _(arrNodes).each(function (node) {
-        var model = this.get(node.id);
-        if (model) {
-          model.set(node);
-        } else {
-          this.add(new ActiveNodeModel(node));
+    merge: function (arrInvocations) {
+      var nodesCreated = 0;
+      _(arrInvocations).each(function (invocation) {
+        var node = invocation.node;
+        invocation.nodeName = node && node.name ? node.name : "";
+
+        var activeNodeModel = this.get(invocation.nodeId);
+        if (!activeNodeModel) {
+          activeNodeModel = new ActiveNodeModel(node);
+          this.add(activeNodeModel);
+          nodesCreated++;
         }
+
+        var invokeArr = activeNodeModel.get("invokes") || [];
+        invokeArr.push(invocation);
+        activeNodeModel.set("invokes", invokeArr);
+
+        var hits = activeNodeModel.get("hits") || 0;
+        activeNodeModel.set("hits", hits + 1);
+      }, this);
+      if (nodesCreated) {
+        console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
+      }
+    },
+
+    empty: function () {
+      this.each(function (model) {
+        this.remove(model);
       }, this)
     },
 

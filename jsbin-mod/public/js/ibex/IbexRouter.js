@@ -52,13 +52,15 @@ def([
 
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
 
-      var debouncedJSPaneUpdate = _.debounce(_.bind(function () {
+      window.updateMirrors = _.bind(function () {
         this.codeMirrorJSView.showSources();
         this.codeMirrorHTMLView.render();
-      }, this), 5000);
+      }, this);
+      window.activeNodeCollection = this.activeNodeCollection;
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
+        console.log("Merging " + obj.invocations.length + " invocations");
         this.activeNodeCollection.merge(obj.invocations);
-        debouncedJSPaneUpdate();
+        window.updateMirrors();
       }, this);
       this.jsBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
         this.codeMirrorCSSView.setCode(obj.css);

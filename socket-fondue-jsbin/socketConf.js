@@ -39,7 +39,7 @@ module.exports = function (httpServer) {
       var sockets = io.sockets;
 
       if (!userId || !binId) {
-        throw new Error("Need userid and bin id to get socket connection");
+        console.error("Need userid and bin id to get socket connection");
       }
 
       if (binSockets[binId]) {
