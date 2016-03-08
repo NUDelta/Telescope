@@ -54,11 +54,11 @@ def([
 
       var debouncedJSPaneUpdate = _.debounce(_.bind(function () {
         this.codeMirrorJSView.showSources();
-      }, this), 100);
+        this.codeMirrorHTMLView.render();
+      }, this), 5000);
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
         this.activeNodeCollection.merge(obj.invocations);
-        this.codeMirrorJSView.showSources();
-        this.codeMirrorHTMLView.render();
+        debouncedJSPaneUpdate();
       }, this);
       this.jsBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
         this.codeMirrorCSSView.setCode(obj.css);

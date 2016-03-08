@@ -3,8 +3,9 @@ define([], function () {
     var FondueBridge = function () {
     };
 
-    FondueBridge.MAX_LOG_COUNT = 2000;
+    FondueBridge.MAX_LOG_COUNT = 1000;
     FondueBridge.MAX_STACK_DEPTH = 20;
+    FondueBridge.EMIT_INTERVAL_MILLIS = 1000;
 
     FondueBridge.prototype = {
       constructor: FondueBridge,
@@ -29,7 +30,7 @@ define([], function () {
         if (!domReady) {
           setTimeout(unravelAgent._.bind(function () {
             this.startTrackInterval(nodeArr);
-          }, this), 100);
+          }, this), FondueBridge.EMIT_INTERVAL_MILLIS);
         }
 
         window.__tracer.resetTrace();
