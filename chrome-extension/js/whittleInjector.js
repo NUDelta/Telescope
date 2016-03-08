@@ -135,39 +135,9 @@ define([],
       };
 
       window.unravelAgent.emitHTML = function () {
-        var trashEls = [];
-        var allDescendants = function (parentEl) {
-          for (var i = 0; i < parentEl.childNodes.length; i++) {
-            var el = parentEl.childNodes[i];
-
-            try {
-              if (el.nodeType === 8) {//comment node
-                el.remove();
-              } else if (el.nodeType !== 3) {
-                if (el.src) {
-                  unravelAgent.$(el).attr("src", el.src);
-                }
-
-                //var path = unravelAgent.$(el).getPath();
-                //if (safePaths.indexOf(path) < 0 && path.indexOf("head") < 0) {
-                //trashEls.push(el);
-                //} else
-                if (el.tagName === "SCRIPT" || el.tagName === "LINK" || el.tagName === "STYLE") {
-                  trashEls.push(el);
-                }
-              }
-            } catch (er) {
-              console.warn("Skipping whittle on node type", el.nodeType);
-            }
-
-            allDescendants(el);
-          }
-        };
-
-        allDescendants(document.getElementsByTagName("html")[0]);
-
-        unravelAgent._(trashEls).each(function (el) {
-          unravelAgent.$(el).attr("data-unravel", "ignore");  //then in cheerio remove all of these
+        unravelAgent.$("[src]").each(function (index, value) {
+          var $el = unravelAgent.$(this);
+          $el.attr("src", $el[0].src);
         });
 
         window.dispatchEvent(new CustomEvent("fondueDTO", {

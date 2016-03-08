@@ -4,6 +4,7 @@ module.exports = function (httpServer) {
   var cheerio = require('cheerio');
   var beautify_html = require('js-beautify').html;
   var beautify_css = require('js-beautify').css;
+  var htmlMinify = require('html-minifier').minify;
 
   var io = socketIO;
   var binSockets = {}; //supports multiple browsers
@@ -89,9 +90,27 @@ module.exports = function (httpServer) {
       console.log("heard html destined for bin ", data.binId);
 
       var $ = cheerio.load(data.html);
-      $("[data-unravel='ignore']").remove();
+      $('[data-unravel="ignore"]').remove();
+      $("meta").remove();
+      $("link").remove();
+      $("script").remove();
+      $("style").remove();
+      $("head").remove();
+      $("noscript").remove();
+      $("svg").remove();
+      var body = $.html();
 
-      data.html = beautify_html($.html(), {
+      body = htmlMinify(body, {
+        removeComments: true,
+        collapseWhitespace: true,
+        collapseInlineTagWhitespace: true,
+        removeTagWhitespace:true,
+        removeRedundantAttributes: true,
+        useShortDoctype:true,
+        removeEmptyAttributes: true
+      });
+
+      data.html = beautify_html(body, {
         "indent_size": 2,
         "indent_char": " ",
         "eol": "\n"
@@ -101,3 +120,5 @@ module.exports = function (httpServer) {
     });
   });
 };
+
+
