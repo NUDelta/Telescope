@@ -15,7 +15,9 @@ def([
     events: {
       "click #fondue-toggle-inactive": "toggleInactiveClicked",
       "click .fondue-file-link": "scrollFileClicked",
-      "click .fondue-toggle-file": "toggleFileClicked"
+      "click .fondue-toggle-file": "toggleFileClicked",
+      "click #pauseUpdates": "togglePauseClicked",
+      "click #resetTraces": "resetClicked"
     },
 
     initialize: function (sourceCollection, codeMirrorJSView) {
@@ -74,6 +76,24 @@ def([
       if (foundModel) {
         this.codeMirrorJSView.scrollToSourceModel(foundModel);
       }
+    },
+
+    togglePauseClicked:function(e){
+      if(this.paused){
+        this.trigger("activeCodePanel:pause", false);
+        this.paused = false;
+        this.$(e.currentTarget).text("Pause Updates");
+        this.$(e.currentTarget).css("background-color", "lightyellow");
+      } else {
+        this.trigger("activeCodePanel:pause", true);
+        this.paused = true;
+        this.$(e.currentTarget).text("Resume Updates");
+        this.$(e.currentTarget).css("background-color", "lightsalmon");
+      }
+    },
+
+    resetClicked:function(e){
+      this.trigger("activeCodePanel:reset", false);
     },
 
     toggleFileClicked: function (e) {

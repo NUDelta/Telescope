@@ -18,6 +18,8 @@ def([
           model.set("callStack", obj.callStack);
         }
       }, this);
+
+      this.empty = _.bind(this.empty, this);
     },
 
     merge: function (arrInvocations) {
@@ -34,11 +36,12 @@ def([
         }
 
         var invokeArr = activeNodeModel.get("invokes") || [];
-        invokeArr.push(invocation);
-        activeNodeModel.set("invokes", invokeArr);
 
-        var hits = activeNodeModel.get("hits") || 0;
-        activeNodeModel.set("hits", hits + 1);
+        if (invokeArr.length < 500) {
+          invokeArr.push(invocation);
+          activeNodeModel.set("invokes", invokeArr);
+        }
+        activeNodeModel.set("hits", (activeNodeModel.get("hits") || 0) + 1);
       }, this);
       if (nodesCreated) {
         console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
@@ -46,9 +49,12 @@ def([
     },
 
     empty: function () {
-      this.each(function (model) {
-        this.remove(model);
-      }, this)
+      var model;
+
+      while (model = this.first()) {
+        model.set("id", null);
+        model.destroy();
+      }
     },
 
     getDomQueryNodes: function () {

@@ -244,13 +244,13 @@ define([
             return file.order === order;
           });
 
-          if(!fileObj){
+          if(fileObj){
+            fileObj.js = js;
+          } else {
             console.warn("HTML INLINE SCRIPT ORDER MISMATCH." +
               " Instrument Service cheerio found a script in a " +
               "different order than the whittle injector.");
           }
-
-          fileObj.js = js;
         });
       };
 

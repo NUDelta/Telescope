@@ -46,21 +46,23 @@ def([
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
 
+
       this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
 
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
 
-      window.updateMirrors = _.bind(function () {
+      var updateMirrors = _.bind(function () {
         this.codeMirrorJSView.showSources();
         this.codeMirrorHTMLView.render();
       }, this);
-      window.activeNodeCollection = this.activeNodeCollection;
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
-        console.log("Merging " + obj.invocations.length + " invocations");
         this.activeNodeCollection.merge(obj.invocations);
-        window.updateMirrors();
+
+        if (!this.pauseUIUpdates) {
+          updateMirrors();
+        }
       }, this);
       this.jsBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
         this.codeMirrorCSSView.setCode(obj.css);
@@ -73,6 +75,14 @@ def([
         this.codeMirrorJSView.showSources();
         this.activeCodePanelView.render();
       }, this);
+      this.activeCodePanelView.on("activeCodePanel:pause", function (isPaused) {
+        this.pauseUIUpdates = isPaused;
+      }, this);
+      this.activeCodePanelView.on("activeCodePanel:reset", function () {
+        //todo emit to pane that we need a reset
+        this.activeNodeCollection.empty();
+        updateMirrors();
+      }, this)
     },
 
     nav: function (panelType, codeMirrorInstance) {
