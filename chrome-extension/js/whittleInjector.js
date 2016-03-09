@@ -13,8 +13,8 @@ define([],
         var metaScripts = [];
         var scripts = unravelAgent.$("script");
 
-        unravelAgent._(scripts).each(function (scriptEl, h) {
-          var path = "";
+        var i = 0;
+        unravelAgent._(scripts).each(function (scriptEl) {
           var url = "";
 
           var $scriptEl = unravelAgent.$(scriptEl);
@@ -22,27 +22,34 @@ define([],
             $scriptEl.attr("src", scriptEl.src);
             url = scriptEl.src;
           } else {
-            try {
-              path = scriptEl.innerHTML.split("__tracer.add(\"")[1].split("\"")[0];
-            } catch (err) {
-              return;
+            if (scriptEl.innerHTML.indexOf("__tracer.add") > -1) {
+              //Inline scripts
+              url = scriptEl.innerHTML.split("__tracer.add(\"")[1].split("\"")[0];
+            } else {
+              if (scriptEl.innerHTML.indexOf("tracer") > -1) {
+                //It is the default fondue tracer script... ignore it
+                return;
+              } else {
+                //Untraced inline scripts
+                //https://localhost:3001/-script-0
+                url = "untraced-inline-script";
+              }
             }
           }
 
-          if (url.indexOf("localhost:300") > -1) {
-            try {
-              path = decodeURIComponent(url).split("https://localhost:3001/instrument?js=true&url=")[1];
-            } catch (ig) {
-            }
+          if (url.indexOf("https://localhost:3001/instrument?js=true&url=") > -1) {
+            url = decodeURIComponent(url).split("https://localhost:3001/instrument?js=true&url=")[1];
           }
 
           metaScripts.push({
-            path: path,
-            url: url || window.location.href,
+            path: url,
+            url: url,
             inline: !scriptEl.src,
             domPath: $scriptEl.getPath(),
-            order: h
+            order: i
           });
+
+          i++;
         });
 
 
@@ -57,69 +64,7 @@ define([],
               var cssRules = document.styleSheets[i].cssRules;
 
               for (var j = 0; j < cssRules.length; j++) {
-
-                //var mediaRuleText = "";
-                //
-                //try {
-                //  var keepRule = false;
-                //  var selectorText = cssRules[j].selectorText;
-                //  var selectors = selectorText.split(",");
-                //  keepRule = !!_(selectors).find(function (selector) {
-                //    var checkText = selector.indexOf(':') > -1 ? selector.substr(0, selector.indexOf(':')) : selector;
-                //    return !!unravelAgent.$(checkText).length;
-                //  });
-                //
-                //} catch (err) {
-                //  if (cssRules[j] instanceof CSSMediaRule) {  //CSSKeyframesRule
-                //    var subRulesToRemove = [];
-                //
-                //    var mediaRule = cssRules[j];
-                //    var innerCSSRules = mediaRule.cssRules;
-                //    for (var k = 0; k < innerCSSRules.length; k++) {
-                //      var innerMediaRule = innerCSSRules[k];
-                //      var innerSelectorText = innerMediaRule.selectorText;
-                //
-                //      try {
-                //        var innerSelectors = innerSelectorText.split(",");
-                //        var innerExists = !!_(innerSelectors).find(function (selector) {
-                //          var checkText = selector.indexOf(':') > -1 ? selector.substr(0, selector.indexOf(':')) : selector;
-                //          return !!unravelAgent.$(checkText).length;
-                //        });
-                //        if (!innerExists) {
-                //          subRulesToRemove.push(innerMediaRule.cssText);
-                //        }
-                //      } catch (err) {
-                //      }
-                //    }
-                //    keepRule = false;
-                //
-                //    if (innerCSSRules.length === subRulesToRemove.length) {
-                //      mediaRuleText = "";
-                //    } else {
-                //      mediaRuleText = cssRules[j].cssText;
-                //      for (var l = 0; l < subRulesToRemove.length; l++) {
-                //        mediaRuleText = mediaRuleText.replace(subRulesToRemove[l], "");
-                //      }
-                //    }
-                //  } else if (cssRules[j] instanceof CSSFontFaceRule) {
-                //    //if (cssRules[j].cssText.length > 1000) {
-                //    keepRule = false;
-                //    //} else {
-                //    //  keepRule = true;
-                //    //}
-                //  } else if (cssRules[j] instanceof CSSKeyframesRule) {
-                //    keepRule = false;
-                //  } else {
-                //    console.log("Blindly passing rule type:", typeof cssRules[j]);
-                //    keepRule = true;
-                //  }
-                //}
-
-                //if (true) {
                 css += cssRules[j].cssText + "\n";
-                //} else if (mediaRuleText) {
-                //  css += mediaRuleText;
-                //}
               }
             }
           }

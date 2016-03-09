@@ -24,9 +24,9 @@ define([], function () {
         this.startTrackInterval(nodeArr);
       },
 
-      resetTracer: function () {
+      resetTracer: function (ids) {
         window.__tracer.resetTrace();
-        this.logHandle = window.__tracer.trackLogs({ids: this.ids});
+        this.logHandle = window.__tracer.trackLogs({ids: ids});
       },
 
       startTrackInterval: function (nodeArr) {
@@ -38,7 +38,6 @@ define([], function () {
           }, this), 100);
         }
 
-        this.resetTracer();
         var _nodeArr = unravelAgent._(nodeArr);
         var nodeMap = {};
         _nodeArr.each(function (node) {
@@ -50,9 +49,10 @@ define([], function () {
           return;
         }
 
+        this.resetTracer(this.ids);
         setInterval(unravelAgent._.bind(function () {
           this.emitNodeActivity();
-          //this.resetTracer();
+          //this.resetTracer(this.ids);
         }, this), FondueBridge.EMIT_INTERVAL_MILLIS);
       },
 

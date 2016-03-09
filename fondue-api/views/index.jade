@@ -6,6 +6,12 @@ html(lang='en')
     script(src='/javascripts/lib/jquery-2.1.4.js')
     script(src='/javascripts/lib/underscore-min.js')
     script(src='/javascripts/lib/moment.js')
+    script(type="text/javascript").
+      function fooInHead() {
+        var i = 0;
+        i++;
+        return i;
+      };
 
     //script(src='//localhost:35729/livereload.js')
     link(href='/stylesheets/bootstrap.min.css', rel='stylesheet')
@@ -22,7 +28,7 @@ html(lang='en')
     .row
       hr
     script(type="text/javascript").
-      var bazz = function(){
+      var bazz = function () {
         var i = 0;
         i++;
         bar();

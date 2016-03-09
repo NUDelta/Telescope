@@ -235,10 +235,22 @@ define([
         return o.order
       }).value();
 
-      var scriptHTMLCallback = function (arrJs) {
-        console.warn("IGNORING INLINE JS");
-        _(arrJs).each(function (srcJS, i) {
-          //internalScripts[i].js = srcJS; //todo fix inline scripts
+      var scriptHTMLCallback = function (arrJsOrder) {
+        _(arrJsOrder).each(function (srcJS, i) {
+          var order = srcJS.order;
+          var js = srcJS.js;
+
+          var fileObj = _(internalScripts).find(function (file) {
+            return file.order === order;
+          });
+
+          if(!fileObj){
+            console.warn("HTML INLINE SCRIPT ORDER MISMATCH." +
+              " Instrument Service cheerio found a script in a " +
+              "different order than the whittle injector.");
+          }
+
+          fileObj.js = js;
         });
       };
 
@@ -261,23 +273,12 @@ define([
 
     getScriptsFromInlineHTML: function (htmlUrl, callback) {
       htmlUrl = htmlUrl.split("#")[0] + "";  //ignoring after hashes because server doesn't get them
-      htmlUrl = "https://localhost:3001/beautifyHTML?url=" + encodeURIComponent(htmlUrl);
+      var fetchUrl = "https://localhost:3001/inlineScriptSrcs?url=" + encodeURIComponent(htmlUrl);
 
-      this.corsGet(htmlUrl, _.bind(function (http) {
-        var $html = $(http.responseText);
-        var arrEl = [];
-        $html.each(function (i, el) {
-          if (el.tagName !== "SCRIPT") {
-            return;
-          }
-
-          if (!el.getAttribute("src")) {
-            arrEl.push(el.innerHTML);
-          }
-        });
-
+      this.corsGet(fetchUrl, _.bind(function (http) {
+        var arrJSOrder = JSON.parse(http.responseText);
         callback = _.bind(callback, this);
-        callback(arrEl);
+        callback(arrJSOrder);
       }, this));
     },
 
@@ -288,7 +289,8 @@ define([
 
         this.corsGet(formattedUrl, _.bind(function (http) {
           var fileObj = _(externalScripts).find(function (file) {
-            return file.url.split("url=")[1] === http.responseURL.split("url=")[1];
+            var fetchedUrl = decodeURIComponent(http.responseURL.split("url=")[1]);
+            return file.url === fetchedUrl;
           });
           fileObj.js = http.responseText;
 
