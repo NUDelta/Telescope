@@ -126,6 +126,10 @@ def([
               var scriptModel = this.sourceCollection.find(function (scriptModel) {
                 return scriptModel.get("path") === path;
               });
+
+              if (!scriptModel) {
+                return;
+              }
               var script = scriptModel.toJSON();
 
               var mirrorLine = script.binStartLine + parseInt(startLine);
@@ -151,7 +155,7 @@ def([
                   argValue = "undefined";
                 } else if (arg.value.value === null) {
                   argValue = "null"
-                } else if (arg.value.value && arg.value.value.trim().length < 1) {
+                } else if (arg.value.value && arg.value.value.trim && arg.value.value.trim().length < 1) {
                   argValue = "\"" + arg.value.value + "\"";
                 } else {
                   argValue = JSON.stringify(arg.value.value);

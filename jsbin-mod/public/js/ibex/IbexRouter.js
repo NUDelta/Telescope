@@ -77,6 +77,7 @@ def([
       }, this);
       this.activeCodePanelView.on("activeCodePanel:pause", function (isPaused) {
         this.pauseUIUpdates = isPaused;
+        updateMirrors();
       }, this);
       this.activeCodePanelView.on("activeCodePanel:reset", function () {
         //todo emit to pane that we need a reset

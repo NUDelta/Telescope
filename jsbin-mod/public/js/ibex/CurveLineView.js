@@ -57,7 +57,9 @@ def([
 
       var fromPos;
       if (!this.fromEl && this.fromHTMLLine !== undefined) {
-        var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + this.fromHTMLLine + ")")[0];
+        var mirrorLineOffsest = parseInt($($(".CodeMirror-code")[0]).find("div:first-child .CodeMirror-linenumber")[0].innerHTML) + 1;
+        var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + (this.fromHTMLLine - mirrorLineOffsest) + ")")[0];
+
         var fromEl = $(el)[0];
         if (fromEl) {
           fromPos = fromEl.getBoundingClientRect();
@@ -69,7 +71,9 @@ def([
       }
       var toPos = $(this.toEl)[0].getBoundingClientRect();
 
-      if (fromPos.height < 1 || fromPos.height < 1 || toPos.height < 1 || toPos.width < 1) {
+      if (!fromPos || !toPos ||
+        fromPos.height < 1 || fromPos.height < 1 ||
+        toPos.height < 1 || toPos.width < 1) {
         return;
       }
 
