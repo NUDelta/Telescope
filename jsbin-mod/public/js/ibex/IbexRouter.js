@@ -45,45 +45,85 @@ def([
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection);
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
-
-
       this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
 
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
 
-      var updateMirrors = _.bind(function () {
-        this.codeMirrorJSView.showSources();
-        this.codeMirrorHTMLView.render();
-      }, this);
+      this.bindSocketHandlers();
+      this.bindViewListeners();
+    },
+
+    bindSocketHandlers: function () {
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
         this.activeNodeCollection.merge(obj.invocations);
+        this.updateMirrors();
 
-        if (!this.pauseUIUpdates) {
-          updateMirrors();
+        if (!this.codeMirrorHTMLView.hasHTML()) {
+          // this jsbin doesn't have all the setup code the browser sent
+          // trigger a fetch to get everything we need
+          console.log("Don't have html/css, requesting...");
+          this.jsBinSocketRouter.emit("jsbin:resendAll", {});
         }
       }, this);
+
       this.jsBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
+        console.log("Got CSS");
         this.codeMirrorCSSView.setCode(obj.css);
       }, this);
+
       this.jsBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
+        console.log("Got HTML");
         this.codeMirrorHTMLView.setCode(obj.html);
       }, this);
+
       this.jsBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
+        console.log("Got Scripts");
+
+        this.sourceCollection.empty();
         this.sourceCollection.add(obj.scripts);
-        this.codeMirrorJSView.showSources();
         this.activeCodePanelView.render();
+        this.updateMirrors();
       }, this);
-      this.activeCodePanelView.on("activeCodePanel:pause", function (isPaused) {
-        this.pauseUIUpdates = isPaused;
-        updateMirrors();
-      }, this);
-      this.activeCodePanelView.on("activeCodePanel:reset", function () {
-        //todo emit to pane that we need a reset
+
+      this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
+        console.log("Received", obj.nodes.length, "new nodes.");
         this.activeNodeCollection.empty();
-        updateMirrors();
-      }, this)
+        this.activeNodeCollection.add(obj.nodes);
+        this.resumeUIUpdates();
+      }, this);
+    },
+
+    bindViewListeners: function () {
+      this.activeCodePanelView.on("activeCodePanel:pause", function (pause) {
+        if (pause) {
+          this.puaseUIUpdates();
+        } else {
+          this.resumeUIUpdates();
+        }
+      }, this);
+
+      this.activeCodePanelView.on("activeCodePanel:reset", function () {
+        this.puaseUIUpdates();
+        this.jsBinSocketRouter.emit("jsbin:reset", {});
+      }, this);
+    },
+
+    puaseUIUpdates: function () {
+      this.pauseUIUpdates = true;
+    },
+
+    resumeUIUpdates: function () {
+      this.pauseUIUpdates = false;
+      this.updateMirrors();
+    },
+
+    updateMirrors: function () {
+      if (!this.pauseUIUpdates) {
+        this.codeMirrorJSView.showSources();
+        this.codeMirrorHTMLView.render();
+      }
     },
 
     nav: function (panelType, codeMirrorInstance) {

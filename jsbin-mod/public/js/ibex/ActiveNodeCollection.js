@@ -22,6 +22,16 @@ def([
       this.empty = _.bind(this.empty, this);
     },
 
+    getActiveNodes: function (path) {
+      return this.filter(function (model) {
+        var hasHits = !!model.get("hits");
+        var hasPath = !!model.get("path");
+        var matchesPath = path ? path === model.get("path") : true;
+        var isFunction = model.get("type") === "function";
+        return hasHits && isFunction && hasPath && matchesPath;
+      });
+    },
+
     merge: function (arrInvocations) {
       var nodesCreated = 0;
       _(arrInvocations).each(function (invocation) {

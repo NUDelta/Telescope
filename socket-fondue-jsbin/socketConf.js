@@ -8,6 +8,7 @@ module.exports = function (httpServer) {
 
   var io = socketIO;
   var binSockets = {}; //supports multiple browsers
+  var binBrowserSocket = {};
 
   io.use(function (socket, next) {
     next(null, true);  //Mock authentication success
@@ -23,9 +24,15 @@ module.exports = function (httpServer) {
     }
   };
 
-  //socket.on("question:create", function (data) {
-  //  io.sockets.emit("questionCollection:add", {foo:"bar"});
-  //});
+  var emitToBrowser = function (binId, eventStr, data) {
+    if (binId) {
+      var socket = binBrowserSocket[binId];
+      if (socket) {
+        console.log("emitting ", eventStr, " from bin ", binId, " to browser on socket id:", socket.id);
+        socket.emit(eventStr, data);
+      }
+    }
+  };
 
   io.on("connection", function (socket) {
     socket.emit("user:id", {
@@ -33,7 +40,7 @@ module.exports = function (httpServer) {
       }
     );
 
-    socket.on("listen", function (data) {
+    socket.on("jsbin:listen", function (data) {
       var userId = data.userId;
       var binId = data.binId;
       var sockets = io.sockets;
@@ -48,8 +55,15 @@ module.exports = function (httpServer) {
         binSockets[binId] = [sockets.sockets[userId]];
       }
 
-      io.sockets.emit("jsbin:live", {binId: binId});
+      io.sockets.emit("jsbin:listen", {
+        binId: binId
+      });
       console.log("Bin [", binId, "] is listening on socket [", userId, "]");
+    });
+
+    socket.on("browser:listen", function (data) {
+      binBrowserSocket[data.binId] = socket;
+      console.log("Browser with socketID [", socket.id, "] is listening to bin [", data.binId, "]");
     });
 
     socket.on("fondueDTO:nodeBacktrace", function (data) {
@@ -72,6 +86,12 @@ module.exports = function (httpServer) {
       console.log("heard scripts destined for bin ", data.binId);
 
       emitToBin(data.binId, "fondueDTO:scripts", data);
+    });
+
+    socket.on("fondueDTO:newNodeList", function (data) {
+      console.log("heard nodes destined for bin ", data.binId);
+
+      emitToBin(data.binId, "fondueDTO:newNodeList", data);
     });
 
     socket.on("fondueDTO:css", function (data) {
@@ -104,9 +124,9 @@ module.exports = function (httpServer) {
         removeComments: true,
         collapseWhitespace: true,
         collapseInlineTagWhitespace: true,
-        removeTagWhitespace:true,
+        removeTagWhitespace: true,
         removeRedundantAttributes: true,
-        useShortDoctype:true,
+        useShortDoctype: true,
         removeEmptyAttributes: true
       });
 
@@ -117,6 +137,15 @@ module.exports = function (httpServer) {
       });
 
       emitToBin(data.binId, "fondueDTO:html", data);
+    });
+
+
+    socket.on("jsbin:reset", function (data) {
+      emitToBrowser(data.binId, "jsbin:reset", data);
+    });
+
+    socket.on("jsbin:resendAll", function (data) {
+      emitToBrowser(data.binId, "jsbin:resendAll", data);
     });
   });
 };

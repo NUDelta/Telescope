@@ -20,13 +20,17 @@ def([
       this.addGutterPills();
     },
 
-    setCode: function(strCode){
+    setCode: function (strCode) {
       this.htmlMirror.setCode(strCode);
       this.htmlSource = strCode;
     },
 
-    removeAllGutterPills: function(){
-      _(this.gutterPills).each(function(pill){
+    hasHTML: function () {
+      return !!this.htmlSource;
+    },
+
+    removeAllGutterPills: function () {
+      _(this.gutterPills).each(function (pill) {
         pill.destroy();
       }, this);
 
@@ -74,11 +78,11 @@ def([
       }, this);
     },
 
-    drawLinksToJS:function(gutterPillView){
+    drawLinksToJS: function (gutterPillView) {
       this.htmlJSLinksView.drawLineFromHTMLToJS(gutterPillView);
     },
 
-    eraseLinksToJS:function(gutterPillView){
+    eraseLinksToJS: function (gutterPillView) {
       this.htmlJSLinksView.removeHTMLToJSLine(gutterPillView);
     },
 

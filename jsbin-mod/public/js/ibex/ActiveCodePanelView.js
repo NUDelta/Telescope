@@ -26,7 +26,7 @@ def([
     },
 
     render: function () {
-      this.$(".fondue-panel").remove();
+      this.$("#fondue-panel-view").remove();
       var sourceModels = this.sourceCollection.getOrdered();
       var arr = _(sourceModels).map(function (model) {
         var json = model.toJSON();

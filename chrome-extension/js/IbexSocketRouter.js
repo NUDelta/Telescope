@@ -22,7 +22,7 @@ define([
         this.userId = obj.id;
         console.log("Storing socket user id in memory", this.userId);
       });
-      this.socket.on("jsbin:live", _.bind(function (obj) {
+      this.socket.on("jsbin:listen", _.bind(function (obj) {
         this.heardIds.push(obj.binId);
         this.trySocketLock();
       }, this));
@@ -37,8 +37,9 @@ define([
           }, this);
           if (foundId) {
             this.connected = true;
-            this.socket.off("jsbin:live");
+            this.socket.off("jsbin:listen");
             this.trigger("connected");
+            this.emit("browser:listen", {});
           }
         }
       }

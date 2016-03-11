@@ -48,7 +48,7 @@ def([
     },
 
     getActiveLines: function () {
-      var traces = this.activeNodeCollection.where({path: this.get("path")});
+      var traces = this.activeNodeCollection.getActiveNodes(this.get("path"));
 
       //Determine a list of line numbers to keep based on trace activity
       var arr = [];

@@ -10,6 +10,7 @@ def([
     mirrorLastLine: 0,
     activeCodeOnly: true,
     nodeIdGutterPill: {},
+    gutterPills: [],
 
     initialize: function (codeMirrors, sourceCollection, activeNodeCollection) {
       this.codeMirrors = codeMirrors;
@@ -22,6 +23,7 @@ def([
       this.jsMirror.setOption("lineNumbers", true);
 
       this.deleteAllLines();
+      this.removeAllGutterPills();
 
       this.activeNodeCollection.markDomManipulatingNodes();
 
@@ -48,7 +50,7 @@ def([
     },
 
     addGutterPills: function (sourceModel) {
-      var activeNodeModels = this.activeNodeCollection.where({type: "function", path: sourceModel.get("path")});
+      var activeNodeModels = this.activeNodeCollection.getActiveNodes(sourceModel.get("path"));
       _(activeNodeModels).each(function (activeNodeModel) {
         var activeNode = activeNodeModel.toJSON();
 
@@ -64,6 +66,15 @@ def([
         }, this);
         this.nodeIdGutterPill[activeNodeModel.get("id")] = pill;
       }, this);
+    },
+
+    removeAllGutterPills: function () {
+      var gutterPills = _(this.nodeIdGutterPill).values();
+      _(gutterPills).each(function (pill) {
+        pill.destroy();
+      }, this);
+
+      this.nodeIdGutterPill = {};
     },
 
     showInactive: function () {
@@ -108,7 +119,7 @@ def([
     deleteAllLines: function () {
       var doc = this.jsMirror.getDoc();
       var lastLine = doc.lineCount();
-      this.deleteLines(0, lastLine);
+      this.deleteLines(-1, lastLine);
     },
 
     deleteLines: function (startLine, endLine) {

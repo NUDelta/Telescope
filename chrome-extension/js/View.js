@@ -26,6 +26,10 @@ define([
       this.getScriptMetaData = _.bind(this.getScriptMetaData, this);
 
       this.ibexSocketRouter = IbexSocketRouter.getInstance();
+
+      this.ibexSocketRouter.onSocketData("jsbin:reset", this.resetTracerResendNodes, this);
+      this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.resendAllCodeToJSBin, this);
+
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
     },
@@ -43,6 +47,25 @@ define([
         this.$(".restart-mode").show();
         return;
       }
+    },
+
+    resetTracerResendNodes: function () {
+      console.log("JSBin requesting tracer reset and new node list.");
+      UnravelAgent.runInPage(function () {
+        unravelAgent.fondueBridge.resetTracer();
+        unravelAgent.fondueBridge.emitNodeList();
+      });
+    },
+
+    resendAllCodeToJSBin: function (data) {
+      console.log("JSBin requesting new set of HTML/CSS/JS");
+      this.transportScriptData();
+
+      UnravelAgent.runInPage(function () {
+        unravelAgent.emitCSS();
+        unravelAgent.emitHTML();
+        unravelAgent.fondueBridge.emitNodeList();
+      });
     },
 
     onBinReady: function () {
@@ -72,7 +95,8 @@ define([
 
         UnravelAgent.runInPage(function () {
           if (unravelAgent.$("body").length) {
-            return unravelAgent.fondueBridge.getNodes();
+            unravelAgent.fondueBridge.emitNodeList(); //for jsbin
+            return unravelAgent.fondueBridge.getNodes(); //for our script metadata
           } else {
             return false;
           }
@@ -220,7 +244,9 @@ define([
 
       var emitToBin = _.bind(function () {
         this.ibexSocketRouter.emit("fondueDTO:scripts", {scripts: hitScripts});
-        callback();
+        if (callback) {
+          callback();
+        }
       }, this);
 
       var externalScripts = _(hitScripts).chain().where({
@@ -244,7 +270,7 @@ define([
             return file.order === order;
           });
 
-          if(fileObj){
+          if (fileObj) {
             fileObj.js = js;
           } else {
             console.warn("HTML INLINE SCRIPT ORDER MISMATCH." +

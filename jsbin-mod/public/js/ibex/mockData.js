@@ -1,4 +1,4 @@
-var activeNodeCollection = new ActiveNodeCollection([
+this.activeNodeCollection = new ActiveNodeCollection([
   //Active
   // a 2 3 4
   // b 2 3 4 5
@@ -10,7 +10,7 @@ var activeNodeCollection = new ActiveNodeCollection([
   {startLine: 1, endLine: 1, path: "c", hits: 4, type: "function"},
 ]);
 
-var sourceCollection = new SourceCollection(null, {
+this.sourceCollection = new SourceCollection(null, {
   scripts: [
     {
       builtIn: false,
@@ -40,7 +40,7 @@ var sourceCollection = new SourceCollection(null, {
       url: "https://localhost:3001/"
     }
   ],
-  activeNodeCollection: activeNodeCollection
+  activeNodeCollection: this.activeNodeCollection
 });
 
 var domQueries = [

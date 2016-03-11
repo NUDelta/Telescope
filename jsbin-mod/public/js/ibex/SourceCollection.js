@@ -12,6 +12,15 @@ def([
       this.add(o.scripts);
     },
 
+    empty: function () {
+      var model;
+
+      while (model = this.first()) {
+        model.set("id", null);
+        model.destroy();
+      }
+    },
+
     getOrdered: function () {
       return this.chain()
         .reject(function (model) {

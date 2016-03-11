@@ -18,7 +18,7 @@ def([
       });
       this.socket.on("user:id", _.bind(function (obj) {
         this.userId = obj.id;
-        this.emit("listen", {
+        this.emit("jsbin:listen", {
           userId: this.userId,
           binId: this.binId
         });
