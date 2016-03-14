@@ -25,8 +25,6 @@ def([
       this.deleteAllLines();
       this.removeAllGutterPills();
 
-      this.activeNodeCollection.markDomManipulatingNodes();
-
       //Write the source and delete its lines in each iteration
       var sourceModels = this.sourceCollection.getOrdered();
       _(sourceModels).each(function (sourceModel) {
@@ -52,12 +50,10 @@ def([
     addGutterPills: function (sourceModel) {
       var activeNodeModels = this.activeNodeCollection.getActiveNodes(sourceModel.get("path"));
       _(activeNodeModels).each(function (activeNodeModel) {
-        var activeNode = activeNodeModel.toJSON();
-
         //subtract one, because the mirror start line === node.startLine
-        var startLine = sourceModel.getMirrorPos().startLine + activeNode.startLine - 1;
-        var pill = new GutterPillView(this.jsMirror, startLine, activeNode, this.sourceCollection);
-        pill.setCount(activeNode.hits);
+        var startLine = sourceModel.getMirrorPos().startLine + activeNodeModel.get("startLine") - 1;
+        var pill = new GutterPillView(this.jsMirror, startLine, activeNodeModel, this.sourceCollection);
+        pill.setCount(activeNodeModel.get("hits"));
         pill.on("pill:expand", function (gutterPillView) {
           this.htmlJSLinksView.drawLineFromJSToHTML(gutterPillView);
         }, this);

@@ -23,11 +23,7 @@ def([
       this.jsMirror = o.jsMirror;
 
       this.reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
-      this.htmlMirror.on("scroll", this.reDrawDebounce);
-      this.jsMirror.on("scroll", this.reDrawDebounce);
-      this.htmlMirror.on("viewportChange", this.reDrawDebounce);
-      this.jsMirror.on("viewportChange", this.reDrawDebounce);
-      $(window).on("resize", this.reDrawDebounce);
+      this.bindListeners("on");
     },
 
     reDraw: function () {
@@ -43,12 +39,17 @@ def([
       this.r = null;
     },
 
+    bindListeners: function (onOff) {
+      this.htmlMirror[onOff]("scroll", this.reDrawDebounce);
+      this.jsMirror[onOff]("scroll", this.reDrawDebounce);
+      this.htmlMirror[onOff]("viewportChange", this.reDrawDebounce);
+      this.jsMirror[onOff]("viewportChange", this.reDrawDebounce);
+      $(window)[onOff]("resize", this.reDrawDebounce);
+    },
+
     destroy: function () {
       this.undraw();
-      this.htmlMirror.off("scroll", this.reDrawDebounce);
-      this.jsMirror.off("scroll", this.reDrawDebounce);
-      $(window).off("resize", this.reDrawDebounce);
-
+      this.bindListeners("off");
       this.remove();
     },
 
@@ -57,7 +58,7 @@ def([
 
       var fromPos;
       if (!this.fromEl && this.fromHTMLLine !== undefined) {
-        var mirrorLineOffsest = parseInt($($(".CodeMirror-code")[0]).find("div:first-child .CodeMirror-linenumber")[0].innerHTML) + 1;
+        var mirrorLineOffsest = parseInt($($(".CodeMirror-code")[0]).find("div:first-child .CodeMirror-linenumber")[0].innerHTML);
         var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + (this.fromHTMLLine - mirrorLineOffsest) + ")")[0];
 
         var fromEl = $(el)[0];

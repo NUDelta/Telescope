@@ -64,6 +64,7 @@ define([
       UnravelAgent.runInPage(function () {
         unravelAgent.emitCSS();
         unravelAgent.emitHTML();
+        unravelAgent.fondueBridge.resetInvokeCounts();
         unravelAgent.fondueBridge.emitNodeList();
       });
     },

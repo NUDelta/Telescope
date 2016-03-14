@@ -238,6 +238,27 @@ Ibex Plan
         Video Demo
         Submit
 
+Ibex Plan Actual
+    Jan 18
+        Pilot Study
+    Jan. 20-30
+        Design Iterations, Build
+    Feb - Mar 14
+        BUILD
+        Paper Intro
+    Mar 14 - Current
+        Recruit
+        User Testing
+         & related works
+        Video Coding
+        Data Analysis
+    Mar 27- April 8
+        Write paper
+    April 8- 13
+        Revise Paper
+        Video Demo
+        Submit
+
 Prototype Feasibility Analysis
 
     User Problem Ties: High/Med/low

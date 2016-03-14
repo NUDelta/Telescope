@@ -27,6 +27,7 @@ def([
         var hasHits = !!model.get("hits");
         var hasPath = !!model.get("path");
         var matchesPath = path ? path === model.get("path") : true;
+        //var isFunction = model.get("type") === "function" || model.get("type") === "callsite";
         var isFunction = model.get("type") === "function";
         return hasHits && isFunction && hasPath && matchesPath;
       });
@@ -56,6 +57,8 @@ def([
       if (nodesCreated) {
         console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
       }
+
+      this.relateNodesByDomQuery();
     },
 
     empty: function () {
@@ -67,15 +70,12 @@ def([
       }
     },
 
-    getDomQueryNodes: function () {
+    getDomQueryNodeMap: function () {
       var queryNodeMap = {};
 
-      this.each(function (nodeModel) {
-        var arrDomQueryObjs = nodeModel.getDomQueries();
-
-        if (!arrDomQueryObjs.length) {
-          return;
-        }
+      var activeNodes = this.getActiveNodes();
+      _(activeNodes).each(function (nodeModel) {
+        var arrDomQueryObjs = nodeModel.get("relatedDomQueries");
 
         _(arrDomQueryObjs).each(function (domQueryObj) {
           var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
@@ -90,15 +90,27 @@ def([
       return queryNodeMap;
     },
 
-    markDomManipulatingNodes: function () {
+    relateNodesByDomQuery: function () {
+      var searchNodes = this.filter(function (model) {
+        var hasHits = !!model.get("hits");
+        var hasPath = !!model.get("path");
+        return hasHits && hasPath;
+      });
+
+      //Reset model related queries
+      _(searchNodes).each(function (model) {
+        model.unset("relatedDomQueries");
+      });
+
       //Run a check against each active node to see if it modifies the dom
       //  If so, mark it and all of its callers
-      this.each(function (nodeModel) {
+      _(searchNodes).each(function (nodeModel) {
         var arrNodeIds = [];
         var domQueries = nodeModel.getDomQueries();
 
+
         if (domQueries.length) {
-          var invokes = nodeModel.get("invokes") || [];
+          var invokes = nodeModel.get("invokes");
           _(invokes).each(function (invoke) {
             arrNodeIds.push(invoke.nodeId);
 
@@ -112,8 +124,6 @@ def([
         _(arrNodeIds).each(function (nodeId) {
           var nodeModel = this.get(nodeId);
           if (nodeModel) {
-            nodeModel.set("relatedDomModifier", true);
-
             var relatedDomQueries = nodeModel.get("relatedDomQueries") || [];
             nodeModel.set("relatedDomQueries", relatedDomQueries.concat(domQueries));
           }

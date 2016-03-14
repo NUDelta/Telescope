@@ -38,7 +38,7 @@ def([
     },
 
     addGutterPills: function () {
-      var queryNodeMap = this.activeNodeCollection.getDomQueryNodes();
+      var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
 
       this.gutterPills = [];
       var domQueries = _(queryNodeMap).keys();
@@ -48,7 +48,7 @@ def([
         var activeNodes = queryNodeMap[domFnQueryStr];
 
         this.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
-          var pill = new GutterPillView(this.htmlMirror, lineNumber, activeNodes, this.sourceCollection);
+          var pill = new GutterPillView(this.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes);
           pill.setCount(activeNodes.length);
           pill.on("pill:expand", this.drawLinksToJS, this);
           pill.on("pill:collapse", this.eraseLinksToJS, this);
@@ -111,27 +111,27 @@ def([
       return marker;
     },
 
-    addNodeMarker: function (node, marker) {
-      this.nodeMarkers[node.id] = this.nodeMarkers[node.id] || [];
-      this.nodeMarkers[node.id].push(marker);
+    addNodeMarker: function (nodeId, marker) {
+      this.nodeMarkers[nodeId] = this.nodeMarkers[nodeId] || [];
+      this.nodeMarkers[nodeId].push(marker);
     },
 
-    addNodesMarker: function (nodesArr, marker) {
-      var key = _(nodesArr).pluck("id").join("");
+    addNodesMarker: function (arrIds, marker) {
+      var key = _(arrIds).join("");
       this.nodeMarkers[key] = this.nodeMarkers[key] || [];
       this.nodeMarkers[key].push(marker);
     },
 
-    clearMarkersForNode: function (node) {
-      _(this.nodeMarkers[node.id]).each(function (marker) {
+    clearMarkersForNode: function (nodeId) {
+      _(this.nodeMarkers[nodeId]).each(function (marker) {
         marker.clear();
       });
 
-      delete this.nodeMarkers[node.id];
+      delete this.nodeMarkers[nodeId];
     },
 
     clearMarkersForNodes: function (nodesArr) {
-      var key = _(nodesArr).pluck("id").join("");
+      var key = _(nodesArr).join("");
 
       _(this.nodeMarkers[key]).each(function (marker) {
         marker.clear();

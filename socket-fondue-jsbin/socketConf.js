@@ -10,16 +10,36 @@ module.exports = function (httpServer) {
   var binSockets = {}; //supports multiple browsers
   var binBrowserSocket = {};
 
+  var arrDisconnectedSocketIds = [];
+
   io.use(function (socket, next) {
     next(null, true);  //Mock authentication success
   });
 
+  var deleteDisconnectedSocketId = function (id) {
+    var ind = arrDisconnectedSocketIds.indexOf(id);
+    if (ind >= 0) {
+      arrDisconnectedSocketIds.splice(ind, 1);
+    }
+  };
+
   var emitToBin = function (binId, eventStr, data) {
     if (binId) {
       var socketArr = binSockets[binId];
-      _(socketArr).each(function (socket) {
-        console.log("emitting ", eventStr, " to ", binId, " on socket id:", socket.id);
-        socket.emit(eventStr, data);
+      var deleteIndexes = [];
+
+      _(socketArr).each(function (socket, i) {
+        if (_(arrDisconnectedSocketIds).contains(socket.id)) {
+          deleteIndexes.push(i);
+          deleteDisconnectedSocketId(socket.id);
+        } else {
+          console.log("emitting ", eventStr, " to ", binId, " on socket id:", socket.id);
+          socket.emit(eventStr, data);
+        }
+      });
+
+      _(deleteIndexes).each(function (ind) {
+        socketArr.splice(ind, 1);
       });
     }
   };
@@ -28,6 +48,12 @@ module.exports = function (httpServer) {
     if (binId) {
       var socket = binBrowserSocket[binId];
       if (socket) {
+        if (_(arrDisconnectedSocketIds).contains(socket.id)) {
+          delete binBrowserSocket[binId];
+          deleteDisconnectedSocketId(socket.id);
+          return;
+        }
+
         console.log("emitting ", eventStr, " from bin ", binId, " to browser on socket id:", socket.id);
         socket.emit(eventStr, data);
       }
@@ -146,6 +172,10 @@ module.exports = function (httpServer) {
 
     socket.on("jsbin:resendAll", function (data) {
       emitToBrowser(data.binId, "jsbin:resendAll", data);
+    });
+
+    socket.on('disconnect', function () {
+      arrDisconnectedSocketIds.push(socket.id);
     });
   });
 };

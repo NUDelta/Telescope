@@ -6,6 +6,7 @@ define([], function () {
       FondueBridge.MAX_LOG_COUNT = 1000;
       FondueBridge.MAX_STACK_DEPTH = 20;
       FondueBridge.EMIT_INTERVAL_MILLIS = 1000;
+      FondueBridge.MAX_INVOKE_LOG_COUNT = 4;
 
       FondueBridge.prototype = {
         constructor: FondueBridge,
@@ -27,9 +28,13 @@ define([], function () {
         resetTracer: function () {
           window.__tracer.resetTrace();
           this.logHandle = window.__tracer.trackLogs({ids: this.ids});
+          this.resetInvokeCounts();
+        },
+
+        resetInvokeCounts: function () {
           unravelAgent._(this.nodeArr).each(function (node) {
-            if (node.invokeHits) {
-              node.invokeHits = 0;
+            if (node.invokeCountTowardsMax) {
+              node.invokeCountTowardsMax = 0;
             }
           });
         },
@@ -55,7 +60,11 @@ define([], function () {
           }
 
           this.resetTracer();
-          setInterval(unravelAgent._.bind(function () {
+          if (this.interval) {
+            window.clearInterval(this.interval);
+          }
+
+          this.interval = setInterval(unravelAgent._.bind(function () {
             this.emitNodeActivity();
           }, this), FondueBridge.EMIT_INTERVAL_MILLIS);
         },
@@ -111,13 +120,13 @@ define([], function () {
               }
 
               invocation.node = node;
-              if (node.invokeHits) {
-                node.invokeHits++;
+              if (node.invokeCountTowardsMax) {
+                node.invokeCountTowardsMax++;
               } else {
-                node.invokeHits = 1;
+                node.invokeCountTowardsMax = 1;
               }
 
-              if (node.invokeHits < 4) {
+              if (node.invokeCountTowardsMax < FondueBridge.MAX_INVOKE_LOG_COUNT) {
                 invocation.callStack = unravelAgent._(__tracer.backtrace({
                   invocationId: invocation.invocationId,
                   range: [0, FondueBridge.MAX_STACK_DEPTH]
@@ -146,7 +155,7 @@ define([], function () {
               })
             );
           } catch (err) {
-            debugger;
+            console.warn("Err on dispatching invocations.")
           }
         }
       };

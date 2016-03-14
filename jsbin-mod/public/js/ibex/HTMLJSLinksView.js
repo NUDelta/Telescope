@@ -16,21 +16,22 @@ def([
 
     drawLineFromJSToHTML: function (gutterPillView) {
       var pillEl = gutterPillView.$el[0];
-      var activeNode = gutterPillView.trace;
+      var activeNodeModel = gutterPillView.activeNodeModel;
 
-      if (!activeNode.relatedDomQueries || activeNode.relatedDomQueries.length < 1) {
+      var relatedDomQueries = activeNodeModel.get("relatedDomQueries");
+      if (!relatedDomQueries || relatedDomQueries.length < 1) {
         return;
       }
 
       var arrLineNumbers = [];
 
-      _(activeNode.relatedDomQueries).each(function (relatedDomQuery) {
+      _(relatedDomQueries).each(function (relatedDomQuery) {
         var domFnName = relatedDomQuery.domFnName;
         var queryString = relatedDomQuery.queryString;
 
         this.codeMirrorHTMLView.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
           var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
-          this.codeMirrorHTMLView.addNodeMarker(gutterPillView.trace, marker);
+          this.codeMirrorHTMLView.addNodeMarker(activeNodeModel.get("id"), marker);
 
           arrLineNumbers.push(lineNumber);
         }, this);
@@ -54,7 +55,7 @@ def([
     },
 
     removeJSToHTMLLine: function (gutterPillView) {
-      this.codeMirrorHTMLView.clearMarkersForNode(gutterPillView.trace);
+      this.codeMirrorHTMLView.clearMarkersForNode(gutterPillView.activeNodeModel.get("id"));
 
       _(gutterPillView.arrLines || []).each(function (lineView) {
         lineView.destroy();
@@ -64,7 +65,10 @@ def([
     },
 
     removeHTMLToJSLine: function (gutterPillView) {
-      this.codeMirrorHTMLView.clearMarkersForNodes(gutterPillView.traces);
+      var arrIds = _(gutterPillView.htmlRelatedNodeModels).map(function (activeNodeModel) {
+        return activeNodeModel.get("id");
+      });
+      this.codeMirrorHTMLView.clearMarkersForNodes(arrIds);
 
       _(gutterPillView.arrLines || []).each(function (lineView) {
         lineView.destroy();
@@ -74,20 +78,22 @@ def([
     },
 
     drawLineFromHTMLToJS: function (gutterPillView) {
-      var activeNodes = gutterPillView.traces;
-      if (!activeNodes || activeNodes.length < 1) {
+      if (!gutterPillView.htmlRelatedNodeModels || gutterPillView.htmlRelatedNodeModels.length < 1) {
         return;
       }
 
       var lineNumber = gutterPillView.line;
       var codeLine = this.codeMirrorHTMLView.htmlMirror.getLine(lineNumber);
       var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
-      this.codeMirrorHTMLView.addNodesMarker(gutterPillView.traces, marker);
+      var arrIds = _(gutterPillView.htmlRelatedNodeModels).map(function (activeNodeModel) {
+        return activeNodeModel.get("id");
+      });
+      this.codeMirrorHTMLView.addNodesMarker(arrIds, marker);
 
       var arrJSPillEl = [];
 
-      _(activeNodes).each(function (activeNode) {
-        var invokes = activeNode.get("invokes");
+      _(gutterPillView.htmlRelatedNodeModels).each(function (activeNodeModel) {
+        var invokes = activeNodeModel.get("invokes");
 
         _(invokes).each(function (invoke) {
           _(invoke.callStack || []).each(function (caller) {
@@ -106,8 +112,8 @@ def([
       _(arrJSPillEl).each(function (el) {
         var lineView = new CurveLineView({
           fromHTMLLine: lineNumber,
-          fromEl:null,
-          toEl:el,
+          fromEl: null,
+          toEl: el,
           jsMirror: this.codeMirrorHTMLView.htmlMirror,
           htmlMirror: this.codeMirrorJSView.jsMirror
         });
