@@ -2,7 +2,7 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "CurveLineView"
+  "./CurveLineView"
 ], function ($, Backbone, _, CurveLineView) {
   return Backbone.View.extend({
     initialize: function (codeMirrorJSView, codeMirrorHTMLView) {

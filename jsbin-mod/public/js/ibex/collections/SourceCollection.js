@@ -2,7 +2,7 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "SourceModel"
+  "../models/SourceModel"
 ], function ($, Backbone, _, SourceModel) {
   return Backbone.Collection.extend({
     model: SourceModel,

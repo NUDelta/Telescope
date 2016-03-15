@@ -2,7 +2,7 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "GutterPillView",
+  "./GutterPillView",
 ], function ($, Backbone, _, GutterPillView) {
   return Backbone.View.extend({
     jsMirror: null,

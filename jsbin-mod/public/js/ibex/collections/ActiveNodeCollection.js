@@ -2,8 +2,8 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "ActiveNodeModel",
-  "JSBinSocketRouter"
+  "../models/ActiveNodeModel",
+  "../routers/JSBinSocketRouter"
 ], function ($, Backbone, _, ActiveNodeModel, JSBinSocketRouter) {
   return Backbone.Collection.extend({
     model: ActiveNodeModel,

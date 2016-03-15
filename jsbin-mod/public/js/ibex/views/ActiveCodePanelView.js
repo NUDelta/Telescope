@@ -3,7 +3,7 @@ def([
   "backbone",
   "underscore",
   "handlebars",
-  "text!templates/SourceListPanel.html"
+  "text!../templates/SourceListPanel.html"
 ], function ($, Backbone, _, Handlebars, panelTemplate) {
   return Backbone.View.extend({
     panelHeight: 90,

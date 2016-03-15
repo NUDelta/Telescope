@@ -578,7 +578,7 @@ function populateEditor(editor, panel) {
 
     var startRequireIbex = function (panelType) {
       req([
-        "JSBinRouter"
+        "routers/JSBinRouter"
       ], function (JSBinRouter) {
         var jSBinRouter = JSBinRouter.getInstance();
         jSBinRouter.nav(panelType, editor.editor);

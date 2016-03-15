@@ -2,7 +2,7 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "util"
+  "../util/util"
 ], function ($, Backbone, _, util) {
   var invocationTemplate =
     '<div class="fondue-invocation-row">' +
