@@ -578,10 +578,10 @@ function populateEditor(editor, panel) {
 
     var startRequireIbex = function (panelType) {
       req([
-        "IbexRouter"
-      ], function (IbexRouter) {
-        var ibexRouter = IbexRouter.getInstance();
-        ibexRouter.nav(panelType, editor.editor);
+        "routers/JSBinRouter"
+      ], function (JSBinRouter) {
+        var jSBinRouter = JSBinRouter.getInstance();
+        jSBinRouter.nav(panelType, editor.editor);
       })
     };
 

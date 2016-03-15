@@ -7,17 +7,50 @@ var routes = require("../routes/routes");
 var fondueService = require("./fondueService");
 
 module.exports = {
+  getInlineScriptSources: function (url, callback) {
+    request({
+      url: url,
+      method: "GET",
+      rejectUnauthorized: false,
+      headers: {
+        "Cache-Control": "no-cache",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.8"
+      }
+    }, function (err, subRes, body) {
+      if (err) throw err;
+
+      var arrJS = [];
+      var $ = cheerio.load(body);
+      var scripts = $("script");
+      _.each(scripts, function (scriptNode, i) {
+        var $scriptEl = $(scriptNode);
+        if (!$scriptEl.attr("src")) {
+          arrJS.push({
+            order: i,
+            js: $scriptEl.html()
+          });
+        }
+      });
+
+      callback(arrJS);
+    });
+  },
+
   instrumentHTML: function (url, basePath, callback) {
-    request({url: url, method: "GET", rejectUnauthorized: false, headers: {
-      //"Host": "interfacelift.com",
-      //"Connection": "keep-alive",
-      //"Pragma": "no-cache",
-      "Cache-Control": "no-cache",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36",
-      //"DNT": "1",
-      "Accept-Language": "en-US,en;q=0.8"
-    }}, function (err, subRes, body) {
+    request({
+      url: url, method: "GET", rejectUnauthorized: false, headers: {
+        //"Host": "interfacelift.com",
+        //"Connection": "keep-alive",
+        //"Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36",
+        //"DNT": "1",
+        "Accept-Language": "en-US,en;q=0.8"
+      }
+    }, function (err, subRes, body) {
       if (err) throw err;
 
       body = util.beautifyHTML(body);  //Remove crap that breaks fondue

@@ -238,6 +238,27 @@ Ibex Plan
         Video Demo
         Submit
 
+Ibex Plan Actual
+    Jan 18
+        Pilot Study
+    Jan. 20-30
+        Design Iterations, Build
+    Feb - Mar 14
+        BUILD
+        Paper Intro
+    Mar 14 - Current
+        Recruit
+        User Testing
+         & related works
+        Video Coding
+        Data Analysis
+    Mar 27- April 8
+        Write paper
+    April 8- 13
+        Revise Paper
+        Video Demo
+        Submit
+
 Prototype Feasibility Analysis
 
     User Problem Ties: High/Med/low
@@ -310,6 +331,9 @@ Prototype Feasibility Analysis
         Wow: Low
         Priority:
 
+    Are two things related?
+        Can I draw the Lines?
+
     Better Unminification Strategy
 
 Ibex in a nutshell
@@ -340,3 +364,56 @@ Evaluation: Not binary
     Don't prove the statement
     How did it work? (Time difference) (Feasibility) (Quality)
     Tradeoff between time/cost
+
+
+Claims
+
+Hypotheses
+
+Contributions
+    Conceptual
+        Show intermediate users how pro websites use js/html/css to create an effect
+
+        Other than recreating the UI event, what other learning can take place with this tool?
+
+
+    System: "On professional web pages":
+        Shows me how relevant JS and HTML interact on a page
+            *possibly add CSS links
+            how they're connected to the visual renderigns on the page
+        Allows user playback and interact
+            Records interaction, whats happening on all three code bases
+            Scopes/filters output
+            Outputs a new spin on a fiddle
+        Showing
+            What Theseus can do
+                But on pro websites/ public
+                Call counts
+            Dom query counts and linked to HTML
+
+        Study
+            What do the affordances allow users to do?
+                Recreate UI feature implementation in visible code
+                    Quicker to recreate
+                    Quicker to understand
+                    Better understanding of how feature works
+
+                Pre-Post ask-then-test study
+                    Giving people opportunity to overcoming the barriers to learn from code
+                        Study design?
+                        3 examples found
+                            Post survey
+                                On a scale of 1-7 how difficult
+                                How willing are you to do that on a web page you cared about?
+
+                    Ask about some features user's would like to learn about?
+                        Pre-cache some examples
+
+
+
+
+    Tech
+        On-the-fly instrumentation
+        Behavior-based code broadcasts
+        Live-theseus integration from public websites
+        Query-based Source linking (js-to-html-to-browser)

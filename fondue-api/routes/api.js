@@ -24,6 +24,14 @@ module.exports = function (app) {
     }
   });
 
+  app.get("/inlineScriptSrcs", function (req, res) {
+    var url = req.param("url");
+
+    instrumentService.getInlineScriptSources(url, function (arrSrcs) {
+      res.send(JSON.stringify(arrSrcs));
+    });
+  });
+
   app.get(routes.BEAUTIFY_HTML, function (req, res) {
     var url = req.param("url");
 

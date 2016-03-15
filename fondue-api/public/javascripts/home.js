@@ -65,5 +65,6 @@ var eighthFunction = function () {
 // Non-querying interval function
 var intervalFoo = function () {
   var a = 2;
+  fooInHead();
 };
-window.setInterval(intervalFoo, 100);
+window.setInterval(intervalFoo, 5000);

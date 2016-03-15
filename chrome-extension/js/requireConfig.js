@@ -10,7 +10,6 @@ require.config({
     bootstrap: './lib/bootstrap.min',
     handlebars_original: './lib/handlebars',
     handlebars: './lib/handlebars-blocks',
-    datatables: "lib/jquery.dataTables.min"
   },
   // non-amd library loaders
   shim: {
@@ -44,11 +43,10 @@ require.config({
 require([
   "jquery",
   "backbone",
-  "Router",
-  "bootstrap"
-], function ($, Backbone, DeltaRouter) {
+  "routers/PanelRouter"
+], function ($, Backbone, PanelRouter) {
   $(document).ready(function () {
-    var router = new DeltaRouter();
+    var router = new PanelRouter();
     Backbone.history.start();
 
     var tabId = chrome.devtools.inspectedWindow.tabId;
@@ -63,6 +61,10 @@ require([
         router.trigger("mutation", message.data);
       } else if (message && message.target == "page" && message.name == "JSTrace") {
         router.trigger("JSTrace", message.data);
+      } else if (message && message.target == "page" && message.name == "fondueDTO") {
+        router.trigger("fondueDTO", message.data);
+      } else if (message && message.target == "page" && message.name == "ContentScriptReloaded") {
+        router.trigger("ContentScriptReloaded", message.data);
       } else if (message && message.target == "page" && message.name == "TabUpdate") {
         router.trigger("TabUpdate", message.data);
       }
