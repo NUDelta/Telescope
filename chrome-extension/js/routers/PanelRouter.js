@@ -1,7 +1,7 @@
 define([
   "backbone",
-  "View",
-  "UnravelAgent"
+  "../views/PanelView",
+  "../agents/UnravelAgent"
 ], function (Backbone, HomeView, UnravelAgent) {
 
   return Backbone.Router.extend({

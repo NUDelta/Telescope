@@ -23,7 +23,7 @@ def([
              JSBinSocketRouter) {
   var instance = null;
 
-  var IbexRouter = Backbone.Router.extend({
+  var JSBinRouter = Backbone.Router.extend({
     codeMirrors: {
       js: null,
       html: null,
@@ -146,12 +146,12 @@ def([
     }
   });
 
-  IbexRouter.getInstance = function () {
+  JSBinRouter.getInstance = function () {
     if (instance === null) {
-      instance = new IbexRouter();
+      instance = new JSBinRouter();
     }
     return instance;
   };
 
-  return IbexRouter;
+  return JSBinRouter;
 });

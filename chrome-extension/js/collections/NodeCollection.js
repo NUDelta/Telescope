@@ -1,7 +1,7 @@
 define([
   "backbone",
   "underscore",
-  "NodeModel"
+  "../models/NodeModel"
 ], function (Backbone, _, NodeModel) {
   return Backbone.Collection.extend({
     model: NodeModel,

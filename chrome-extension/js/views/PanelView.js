@@ -2,17 +2,18 @@ define([
   "backbone",
   "underscore",
   "jquery",
-  "datatables",
   "handlebars",
-  "UnravelAgent",
-  "text!templates/view.html",
-  "CallStackCollection",
-  "NodeCollection",
-  "IbexSocketRouter"
-], function (Backbone, _, $, datatables, Handlebars, UnravelAgent, viewTemplate,
+  "../agents/UnravelAgent",
+  "../collections/CallStackCollection",
+  "../collections/NodeCollection",
+  "../routers/PanelSocketRouter",
+  "text!../templates/view.html"
+], function (Backbone, _, $,
+             Handlebars,
+             UnravelAgent,
              CallStackCollection,
              NodeCollection,
-             IbexSocketRouter) {
+             IbexSocketRouter, viewTemplate) {
   return Backbone.View.extend({
     template: Handlebars.compile(viewTemplate),
 

@@ -10,7 +10,6 @@ require.config({
     bootstrap: './lib/bootstrap.min',
     handlebars_original: './lib/handlebars',
     handlebars: './lib/handlebars-blocks',
-    datatables: "lib/jquery.dataTables.min"
   },
   // non-amd library loaders
   shim: {
@@ -44,10 +43,10 @@ require.config({
 require([
   "jquery",
   "backbone",
-  "Router"
-], function ($, Backbone, DeltaRouter) {
+  "routers/PanelRouter"
+], function ($, Backbone, PanelRouter) {
   $(document).ready(function () {
-    var router = new DeltaRouter();
+    var router = new PanelRouter();
     Backbone.history.start();
 
     var tabId = chrome.devtools.inspectedWindow.tabId;

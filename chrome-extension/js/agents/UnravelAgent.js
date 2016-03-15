@@ -1,10 +1,10 @@
 define([
-  "jQueryInjector",
-  "underscoreInjector",
-  "observerInjector",
-  "jsTraceInjector",
-  "fondueInjector",
-  "whittleInjector"
+  "../injectors/jQueryInjector",
+  "../injectors/underscoreInjector",
+  "../injectors/observerInjector",
+  "../injectors/jsTraceInjector",
+  "../injectors/fondueInjector",
+  "../injectors/whittleInjector"
 ], function (jQueryInjector,
              underscoreInjector,
              observerInjector,
