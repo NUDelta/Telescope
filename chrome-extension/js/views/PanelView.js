@@ -30,6 +30,7 @@ define([
 
       this.ibexSocketRouter.onSocketData("jsbin:reset", this.resetTracerResendNodes, this);
       this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.resendAllCodeToJSBin, this);
+      this.ibexSocketRouter.onSocketData("jsbin:html", this.introPageHTML, this);
 
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
@@ -50,6 +51,18 @@ define([
       }
     },
 
+    introPageHTML: function (o) {
+      if (o.selected === true) {
+        UnravelAgent.runInPage(function (relatedDomQueries) {
+          unravelAgent.introJsBridge.addHighlight(relatedDomQueries);
+        }, null, o.relatedDomQueries);
+      } else if (o.selected === false) {
+        UnravelAgent.runInPage(function (relatedDomQueries) {
+          unravelAgent.introJsBridge.removeHilight(relatedDomQueries);
+        }, null, o.relatedDomQueries);
+      }
+    },
+
     resetTracerResendNodes: function () {
       console.log("JSBin requesting tracer reset and new node list.");
       UnravelAgent.runInPage(function () {
@@ -64,7 +77,7 @@ define([
 
       UnravelAgent.runInPage(function () {
         unravelAgent.emitCSS();
-        unravelAgent.emitHTML();
+        unravelAgent.emitHTMLSelect();
         unravelAgent.fondueBridge.resetInvokeCounts();
         unravelAgent.fondueBridge.emitNodeList();
       });
@@ -73,7 +86,7 @@ define([
     onBinReady: function () {
       UnravelAgent.runInPage(function () {
         unravelAgent.emitCSS();
-        unravelAgent.emitHTML();
+        unravelAgent.emitHTMLSelect();
       }, _.bind(this.installTracer, this));
     },
 

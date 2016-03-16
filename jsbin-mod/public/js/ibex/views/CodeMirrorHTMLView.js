@@ -2,8 +2,9 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "./GutterPillView"
-], function ($, Backbone, _, GutterPillView) {
+  "./GutterPillView",
+  "../routers/JSBinSocketRouter"
+], function ($, Backbone, _, GutterPillView, JSBinSocketRouter) {
   return Backbone.View.extend({
     htmlMirror: null,
     htmlSource: "",
@@ -12,6 +13,7 @@ def([
     initialize: function (codeMirrors, activeNodeCollection) {
       this.codeMirrors = codeMirrors;
       this.activeNodeCollection = activeNodeCollection;
+      this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
     },
 
     render: function () {
@@ -49,6 +51,10 @@ def([
 
         this.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
           var pill = new GutterPillView(this.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes);
+          pill.setRelatedDomQueries([{
+            domFnName: domFnName,
+            queryString: queryString
+          }]);
           pill.setCount(activeNodes.length);
           pill.on("pill:expand", this.drawLinksToJS, this);
           pill.on("pill:collapse", this.eraseLinksToJS, this);
@@ -80,10 +86,19 @@ def([
 
     drawLinksToJS: function (gutterPillView) {
       this.htmlJSLinksView.drawLineFromHTMLToJS(gutterPillView);
+      this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
     },
 
     eraseLinksToJS: function (gutterPillView) {
       this.htmlJSLinksView.removeHTMLToJSLine(gutterPillView);
+      this.emitHTMLSelect(false, gutterPillView.getRelatedDomQueries());
+    },
+
+    emitHTMLSelect: function (selected, relatedDomQueries) {
+      this.jsBinSocketRouter.emit("jsbin:html", {
+        selected: selected,
+        relatedDomQueries: relatedDomQueries
+      });
     },
 
     scrollTop: function () {

@@ -11,7 +11,7 @@ def([
       "getElementsByName",
       "getElementById",
       "querySelector",
-      "createElement",
+      //"createElement",
       "querySelectorAll"
     ]),
 

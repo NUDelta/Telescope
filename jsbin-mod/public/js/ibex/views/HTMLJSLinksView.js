@@ -52,6 +52,8 @@ def([
       }, this);
 
       gutterPillView.arrLines = arrLines;
+      gutterPillView.setRelatedDomQueries(relatedDomQueries);
+      this.emitHTMLSelect(true, relatedDomQueries);
     },
 
     removeJSToHTMLLine: function (gutterPillView) {
@@ -62,6 +64,14 @@ def([
       });
 
       gutterPillView.arrLines = [];
+      this.emitHTMLSelect(false, gutterPillView.getRelatedDomQueries());
+    },
+
+    emitHTMLSelect: function (selected, relatedDomQueries) {
+      this.jsBinSocketRouter.emit("jsbin:html", {
+        selected: selected,
+        relatedDomQueries: relatedDomQueries
+      });
     },
 
     removeHTMLToJSLine: function (gutterPillView) {

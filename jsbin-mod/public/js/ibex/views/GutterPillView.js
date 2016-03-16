@@ -51,6 +51,14 @@ def([
       this.setDomModifier();
     },
 
+    setRelatedDomQueries:function(relatedDomQueries){
+      this.relatedDomQueries = relatedDomQueries;
+    },
+
+    getRelatedDomQueries:function(){
+      return this.relatedDomQueries || [];
+    },
+
     destroy: function () {
       this.mirror.setGutterMarker(this.line, null, null);
       this.remove();
