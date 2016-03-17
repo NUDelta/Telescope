@@ -89,8 +89,7 @@ def([
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
         console.log("Received", obj.nodes.length, "new nodes.");
-        this.activeNodeCollection.empty();
-        this.activeNodeCollection.add(obj.nodes);
+        this.activeNodeCollection.merge(obj.nodes);
         this.resumeUIUpdates();
       }, this);
     },
@@ -106,6 +105,7 @@ def([
 
       this.activeCodePanelView.on("activeCodePanel:reset", function () {
         this.puaseUIUpdates();
+        this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
       }, this);
     },

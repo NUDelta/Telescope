@@ -42,8 +42,7 @@ def([
       this.sourceCollection = sourceCollection;
       this.line = line;
       this.mirror = codeMirror;
-
-      codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
+      this.marker = codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
 
       this.activeNodeModel = activeNodeModel;
       this.htmlRelatedNodeModels = htmlRelatedNodeModels;
@@ -51,16 +50,16 @@ def([
       this.setDomModifier();
     },
 
-    setRelatedDomQueries:function(relatedDomQueries){
+    setRelatedDomQueries: function (relatedDomQueries) {
       this.relatedDomQueries = relatedDomQueries;
     },
 
-    getRelatedDomQueries:function(){
+    getRelatedDomQueries: function () {
       return this.relatedDomQueries || [];
     },
 
     destroy: function () {
-      this.mirror.setGutterMarker(this.line, null, null);
+      this.mirror.setGutterMarker(this.marker, "pill-gutter", null);
       this.remove();
     },
 

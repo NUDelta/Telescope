@@ -9,6 +9,7 @@ def([
     htmlMirror: null,
     htmlSource: "",
     nodeMarkers: {},
+    gutterPills: [],
 
     initialize: function (codeMirrors, activeNodeCollection) {
       this.codeMirrors = codeMirrors;
@@ -18,7 +19,6 @@ def([
 
     render: function () {
       this.htmlMirror = this.codeMirrors.html;
-      this.removeAllGutterPills();
       this.addGutterPills();
     },
 
@@ -40,9 +40,10 @@ def([
     },
 
     addGutterPills: function () {
+      this.removeAllGutterPills();
+
       var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
 
-      this.gutterPills = [];
       var domQueries = _(queryNodeMap).keys();
       _(domQueries).each(function (domFnQueryStr) {
         var domFnName = domFnQueryStr.split("|")[0];

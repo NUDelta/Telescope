@@ -115,6 +115,11 @@ def([
         var invokes = activeNodeModel.get("invokes");
 
         _(invokes).each(function (invoke) {
+          if(this.codeMirrorJSView.nodeIdGutterPill[invoke.nodeId]){
+            var jsPill = this.codeMirrorJSView.nodeIdGutterPill[invoke.nodeId];
+            arrJSPillEl.push(jsPill.$el[0]);
+          }
+
           _(invoke.callStack || []).each(function (caller) {
             var jsPill = this.codeMirrorJSView.nodeIdGutterPill[caller.nodeId];
             if (!jsPill) {

@@ -15,34 +15,12 @@ define([], function () {
       IntroJsBridge.prototype = {
         constructor: IntroJsBridge,
 
-        testOn: function () {
-          this.addHighlight([
-            {
-              domFnName: "getElementById",
-              queryString: "effect1"
-            },
-            {
-              domFnName: "getElementById",
-              queryString: "effect2"
-            }
-          ]);
-        },
-
-        testOff: function () {
-          this.removeHilight([
-            {
-              domFnName: "getElementById",
-              queryString: "effect1"
-            },
-            {
-              domFnName: "getElementById",
-              queryString: "effect2"
-            }
-          ]);
-        },
-
         addHighlight: function (relatedDomQueries) {
           this.insertCSS();
+          var $previousIntroOverlay = unravelAgent.$("div.introjs-overlay");
+          if ($previousIntroOverlay.length) {
+            $previousIntroOverlay.remove();
+          }
 
           var els = [];
           unravelAgent._(relatedDomQueries).each(function (q) {
@@ -59,16 +37,22 @@ define([], function () {
             if (el) {
               els.push({
                 el: el,
-                html: html
+                html: html,
+                visible: unravelAgent.$(el).is(":visible")
               });
             }
           }, this);
 
           var stepArr = [];
           unravelAgent._(els).map(function (el) {
+            var invisibleNotice = "";
+            if (!el.visible) {
+              invisibleNotice = "<h6 style='font-weight:bold;'>(Element is Hidden)</h6>"
+            }
+
             stepArr.push({
-              element: el.el,
-              intro: unravelAgent.hljs.highlight("html", el.html).value
+              element: el.visible ? el.el : undefined,
+              intro: invisibleNotice + unravelAgent.hljs.highlight("html", el.html).value
             });
           });
 
@@ -94,6 +78,7 @@ define([], function () {
           this.removeCSS();
           if (this.intro) {
             this.intro.exit();
+            this.intro = null;
           }
         },
 
