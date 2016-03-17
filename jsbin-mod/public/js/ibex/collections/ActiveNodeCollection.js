@@ -10,6 +10,8 @@ def([
 
     idAttribute: "id",
 
+    queryNodeMap: {},
+
     initialize: function () {
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
       this.jsBinSocketRouter.onSocketData("fondueDTO:nodeBacktrace", function (obj) {
@@ -71,23 +73,27 @@ def([
     },
 
     getDomQueryNodeMap: function () {
-      var queryNodeMap = {};
+      return this.queryNodeMap;
+    },
 
-      var activeNodes = this.getActiveNodes();
-      _(activeNodes).each(function (nodeModel) {
-        var arrDomQueryObjs = nodeModel.get("relatedDomQueries");
-
-        _(arrDomQueryObjs).each(function (domQueryObj) {
-          var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
-          if (queryNodeMap[key]) {
-            queryNodeMap[key].push(nodeModel);
-          } else {
-            queryNodeMap[key] = [nodeModel];
-          }
+    findRelatedQueries: function (nodeModel) {
+      var id = nodeModel.get("id");
+      var domQueryArr = [];
+      _(this.queryNodeMap).each(function (value, key) {
+        var found = _(value).find(function (nodeM) {
+          return id === nodeM.get("id");
         });
-      }, this);
+        if (found) {
+          var domFnName = key.split("|")[0];
+          var queryString = key.split("|")[1];
+          domQueryArr.push({
+            domFnName: domFnName,
+            queryString: queryString
+          });
+        }
+      });
 
-      return queryNodeMap;
+      return domQueryArr;
     },
 
     relateNodesByDomQuery: function () {
@@ -97,36 +103,44 @@ def([
         return hasHits && hasPath;
       });
 
-      //Reset model related queries
-      _(searchNodes).each(function (model) {
-        model.unset("relatedDomQueries");
-      });
-
       //Run a check against each active node to see if it modifies the dom
-      //  If so, mark it and all of its callers
       _(searchNodes).each(function (nodeModel) {
         var arrNodeIds = [];
         var domQueries = nodeModel.getDomQueries();
 
-
+        //  If so, find all of its callers
         if (domQueries.length) {
+          console.log("node:", nodeModel.get("id"));
+
           var invokes = nodeModel.get("invokes");
           _(invokes).each(function (invoke) {
+            if (invoke.processed) {
+              return;
+            }
+
+            invoke.processed = true;
             arrNodeIds.push(invoke.nodeId);
+            console.log("invoke:", invoke.nodeId);
 
             _(invoke.callStack || []).each(function (caller) {
               arrNodeIds.push(caller.nodeId);
+              console.log("call:", caller.nodeId)
             });
           });
         }
 
+        // Mark them as related
         arrNodeIds = _(arrNodeIds).uniq();
         _(arrNodeIds).each(function (nodeId) {
           var nodeModel = this.get(nodeId);
-          if (nodeModel) {
-            var relatedDomQueries = nodeModel.get("relatedDomQueries") || [];
-            nodeModel.set("relatedDomQueries", relatedDomQueries.concat(domQueries));
-          }
+          nodeModel.set("domModifier", true);
+
+          _(domQueries).each(function (domQueryObj) {
+            var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
+            var arrNodes = this.queryNodeMap[key] || [];
+            arrNodes.push(nodeModel);
+            this.queryNodeMap[key] = arrNodes;
+          }, this);
         }, this);
       }, this);
     }

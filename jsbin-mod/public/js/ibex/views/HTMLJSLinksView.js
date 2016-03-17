@@ -6,7 +6,7 @@ def([
   "../routers/JSBinSocketRouter"
 ], function ($, Backbone, _, CurveLineView, JSBinSocketRouter) {
   return Backbone.View.extend({
-    initialize: function (codeMirrorJSView, codeMirrorHTMLView) {
+    initialize: function (codeMirrorJSView, codeMirrorHTMLView, activeNodeCollection) {
       this.codeMirrorJSView = codeMirrorJSView;
       this.codeMirrorHTMLView = codeMirrorHTMLView;
       this.drawLineFromJSToHTML = _.bind(this.drawLineFromJSToHTML, this);
@@ -14,24 +14,24 @@ def([
       this.removeJSToHTMLLine = _.bind(this.removeJSToHTMLLine, this);
       this.removeHTMLToJSLine = _.bind(this.removeHTMLToJSLine, this);
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
+      this.activeNodeCollection = activeNodeCollection;
     },
 
     drawLineFromJSToHTML: function (gutterPillView) {
       var pillEl = gutterPillView.$el[0];
       var activeNodeModel = gutterPillView.activeNodeModel;
 
-      var relatedDomQueries = activeNodeModel.get("relatedDomQueries");
-      if (!relatedDomQueries || relatedDomQueries.length < 1) {
+      var domQueries = this.activeNodeCollection.findRelatedQueries(activeNodeModel);
+      if (domQueries.length < 1) {
         return;
       }
 
       var arrLineNumbers = [];
-
       var rdqArr = [];
 
-      _(relatedDomQueries).each(function (relatedDomQuery) {
-        var domFnName = relatedDomQuery.domFnName;
-        var queryString = relatedDomQuery.queryString;
+      _(domQueries).each(function (domQueryObj) {
+        var domFnName = domQueryObj.domFnName;
+        var queryString = domQueryObj.queryString;
 
         this.codeMirrorHTMLView.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
           var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
@@ -61,7 +61,7 @@ def([
       }, this);
 
       gutterPillView.arrLines = arrLines;
-      gutterPillView.setRelatedDomQueries(rdqArr);
+      gutterPillView.addRelatedDomQueries(rdqArr);
       this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
     },
 
@@ -97,7 +97,7 @@ def([
     },
 
     drawLineFromHTMLToJS: function (gutterPillView) {
-      if (!gutterPillView.htmlRelatedNodeModels || gutterPillView.htmlRelatedNodeModels.length < 1) {
+      if (!gutterPillView.htmlRelatedNodeModels) {
         return;
       }
 
@@ -110,24 +110,16 @@ def([
       this.codeMirrorHTMLView.addNodesMarker(arrIds, marker);
 
       var arrJSPillEl = [];
+      var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
 
-      _(gutterPillView.htmlRelatedNodeModels).each(function (activeNodeModel) {
-        var invokes = activeNodeModel.get("invokes");
-
-        _(invokes).each(function (invoke) {
-          if(this.codeMirrorJSView.nodeIdGutterPill[invoke.nodeId]){
-            var jsPill = this.codeMirrorJSView.nodeIdGutterPill[invoke.nodeId];
+      var arrRelatedDQ = gutterPillView.getRelatedDomQueries();
+      _(arrRelatedDQ).each(function (dq) {
+        var nodeModels = queryNodeMap[dq.domFnName + "|" + dq.queryString];
+        _(nodeModels).each(function (nodeModel) {
+          var jsPill = this.codeMirrorJSView.nodeIdGutterPill[nodeModel.get("id")];
+          if (jsPill) {
             arrJSPillEl.push(jsPill.$el[0]);
           }
-
-          _(invoke.callStack || []).each(function (caller) {
-            var jsPill = this.codeMirrorJSView.nodeIdGutterPill[caller.nodeId];
-            if (!jsPill) {
-              return;
-            }
-
-            arrJSPillEl.push(jsPill.$el[0]);
-          }, this);
         }, this);
       }, this);
 

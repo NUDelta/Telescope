@@ -50,8 +50,12 @@ def([
       this.setDomModifier();
     },
 
-    setRelatedDomQueries: function (relatedDomQueries) {
-      this.relatedDomQueries = relatedDomQueries;
+    addRelatedDomQueries: function (relatedDomQueries) {
+      this.relatedDomQueries = this.relatedDomQueries || [];
+      this.relatedDomQueries = this.relatedDomQueries.concat(relatedDomQueries);
+      this.relatedDomQueries = _(this.relatedDomQueries).uniq(function (domQueryObj) {
+        return domQueryObj.domFnName + domQueryObj.queryString;
+      });
     },
 
     getRelatedDomQueries: function () {
@@ -72,10 +76,15 @@ def([
       var html = count + txt;
       this.$el.find(".counts").html(html);
       this.$el.toggleClass("none", count === 0);
+      this.count = count;
+    },
+
+    getCount: function () {
+      return this.count || 0;
     },
 
     setDomModifier: function () {
-      if (this.activeNodeModel && this.activeNodeModel.get("relatedDomQueries") && this.activeNodeModel.get("relatedDomQueries").length) {
+      if (this.activeNodeModel && this.activeNodeModel.get("domModifier")) {
         this.$el.attr("style", "background-color: yellow !important;");
       }
     },
@@ -131,10 +140,10 @@ def([
 
         this.$invokeNode.animate({
           height: 200
-        }, 200, expandCallback);
+        }, 200);
         this.$expander.animate({
           height: 200
-        }, 200);
+        }, 200, expandCallback);
       }
     },
 

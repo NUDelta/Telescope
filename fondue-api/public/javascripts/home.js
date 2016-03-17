@@ -36,9 +36,8 @@ var scenario1 = function () {
     })();
   };
 
-  var $effect3 = $("#effect3");
   var fourthFunction = function (triggerData) {
-    $effect3.show("fast");
+    $("#effect3").show("fast");
     window.setTimeout(eighthFunction, 1000);
   };
 
@@ -58,7 +57,7 @@ var scenario1 = function () {
   };
 
   var eighthFunction = function () {
-    $effect3.hide("fast");
+    $("#effect3").hide("fast");
   };
 
   /***************************************/
@@ -96,5 +95,5 @@ var scenario2 = function () {
 };
 
 
-// scenario1();
-scenario2();
+scenario1();
+// scenario2();

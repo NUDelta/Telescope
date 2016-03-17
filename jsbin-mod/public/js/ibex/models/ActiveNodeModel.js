@@ -33,6 +33,9 @@ def([
         var arrDomQueryObjs = [];
 
         _(invokes).each(function (invoke) {
+          if (invoke.processed) {
+            return;
+          }
           var queryObj = this.getQueryFromInvoke(invoke, domFnName);
           if (queryObj) {
             if (!(queryObj.domFnName === "getElementsByTagName" && queryObj.queryString === "script")) {

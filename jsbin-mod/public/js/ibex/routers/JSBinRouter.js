@@ -45,7 +45,7 @@ def([
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection);
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
-      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
+      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView, this.activeNodeCollection);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
 
@@ -75,7 +75,7 @@ def([
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
         console.log("Got HTML");
-        this.codeMirrorHTMLView.setCode(obj.html);
+        this.codeMirrorHTMLView.render(obj.html);
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
