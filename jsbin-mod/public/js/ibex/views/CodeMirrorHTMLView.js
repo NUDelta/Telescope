@@ -53,7 +53,8 @@ def([
           var pill = new GutterPillView(this.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes);
           pill.setRelatedDomQueries([{
             domFnName: domFnName,
-            queryString: queryString
+            queryString: queryString,
+            html: codeLine
           }]);
           pill.setCount(activeNodes.length);
           pill.on("pill:expand", this.drawLinksToJS, this);

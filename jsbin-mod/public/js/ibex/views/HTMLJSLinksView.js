@@ -2,8 +2,9 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "./CurveLineView"
-], function ($, Backbone, _, CurveLineView) {
+  "./CurveLineView",
+  "../routers/JSBinSocketRouter"
+], function ($, Backbone, _, CurveLineView, JSBinSocketRouter) {
   return Backbone.View.extend({
     initialize: function (codeMirrorJSView, codeMirrorHTMLView) {
       this.codeMirrorJSView = codeMirrorJSView;
@@ -12,6 +13,7 @@ def([
       this.drawLineFromHTMLToJS = _.bind(this.drawLineFromHTMLToJS, this);
       this.removeJSToHTMLLine = _.bind(this.removeJSToHTMLLine, this);
       this.removeHTMLToJSLine = _.bind(this.removeHTMLToJSLine, this);
+      this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
     },
 
     drawLineFromJSToHTML: function (gutterPillView) {
@@ -25,6 +27,8 @@ def([
 
       var arrLineNumbers = [];
 
+      var rdqArr = [];
+
       _(relatedDomQueries).each(function (relatedDomQuery) {
         var domFnName = relatedDomQuery.domFnName;
         var queryString = relatedDomQuery.queryString;
@@ -33,6 +37,11 @@ def([
           var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
           this.codeMirrorHTMLView.addNodeMarker(activeNodeModel.get("id"), marker);
 
+          rdqArr.push({
+            domFnName: domFnName,
+            queryString: queryString,
+            html: codeLine
+          });
           arrLineNumbers.push(lineNumber);
         }, this);
       }, this);
@@ -52,8 +61,8 @@ def([
       }, this);
 
       gutterPillView.arrLines = arrLines;
-      gutterPillView.setRelatedDomQueries(relatedDomQueries);
-      this.emitHTMLSelect(true, relatedDomQueries);
+      gutterPillView.setRelatedDomQueries(rdqArr);
+      this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
     },
 
     removeJSToHTMLLine: function (gutterPillView) {

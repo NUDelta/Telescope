@@ -7,6 +7,8 @@ define([], function () {
       IntroJsBridge.styleElTemplate = "<div id='" + IntroJsBridge.styleElID + "'>" +
         "<style>" +
         unravelAgent.introCss +
+        "</style><style>" +
+        unravelAgent.hljsCSS +
         "</style>" +
         "</div>";
 
@@ -43,42 +45,46 @@ define([], function () {
           this.insertCSS();
 
           var els = [];
-          unravelAgent._(relatedDomQueries).each(function () {
+          unravelAgent._(relatedDomQueries).each(function (q) {
             var el;
             try {
-              var q = relatedDomQueries[0];
               var domFnName = q.domFnName;
               var queryString = q.queryString;
               el = document[domFnName](queryString);
             } catch (ig) {
             }
 
+            var html = q.html;
+
             if (el) {
-              els.push(el);
+              els.push({
+                el: el,
+                html: html
+              });
             }
           }, this);
-          els = unravelAgent._(els).flatten();
 
-          if (!els.length) {
+          var stepArr = [];
+          unravelAgent._(els).map(function (el) {
+            stepArr.push({
+              element: el.el,
+              intro: unravelAgent.hljs.highlight("html", el.html).value
+            });
+          });
+
+          if (!stepArr.length) {
             return;
           }
-          var firstEl = els.shift();
 
           this.intro = unravelAgent.introJs();
           this.intro.setOptions({
-            steps: [
-              {
-                element: firstEl,
-                elements: els,
-
-              }
-            ],
+            steps: stepArr,
             showStepNumbers: false,
-            showButtons: false,
+            showButtons: stepArr.length > 1,
             showBullets: false,
             showProgress: false,
             scrollToElement: true,
-            disableInteraction: true
+            disableInteraction: stepArr.length < 2
           });
 
           this.intro.start();

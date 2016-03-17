@@ -2133,7 +2133,7 @@ define([],
         "    -webkit-transform: scale(1);" +
         "    opacity: 0.0;" +
         " }" +
-        "}" +
-        ".introjs-tooltip{display:none !important;";
+        "}";
+        //".introjs-tooltip{display:none !important;";
     };
   });
