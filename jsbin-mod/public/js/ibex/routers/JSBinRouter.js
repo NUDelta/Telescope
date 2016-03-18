@@ -58,13 +58,24 @@ def([
     bindSocketHandlers: function () {
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
         this.activeNodeCollection.merge(obj.invocations);
-        this.updateMirrors();
 
-        if (!this.codeMirrorHTMLView.hasHTML()) {
+        if (!this.sourceCollection.length) {
           // this jsbin doesn't have all the setup code the browser sent
           // trigger a fetch to get everything we need
-          console.log("Don't have html/css, requesting...");
-          this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+
+          if (!this.resendRequested) {
+            console.log("Don't have scripts, requesting...");
+            this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+            this.resendRequested = true;
+          }
+
+          return;
+        }
+
+        this.resendRequested = false;
+
+        if (this.activeNodeCollection.hasFullNodeList) {
+          this.updateMirrors();
         }
       }, this);
 
@@ -75,7 +86,8 @@ def([
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
         console.log("Got HTML");
-        this.codeMirrorHTMLView.render(obj.html);
+        this.codeMirrorHTMLView.htmlSource = obj.html;
+        this.codeMirrorHTMLView.render();
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
@@ -89,7 +101,7 @@ def([
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
         console.log("Received", obj.nodes.length, "new nodes.");
-        this.activeNodeCollection.merge(obj.nodes);
+        this.activeNodeCollection.merge(obj.nodes, true);
         this.resumeUIUpdates();
       }, this);
     },

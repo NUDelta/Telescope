@@ -211,7 +211,7 @@ define([],
                 }
               }
 
-              console.log("Deleting", JSON.stringify(deleteKeys));
+              // console.log("Deleting", JSON.stringify(deleteKeys));
 
               var wontDeleteKeys = [];
               window.unravelAgent._(deleteKeys).each(function (key) {

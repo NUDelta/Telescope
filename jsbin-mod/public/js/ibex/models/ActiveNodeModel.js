@@ -4,6 +4,7 @@ def([
   "underscore"
 ], function ($, Backbone, _) {
   return Backbone.Model.extend({
+    // TODO Keep in sync with Fondue Injector
     _domFnNames: _([
       "getElementsByTagName",
       "getElementsByTagNameNS",
@@ -55,16 +56,17 @@ def([
     },
 
     getQueryFromInvoke: function (invoke, domFnName) {
-      try {
-        if (invoke.arguments[0].value.type === "string") {
-          return {
-            domFnName: domFnName,
-            queryString: invoke.arguments[0].value.value
-          };
-        }
-      } catch (ignored) {
-        return null;
+      if (invoke &&
+        invoke.arguments &&
+        invoke.arguments[0] &&
+        invoke.arguments[0].value &&
+        invoke.arguments[0].value.type === "string") {
+        return {
+          domFnName: domFnName,
+          queryString: invoke.arguments[0].value.value
+        };
       }
+      return null;
     }
   });
 });

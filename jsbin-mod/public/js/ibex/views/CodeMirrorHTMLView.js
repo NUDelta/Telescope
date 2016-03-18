@@ -18,21 +18,16 @@ def([
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
     },
 
-    render: function (strCode) {
+    render: function () {
       if (!this.htmlMirror) {
         this.htmlMirror = this.codeMirrors.html;
       }
 
-      if(strCode){
-        this.setCode(strCode);
+      if(!this.htmlSource){
+        return;
       }
-
+      this.htmlMirror.setCode(this.htmlSource);
       this.addGutterPills();
-    },
-
-    setCode: function (strCode) {
-      this.htmlMirror.setCode(strCode);
-      this.htmlSource = strCode;
     },
 
     hasHTML: function () {

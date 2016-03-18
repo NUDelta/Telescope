@@ -23,17 +23,18 @@ define([
 
     initialize: function () {
       this.storeNodeActivity = _.bind(this.storeNodeActivity, this);
-      this.transportScriptData = _.bind(this.transportScriptData, this);
+      this.sendScriptsToJSBin = _.bind(this.sendScriptsToJSBin, this);
       this.getScriptMetaData = _.bind(this.getScriptMetaData, this);
 
       this.ibexSocketRouter = IbexSocketRouter.getInstance();
 
       this.ibexSocketRouter.onSocketData("jsbin:reset", this.resetTracerResendNodes, this);
-      this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.resendAllCodeToJSBin, this);
+      this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.sendNodesHTMLCSSToJSBin, this);
       this.ibexSocketRouter.onSocketData("jsbin:html", this.introPageHTML, this);
 
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
+      this.binSetupInProgress = true;
     },
 
     render: function (unravelAgentActive) {
@@ -71,9 +72,14 @@ define([
       });
     },
 
-    resendAllCodeToJSBin: function (data) {
+    sendNodesHTMLCSSToJSBin: function (data) {
+      if (this.binSetupInProgress) {
+        console.log("Ignoring JSBin resendAll request, still setting up...");
+        return;
+      }
+
       console.log("JSBin requesting new set of HTML/CSS/JS");
-      this.transportScriptData();
+      this.sendScriptsToJSBin();
 
       UnravelAgent.runInPage(function () {
         unravelAgent.emitCSS();
@@ -91,35 +97,46 @@ define([
     },
 
     onFondueReady: function () {
-      var that = this;
-      var transportFn = _.bind(function () {
-        var callback = _.bind(function (nodeArr) {
+      var panelView = this;
+      var tryToGetNodes = function () {
+        var onNodesLoaded = function (nodeArr) {
           if (!nodeArr) {
-            setTimeout(transportFn, 100);
+            setTimeout(tryToGetNodes, 100);
           } else {
-            this.nodeCollection.add(nodeArr);
-            this.getScriptMetaData(_.bind(function () {
-              this.transportScriptData(function () {
-                UnravelAgent.runInPage(function () {
-                  unravelAgent.fondueBridge.startTracking();
-                });
+            panelView.nodeCollection.add(nodeArr);
+            console.log("ADDING", nodeArr.length, " NODES");
+            panelView.getScriptMetaData(function () {
+              UnravelAgent.runInPage(function () {
+                unravelAgent.fondueBridge.startTracking();
+                unravelAgent.startObserving();
+              }, function () {
+                panelView.binSetupInProgress = false;
               });
-            }, this));
+            });
           }
-        }, that);
+        };
 
         UnravelAgent.runInPage(function () {
-          if (unravelAgent.$("body").length) {
-            unravelAgent.fondueBridge.emitNodeList(); //for jsbin
-            return unravelAgent.fondueBridge.getNodes(); //for our script metadata
+          var hasBodyChildren = !!$("body").children().length;
+
+          var scripts = unravelAgent.$("script");
+          if (hasBodyChildren && scripts &&
+            scripts[0] &&
+            scripts[0].innerHTML &&
+            scripts[0].innerHTML.indexOf("__tracer") > -1) {
+
+            var nodes = unravelAgent.fondueBridge.getNodes();
+            return nodes; //for our script metadata
           } else {
+            console.log("Body or scripts not fully reloaded yet");
+
             return false;
           }
-        }, callback);
+        }, onNodesLoaded);
 
-      }, this);
+      };
 
-      transportFn();
+      tryToGetNodes();
     },
 
     createBin: function () {
@@ -222,7 +239,7 @@ define([
       }, this.redirectingSources);
     },
 
-    transportScriptData: function (callback) {
+    sendScriptsToJSBin: function (callback) {
       var hitScripts = _.chain(this.nodeCollection.models)
         .map(function (model) {
           return model.toJSON()

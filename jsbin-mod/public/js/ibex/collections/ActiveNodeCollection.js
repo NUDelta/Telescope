@@ -35,7 +35,16 @@ def([
       });
     },
 
-    merge: function (arrInvocations) {
+    merge: function (arrInvocations, newList) {
+      if (newList) {
+        this.hasFullNodeList = true;
+      }
+
+      //We have to relate them as the come with the full list
+      if (!this.hasFullNodeList){
+        return;
+      }
+
       var nodesCreated = 0;
       _(arrInvocations).each(function (invocation) {
         var node = invocation.node;

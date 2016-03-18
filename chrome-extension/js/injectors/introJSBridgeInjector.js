@@ -60,6 +60,7 @@ define([], function () {
             return;
           }
 
+          window.unravelAgent.stopObserving();
           this.intro = unravelAgent.introJs();
           this.intro.setOptions({
             steps: stepArr,
@@ -70,6 +71,7 @@ define([], function () {
             scrollToElement: true,
             disableInteraction: stepArr.length < 2
           });
+          this.intro.onexit(window.unravelAgent.startObserving);
 
           this.intro.start();
         },
