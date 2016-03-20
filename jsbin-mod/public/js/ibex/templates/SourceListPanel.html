@@ -17,16 +17,29 @@
     </div>
   </div>
   <style>
-    #pauseUpdates {
-      float: right;
-      background-color: lightyellow;
+    .fondue-panel {
     }
 
-    #resetTraces {
-      float: right;
-      background-color: lightcyan;
+    #fondue-toggle-group {
+      padding-left: 0;
+      margin: 0;
+    }
+
+    #fondue-toggle-group li {
+      list-style: none;
+    }
+
+    ul#fondue-toggle-group li:nth-child(odd) {
+      background-color: #f2f8ff;
+    }
+
+    ul#fondue-toggle-group li:nth-child(even) {
+      background-color: #fdfdfd;
+    }
+
+    .group-wrap {
+      float: left;
+      overflow: scroll;
     }
   </style>
-  <a id="pauseUpdates" role="button" class="button group" href="javascript:;">Pause Updates</a>
-  <a id="resetTraces" role="button" class="button group" href="javascript:;">Reset Traces</a>
 </div>
