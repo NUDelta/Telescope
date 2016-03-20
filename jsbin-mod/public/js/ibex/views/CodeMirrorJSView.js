@@ -12,10 +12,11 @@ def([
     nodeIdGutterPill: {},
     gutterPills: [],
 
-    initialize: function (codeMirrors, sourceCollection, activeNodeCollection) {
+    initialize: function (codeMirrors, sourceCollection, activeNodeCollection, jsBinRouter) {
       this.codeMirrors = codeMirrors;
       this.sourceCollection = sourceCollection;
       this.activeNodeCollection = activeNodeCollection;
+      this.jsBinRouter = jsBinRouter;
     },
 
     showSources: function () {
@@ -52,14 +53,10 @@ def([
       _(activeNodeModels).each(function (activeNodeModel) {
         //subtract one, because the mirror start line === node.startLine
         var startLine = sourceModel.getMirrorPos().startLine + activeNodeModel.get("startLine") - 1;
-        var pill = new GutterPillView(this.jsMirror, startLine, activeNodeModel, this.sourceCollection);
+        var pill = new GutterPillView(this.jsMirror, startLine, activeNodeModel, this.sourceCollection, null, this.jsBinRouter);
         pill.setCount(activeNodeModel.get("hits"));
-        pill.on("pill:expand", function (gutterPillView) {
-          this.htmlJSLinksView.drawLineFromJSToHTML(gutterPillView);
-        }, this);
-        pill.on("pill:collapse", function (gutterPillView) {
-          this.htmlJSLinksView.removeJSToHTMLLine(gutterPillView);
-        }, this);
+        pill.setExpandFn(_.bind(this.htmlJSLinksView.drawLineFromJSToHTML, this));
+        pill.setCollapseFn(_.bind(this.removeJSToHTMLLine, this));
         this.nodeIdGutterPill[activeNodeModel.get("id")] = pill;
       }, this);
     },
@@ -71,6 +68,18 @@ def([
       }, this);
 
       this.nodeIdGutterPill = {};
+    },
+
+    collapseAllGutterPills: function () {
+      var gutterPills = _(this.nodeIdGutterPill).values();
+      _(gutterPills).each(function (pill) {
+        this.removeJSToHTMLLine(pill);
+        pill.collapseQuiet();
+      }, this);
+    },
+
+    removeJSToHTMLLine: function (pill) {
+      this.htmlJSLinksView.removeJSToHTMLLine(pill);
     },
 
     showInactive: function () {

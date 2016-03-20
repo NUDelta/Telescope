@@ -40,7 +40,17 @@ def([
       this.$el.append(html);
       this.$(".fondue-panel").css("height", this.panelHeight + "px");
 
+      this.setupDropDownMenus();
       this.hideKnownLibs();
+    },
+
+    setupDropDownMenus: function () {
+      // var $htmlDropDown = $(".dropdownmenu[data-type='html']");
+      // $htmlDropDown.empty();
+      // var $cssDropDown = $(".dropdownmenu[data-type='css']");
+      // $cssDropDown.empty();
+      // var $jsDropdown = $(".dropdownmenu[data-type='javascript']");
+      // $jsDropdown.empty();
     },
 
     _blockLibs: _([

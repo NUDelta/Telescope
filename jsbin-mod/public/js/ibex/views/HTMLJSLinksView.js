@@ -17,8 +17,12 @@ def([
       this.activeNodeCollection = activeNodeCollection;
     },
 
+    collapseAll: function () {
+      this.codeMirrorJSView.collapseAllGutterPills();
+      this.codeMirrorHTMLView.collapseAllGutterPills();
+    },
+
     drawLineFromJSToHTML: function (gutterPillView) {
-      this.trigger("draw:linkToHTML");
       var pillEl = gutterPillView.$el[0];
       var activeNodeModel = gutterPillView.activeNodeModel;
 
@@ -48,6 +52,10 @@ def([
       }, this);
 
       var arrLines = [];
+
+      if (arrLineNumbers.length) {
+        this.collapseAll();
+      }
 
       _(arrLineNumbers).each(function (lineNumber) {
         var lineView = new CurveLineView({
@@ -125,6 +133,10 @@ def([
       }, this);
 
       var arrLines = [];
+
+      if (arrJSPillEl.length) {
+        this.collapseAll();
+      }
 
       _(arrJSPillEl).each(function (el) {
         var lineView = new CurveLineView({

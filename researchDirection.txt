@@ -246,14 +246,20 @@ Ibex Plan Actual
     Feb - Mar 14
         BUILD
         Paper Intro
-    Mar 14 - Current
-        Recruit
-        User Testing
-         & related works
+    Mar 14 - 18
+        Build Features, Fixes
+    Mar 18
+        Pilot Study 2
+    Mar 19 - 22
+        Code Complete
+    Mar 23
         Video Coding
         Data Analysis
+        Recruit/Test
     Mar 27- April 8
         Write paper
+        Related work
+        Recruit/Test
     April 8- 13
         Revise Paper
         Video Demo

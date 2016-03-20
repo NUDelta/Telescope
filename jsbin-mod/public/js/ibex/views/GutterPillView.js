@@ -11,9 +11,10 @@ def([
       "click": "toggleTrace"
     },
 
-    initialize: function (codeMirror, line, activeNodeModel, sourceCollection, htmlRelatedNodeModels) {
+    initialize: function (codeMirror, line, activeNodeModel, sourceCollection, htmlRelatedNodeModels, jsBinRouter) {
       this.sourceCollection = sourceCollection;
       this.line = line;
+      this.jsBinRouter = jsBinRouter;
       this.mirror = codeMirror;
       this.marker = codeMirror.setGutterMarker(line, "pill-gutter", this.$el[0]);
 
@@ -71,14 +72,27 @@ def([
       this.setActive(!this._active);
     },
 
+    setCollapseFn: function (fn) {
+      this.collapseFn = fn;
+    },
+
+    setExpandFn: function (fn) {
+      this.expandFn = fn;
+    },
+
     toggleTrace: function (e) {
       if (this.expanded) {
-        this.trigger("pill:collapse", this);
+        this.collapseFn(this);
         this.expanded = false;
       } else {
+        this.jsBinRouter.pauseUIUpdates();
+        this.expandFn(this);
         this.expanded = true;
-        this.trigger("pill:expand", this);
       }
+    },
+
+    collapseQuiet: function () {
+      this.expanded = false;
     }
   });
 });

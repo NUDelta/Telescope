@@ -6492,3 +6492,24 @@ background-color: #fdfdfd;
   background-repeat: no-repeat;
   outline: 0;
 }
+
+
+#infocard, .control .menu, .help, #sharemenu {
+  display: none !important;
+}
+
+#panels a:nth-child(4) {
+  display: none !important;
+}
+
+#panels a:nth-child(5) {
+  display: none !important;
+}
+
+.dropdownmenu a {
+  display: none !important;
+}
+
+#tip, .notification {
+  display: none !important;
+}
