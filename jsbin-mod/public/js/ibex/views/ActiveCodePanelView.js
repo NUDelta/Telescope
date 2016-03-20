@@ -78,21 +78,25 @@ def([
       }
     },
 
-    togglePauseClicked:function(e){
-      if(this.paused){
+    togglePauseClicked: function (e) {
+      if (this.paused) {
         this.trigger("activeCodePanel:pause", false);
         this.paused = false;
-        this.$(e.currentTarget).text("Pause Updates");
-        this.$(e.currentTarget).css("background-color", "lightyellow");
+        this.$("#pauseUpdates").text("Pause Updates");
+        this.$("#pauseUpdates").css("background-color", "lightyellow");
       } else {
         this.trigger("activeCodePanel:pause", true);
-        this.paused = true;
-        this.$(e.currentTarget).text("Resume Updates");
-        this.$(e.currentTarget).css("background-color", "lightsalmon");
+        this.pause();
       }
     },
 
-    resetClicked:function(e){
+    pause: function () {
+      this.paused = true;
+      this.$("#pauseUpdates").text("Resume Updates");
+      this.$("#pauseUpdates").css("background-color", "lightsalmon");
+    },
+
+    resetClicked: function (e) {
       this.trigger("activeCodePanel:reset", false);
     },
 

@@ -18,6 +18,7 @@ def([
     },
 
     drawLineFromJSToHTML: function (gutterPillView) {
+      this.trigger("draw:linkToHTML");
       var pillEl = gutterPillView.$el[0];
       var activeNodeModel = gutterPillView.activeNodeModel;
 

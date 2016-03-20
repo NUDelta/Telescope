@@ -120,10 +120,18 @@ def([
         this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
       }, this);
+
+      this.codeMirrorHTMLView.on("draw:linkToJS", function () {
+        this.puaseUIUpdates();
+      }, this);
+      this.htmlJSLinksView.on("draw:linkToHTML", function () {
+        this.puaseUIUpdates();
+      }, this);
     },
 
     puaseUIUpdates: function () {
       this.pauseUIUpdates = true;
+      this.activeCodePanelView.pause();
     },
 
     resumeUIUpdates: function () {

@@ -99,6 +99,7 @@ def([
     },
 
     drawLinksToJS: function (gutterPillView) {
+      this.trigger("draw:linkToJS");
       this.htmlJSLinksView.drawLineFromHTMLToJS(gutterPillView);
       this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
     },

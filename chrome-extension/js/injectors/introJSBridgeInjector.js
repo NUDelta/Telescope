@@ -16,6 +16,7 @@ define([], function () {
         constructor: IntroJsBridge,
 
         addHighlight: function (relatedDomQueries) {
+          this.removeHilight();
           this.insertCSS();
           var $previousIntroOverlay = unravelAgent.$("div.introjs-overlay");
           if ($previousIntroOverlay.length) {
@@ -76,7 +77,7 @@ define([], function () {
           this.intro.start();
         },
 
-        removeHilight: function (relatedDomQueries) {
+        removeHilight: function () {
           this.removeCSS();
           if (this.intro) {
             this.intro.exit();
