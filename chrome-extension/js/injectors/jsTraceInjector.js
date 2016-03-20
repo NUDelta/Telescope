@@ -64,7 +64,6 @@ define([],
       };
 
       window.unravelAgent.reWritePage = function () {
-
         //https://developer.mozilla.org/en-US/docs/Web/API/Window
         var keepKeys = [
           "applicationCache",

@@ -4,11 +4,21 @@
 
 var addListeners = function (notifyRouter) {
   if (notifyRouter) {
-    chrome.extension.sendMessage({
-      target: "page",
-      name: "ContentScriptReloaded",
-      data: {}
-    });
+    var i = 0;
+
+    var interval = setInterval(function () {
+      i += 50;
+      chrome.extension.sendMessage({
+        target: "page",
+        name: "ContentScriptReloaded",
+        data: {}
+      });
+    }, 50);
+
+    window.addEventListener("StopCSReloadEmitter", function (event) {
+      window.clearInterval(interval);
+      console.log("Ibex build: " + i + " millis.");
+    }, false);
   }
 
   window.addEventListener("UnravelKeepAlive", function (event) {
@@ -67,16 +77,6 @@ var addListeners = function (notifyRouter) {
       addListeners(true);
     }, 0)
   }, false);
-
-  //chrome.extension.sendMessage({
-  //  target: "page",
-  //  name: "UnravelRedirectRequests",
-  //  data: {
-  //    contentScript: true,
-  //    redirecting: false,
-  //    origin: window.location.origin
-  //  }
-  //});
 };
 
 addListeners();

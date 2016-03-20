@@ -35,13 +35,28 @@ def([
       });
     },
 
-    merge: function (arrInvocations, newList) {
-      if (newList) {
-        this.hasFullNodeList = true;
+    mergeNodes: function (arrNodes) {
+      this.hasFullNodeList = true;
+
+      var nodesCreated = 0;
+      _(arrNodes).each(function (node) {
+        var activeNodeModel = this.get(node.id);
+        if (!activeNodeModel) {
+          activeNodeModel = new ActiveNodeModel(node);
+          this.add(activeNodeModel);
+          nodesCreated++;
+        }
+      }, this);
+      if (nodesCreated) {
+        console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
       }
 
+      this.populateQueryNodeMap();
+    },
+
+    mergeInvocations: function (arrInvocations) {
       //We have to relate them as the come with the full list
-      if (!this.hasFullNodeList){
+      if (!this.hasFullNodeList) {
         return;
       }
 
@@ -69,7 +84,7 @@ def([
         console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
       }
 
-      this.relateNodesByDomQuery();
+      this.populateQueryNodeMap();
     },
 
     empty: function () {
@@ -85,7 +100,7 @@ def([
       return this.queryNodeMap;
     },
 
-    findRelatedQueries: function (nodeModel) {
+    findQueriesPerNode: function (nodeModel) {
       var id = nodeModel.get("id");
       var domQueryArr = [];
       _(this.queryNodeMap).each(function (value, key) {
@@ -105,7 +120,7 @@ def([
       return domQueryArr;
     },
 
-    relateNodesByDomQuery: function () {
+    populateQueryNodeMap: function () {
       var searchNodes = this.filter(function (model) {
         var hasHits = !!model.get("hits");
         var hasPath = !!model.get("path");
@@ -114,43 +129,38 @@ def([
 
       //Run a check against each active node to see if it modifies the dom
       _(searchNodes).each(function (nodeModel) {
-        var arrNodeIds = [];
-        var domQueries = nodeModel.getDomQueries();
-
         //  If so, find all of its callers
-        if (domQueries.length) {
-          console.log("node:", nodeModel.get("id"));
-
+        var domQueryFn = nodeModel.getDomQueryFn();
+        if (domQueryFn) {
           var invokes = nodeModel.get("invokes");
           _(invokes).each(function (invoke) {
             if (invoke.processed) {
               return;
             }
-
             invoke.processed = true;
-            arrNodeIds.push(invoke.nodeId);
-            console.log("invoke:", invoke.nodeId);
 
-            _(invoke.callStack || []).each(function (caller) {
-              arrNodeIds.push(caller.nodeId);
-              console.log("call:", caller.nodeId)
-            });
-          });
-        }
+            var domQueryString = nodeModel.getDomQueryStringFromInvoke(invoke);
 
-        // Mark them as related
-        arrNodeIds = _(arrNodeIds).uniq();
-        _(arrNodeIds).each(function (nodeId) {
-          var nodeModel = this.get(nodeId);
-          nodeModel.set("domModifier", true);
+            // Mark them as related
+            if (domQueryString) {
+              var key = domQueryFn + "|" + domQueryString;
+              var arrNodes = this.queryNodeMap[key] || [];
+              arrNodes.push(nodeModel);
 
-          _(domQueries).each(function (domQueryObj) {
-            var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
-            var arrNodes = this.queryNodeMap[key] || [];
-            arrNodes.push(nodeModel);
-            this.queryNodeMap[key] = arrNodes;
+              nodeModel.set("domModifier", true);
+
+              _(invoke.callStack).each(function (caller) {
+                var callerNodeModel = this.get(caller.nodeId);
+                if (callerNodeModel) {
+                  arrNodes.push(callerNodeModel);
+                  callerNodeModel.set("domModifier", true);
+                }
+              }, this);
+
+              this.queryNodeMap[key] = arrNodes;
+            }
           }, this);
-        }, this);
+        }
       }, this);
     }
 

@@ -57,7 +57,7 @@ def([
 
     bindSocketHandlers: function () {
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
-        this.activeNodeCollection.merge(obj.invocations);
+        this.activeNodeCollection.mergeInvocations(obj.invocations);
 
         if (!this.sourceCollection.length) {
           // this jsbin doesn't have all the setup code the browser sent
@@ -101,7 +101,7 @@ def([
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
         console.log("Received", obj.nodes.length, "new nodes.");
-        this.activeNodeCollection.merge(obj.nodes, true);
+        this.activeNodeCollection.mergeNodes(obj.nodes);
         this.resumeUIUpdates();
       }, this);
     },

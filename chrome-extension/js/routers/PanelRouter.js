@@ -5,6 +5,8 @@ define([
 ], function (Backbone, HomeView, UnravelAgent) {
 
   return Backbone.Router.extend({
+    heardReload: false,
+
     initialize: function () {
     },
 
@@ -24,20 +26,18 @@ define([
           return;
         }
 
-        //router.on("mutation", function (mutations) {
-          //router.homeView.handleMutations(mutations);
-        //}, router);
-
-        //router.on("JSTrace", function (data) {
-        //  router.homeView.handleJSTrace(data);
-        //}, router);
-
         router.on("fondueDTO", function (data) {
           router.homeView.handleFondueDto(data);
         }, router);
 
         router.on("ContentScriptReloaded", function (data) {
-          router.homeView.onFondueReady();
+          if (!this.heardReload) {
+            this.heardReload = true;
+            router.homeView.onFondueReady();
+            UnravelAgent.runInPage(function () {
+              window.dispatchEvent(new CustomEvent("StopCSReloadEmitter"));
+            });
+          }
         }, router);
 
         router.on("TabUpdate", function (data) {

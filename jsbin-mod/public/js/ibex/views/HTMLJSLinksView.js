@@ -21,7 +21,7 @@ def([
       var pillEl = gutterPillView.$el[0];
       var activeNodeModel = gutterPillView.activeNodeModel;
 
-      var domQueries = this.activeNodeCollection.findRelatedQueries(activeNodeModel);
+      var domQueries = this.activeNodeCollection.findQueriesPerNode(activeNodeModel);
       if (domQueries.length < 1) {
         return;
       }

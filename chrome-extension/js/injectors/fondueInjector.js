@@ -117,6 +117,7 @@ define([], function () {
 
           return !!this._domFnNames.find(function (fnName) {
             if (node.name.indexOf(fnName) > -1) {
+              node.domQuery = true;
               return true;
             }
           });
@@ -144,20 +145,7 @@ define([], function () {
               }
 
               invocation.node = node;
-              var isDomQuery = this.isDomQueryNode(node);
-
-              var underMaxInvokes = true;
-              if (!isDomQuery) {
-                if (node.invokeCountTowardsMax) {
-                  node.invokeCountTowardsMax++;
-                } else {
-                  node.invokeCountTowardsMax = 1;
-                }
-
-                underMaxInvokes = node.invokeCountTowardsMax < FondueBridge.MAX_INVOKE_LOG_COUNT;
-              }
-
-              if (isDomQuery || underMaxInvokes) {
+              if (node.domQuery || this.isDomQueryNode(node)) {
                 invocation.callStack = unravelAgent._(__tracer.backtrace({
                   invocationId: invocation.invocationId,
                   range: [0, FondueBridge.MAX_STACK_DEPTH]
@@ -167,12 +155,6 @@ define([], function () {
                 if (invocation.callStack.length > 0) {
                   invocation.callStack.pop();
                 }
-
-                //Add the node name to each call in the callstack
-                unravelAgent._(invocation.callStack).each(function (call) {
-                  var node = this.nodeMap[call.nodeId];
-                  call.nodeName = node && node.name ? node.name : "";
-                }, this);
               } else {
                 invocation.callStack = [];
               }

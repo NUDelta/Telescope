@@ -78,22 +78,28 @@ define([
         return;
       }
 
-      console.log("JSBin requesting new set of HTML/CSS/JS");
-      this.sendScriptsToJSBin();
+      var send = _.bind(function () {
+        if (!this.binReady) {
+          console.log("Bin not ready for data, waiting...");
+          setTimeout(send, 100);
+          return;
+        }
 
-      UnravelAgent.runInPage(function () {
-        unravelAgent.emitCSS();
-        unravelAgent.emitHTMLSelect();
-        unravelAgent.fondueBridge.resetInvokeCounts();
-        unravelAgent.fondueBridge.emitNodeList();
-      });
+        console.log("Sending JSBin new set of HTML/CSS/JS");
+        this.sendScriptsToJSBin();
+        UnravelAgent.runInPage(function () {
+          unravelAgent.emitCSS();
+          unravelAgent.emitHTMLSelect();
+          unravelAgent.fondueBridge.resetInvokeCounts();
+          unravelAgent.fondueBridge.emitNodeList();
+        });
+      }, this);
+
+      send();
     },
 
     onBinReady: function () {
-      UnravelAgent.runInPage(function () {
-        unravelAgent.emitCSS();
-        unravelAgent.emitHTMLSelect();
-      }, _.bind(this.installTracer, this));
+      this.binReady = true;
     },
 
     onFondueReady: function () {
@@ -104,13 +110,14 @@ define([
             setTimeout(tryToGetNodes, 100);
           } else {
             panelView.nodeCollection.add(nodeArr);
-            console.log("ADDING", nodeArr.length, " NODES");
+            console.log("", nodeArr.length, " nodes loaded.");
             panelView.getScriptMetaData(function () {
               UnravelAgent.runInPage(function () {
                 unravelAgent.fondueBridge.startTracking();
                 unravelAgent.startObserving();
               }, function () {
                 panelView.binSetupInProgress = false;
+                panelView.sendNodesHTMLCSSToJSBin();
               });
             });
           }
@@ -120,13 +127,8 @@ define([
           var hasBodyChildren = !!$("body").children().length;
 
           var scripts = unravelAgent.$("script");
-          if (hasBodyChildren && scripts &&
-            scripts[0] &&
-            scripts[0].innerHTML &&
-            scripts[0].innerHTML.indexOf("__tracer") > -1) {
-
-            var nodes = unravelAgent.fondueBridge.getNodes();
-            return nodes; //for our script metadata
+          if (hasBodyChildren && scripts && scripts[0]) {
+            return unravelAgent.fondueBridge.getNodes(); //for our script metadata
           } else {
             console.log("Body or scripts not fully reloaded yet");
 
@@ -205,38 +207,6 @@ define([
       };
 
       http.send();
-    },
-
-    installTracer: function (callback) {
-      this.redirectTraces();
-      UnravelAgent.runInPage(function () {
-        unravelAgent.reWritePage();
-      }, callback);
-    },
-
-    redirectTraces: function () {
-      if (!this.redirectingSources) {
-        this.redirectingSources = true;
-      } else {
-        this.redirectingSources = false;
-      }
-      UnravelAgent.runInPage(function (redirecting) {
-        window.dispatchEvent(new CustomEvent("UnravelRedirectRequests", {
-          "detail": {
-            redirecting: redirecting,
-            origin: window.location.origin
-          }
-        }));
-        return redirecting;
-      }, function (redirecting) {
-        if (redirecting) {
-          this.$("#redirectTraces .inactive").hide();
-          this.$("#redirectTraces .active").show();
-        } else {
-          this.$("#redirectTraces .inactive").show();
-          this.$("#redirectTraces .active").hide();
-        }
-      }, this.redirectingSources);
     },
 
     sendScriptsToJSBin: function (callback) {

@@ -89,8 +89,8 @@ var scenario2 = function () {
 
   $("#test3").click(function () {
     var $effect3 = $("#effect3");
-    $effect3.show("fast");
-    $effect3.hide("fast");
+    $effect3.show("slow");
+    $effect3.hide("slow");
   });
 };
 
