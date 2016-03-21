@@ -26,6 +26,8 @@ def([
       var pillEl = gutterPillView.$el[0];
       var activeNodeModel = gutterPillView.activeNodeModel;
 
+      this.collapseAll();
+
       var domQueries = this.activeNodeCollection.findQueriesPerNode(activeNodeModel);
       if (domQueries.length < 1) {
         return;
@@ -52,10 +54,6 @@ def([
       }, this);
 
       var arrLines = [];
-
-      if (arrLineNumbers.length) {
-        this.collapseAll();
-      }
 
       _(arrLineNumbers).each(function (lineNumber) {
         var lineView = new CurveLineView({
@@ -110,6 +108,8 @@ def([
         return;
       }
 
+      this.collapseAll();
+
       var lineNumber = gutterPillView.line;
       var codeLine = this.codeMirrorHTMLView.htmlMirror.getLine(lineNumber);
       var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
@@ -133,10 +133,6 @@ def([
       }, this);
 
       var arrLines = [];
-
-      if (arrJSPillEl.length) {
-        this.collapseAll();
-      }
 
       _(arrJSPillEl).each(function (el) {
         var lineView = new CurveLineView({

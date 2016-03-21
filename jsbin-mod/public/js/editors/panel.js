@@ -102,11 +102,13 @@ var Panel = function (name, settings) {
       dragDrop: false, // we handle it ourselves
       mode: editorModes[panelLanguage],
       lineWrapping: true,
+      tabSize:2,
       gutters: ['pill-gutter', "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       lineNumbers: true,
       foldGutter: true,
       theme: jsbin.settings.theme || 'jsbin',
-      highlightLine: true
+      highlightLine: true,
+      viewportMargin: Infinity
     };
 
     $.extend(cmSettings, jsbin.settings.editor || {});

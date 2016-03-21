@@ -21,6 +21,7 @@ def([
     render: function () {
       if (!this.htmlMirror) {
         this.htmlMirror = this.codeMirrors.html;
+        this.htmlMirror.setOption('lineNumbers', true);
       }
 
       if (!this.htmlSource) {

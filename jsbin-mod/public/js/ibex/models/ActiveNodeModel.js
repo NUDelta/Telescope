@@ -40,7 +40,11 @@ def([
         invoke.arguments[0] &&
         invoke.arguments[0].value &&
         invoke.arguments[0].value.type === "string") {
-        return invoke.arguments[0].value.value;
+        var value = invoke.arguments[0].value.value;
+
+        if (value !== "*" && value !== "script") {
+          return value;
+        }
       } else {
         return null;
       }

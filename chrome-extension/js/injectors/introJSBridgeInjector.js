@@ -23,6 +23,9 @@ define([], function () {
             $previousIntroOverlay.remove();
           }
 
+          var docWidth = unravelAgent.$(document).width();
+          var docHeight = unravelAgent.$(document).height();
+
           var els = [];
           unravelAgent._(relatedDomQueries).each(function (q) {
             var el;
@@ -36,10 +39,28 @@ define([], function () {
             var html = q.html;
 
             if (el) {
-              els.push({
-                el: el,
-                html: html,
-                visible: unravelAgent.$(el).is(":visible")
+              var subEls;
+              if (!el.length) {
+                subEls = [el]
+              } else {
+                subEls = el;
+              }
+
+              unravelAgent._(subEls).map(function (subEl) {
+                var onScreen = true;
+                try {
+                  var rect = subEl.getBoundingClientRect();
+                  if (rect.top < 0 || rect.left < 0 || rect.bottom > docHeight || rect.right > docWidth) {
+                    onScreen = false;
+                  }
+                } catch (ig) {
+                }
+
+                els.push({
+                  el: subEl,
+                  html: html,
+                  visible: unravelAgent.$(el).is(":visible") && onScreen
+                });
               });
             }
           }, this);
