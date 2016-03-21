@@ -1,5 +1,16 @@
 <div id="fondue-ui-controls">
   <style>
+    #fondue-ui-controls {
+      float: right;
+      display: block;
+      height: 35px;
+      width: 50%;
+    }
+
+    #panels {
+      width: 210px;
+    }
+
     #pauseUpdates {
       float: right;
       background-color: lightyellow;
@@ -9,7 +20,17 @@
       float: right;
       background-color: lightcyan;
     }
+
+    .fondue-option {
+      line-height: 30px;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-right: 4px;
+      margin-top: 2px;
+      border-radius: 3px;
+      text-decoration: none;
+    }
   </style>
-  <a id="pauseUpdates" role="button" class="button group" href="javascript:;">Pause Updates</a>
-  <a id="resetTraces" role="button" class="button group" href="javascript:;">Reset Traces</a>
+  <a id="pauseUpdates" role="button" class="fondue-option" href="javascript:;">Pause Updates</a>
+  <a id="resetTraces" role="button" class="fondue-option" href="javascript:;">Reset Traces</a>
 </div>

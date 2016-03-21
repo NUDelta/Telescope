@@ -3,19 +3,17 @@ def([
   "backbone",
   "underscore",
   "handlebars",
-  "text!../templates/SourceListPanel.html",
-  "text!../templates/UIControls.html"
-], function ($, Backbone, _, Handlebars, panelTemplate, uiControlsTemplate) {
+  "text!../templates/SourceListPanel.html"
+], function ($, Backbone, _, Handlebars, panelTemplate) {
   return Backbone.View.extend({
     template: Handlebars.compile(panelTemplate),
-    uiControlsTemplate: Handlebars.compile(uiControlsTemplate),
 
     el: ".dropdownmenu[data-type='javascript']",
 
     events: {
       "click #fondue-toggle-inactive": "toggleInactiveClicked",
       "click .fondue-file-link": "scrollFileClicked",
-      "click .fondue-toggle-file": "toggleFileClicked",
+      "click .fondue-toggle-file": "toggleFileClicked"
     },
 
     initialize: function (sourceCollection, codeMirrorJSView) {
@@ -30,7 +28,6 @@ def([
     },
 
     render: function () {
-      this.$("#fondue-panel-view").remove();
       var sourceModels = this.sourceCollection.getOrdered();
       var arr = _(sourceModels).map(function (model) {
         var json = model.toJSON();
@@ -43,11 +40,6 @@ def([
 
       this.$el.html(html);
       this.hideKnownLibs();
-
-      $("#fondue-ui-controls").remove();
-      $(".control").append(this.uiControlsTemplate());
-      $("#pauseUpdates").click(_.bind(this.togglePauseClicked, this));
-      $("#resetTraces").click(_.bind(this.resetClicked, this));
     },
 
     _blockLibs: _([
@@ -83,36 +75,6 @@ def([
       if (foundModel) {
         this.codeMirrorJSView.scrollToSourceModel(foundModel);
       }
-    },
-
-    togglePauseClicked: function (e) {
-      if (this.paused) {
-        this.trigger("activeCodePanel:pause", false);
-        this.resume();
-      } else {
-        this.trigger("activeCodePanel:pause", true);
-        this.pause();
-      }
-    },
-
-    pause: function () {
-      this.paused = true;
-      var $pauseUpdates = $("#pauseUpdates");
-      $pauseUpdates.text("Resume Updates");
-      $pauseUpdates.css("background-color", "red");
-      $pauseUpdates.css("color", "white");
-    },
-
-    resume: function () {
-      this.paused = false;
-      var $pauseUpdates = $("#pauseUpdates");
-      $pauseUpdates.text("Pause Updates");
-      $pauseUpdates.css("background-color", "lightyellow");
-      $pauseUpdates.css("color", "black");
-    },
-
-    resetClicked: function (e) {
-      this.trigger("activeCodePanel:reset", false);
     },
 
     toggleFileClicked: function (e) {
@@ -152,7 +114,5 @@ def([
         this.codeMirrorJSView.showInactive();
       }
     }
-
-
   });
 });

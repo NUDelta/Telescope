@@ -3,7 +3,8 @@ def([
   "backbone",
   "underscore",
   "../views/GutterPillView",
-  "../views/ActiveCodePanelView",
+  "../views/DropDownJSView",
+  "../views/HeaderControlView",
   "../views/CodeMirrorJSView",
   "../views/CodeMirrorHTMLView",
   "../views/CodeMirrorCSSView",
@@ -13,7 +14,8 @@ def([
   "../routers/JSBinSocketRouter"
 ], function ($, Backbone, _,
              GutterPillView,
-             ActiveCodePanelView,
+             DropDownJSView,
+             HeaderControlView,
              CodeMirrorJSView,
              CodeMirrorHTMLView,
              CodeMirrorCSSView,
@@ -43,7 +45,9 @@ def([
 
       this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection, this);
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection, this);
-      this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
+      this.dropDownJSView = new DropDownJSView(this.sourceCollection, this.codeMirrorJSView);
+      this.headerControlView = new HeaderControlView();
+      this.headerControlView.render();
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
       this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView, this.activeNodeCollection);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
@@ -97,7 +101,7 @@ def([
 
         this.sourceCollection.empty();
         this.sourceCollection.add(obj.scripts);
-        this.activeCodePanelView.render();
+        this.dropDownJSView.render();
         this.updateMirrors();
       }, this);
 
@@ -109,7 +113,7 @@ def([
     },
 
     bindViewListeners: function () {
-      this.activeCodePanelView.on("activeCodePanel:pause", function (pause) {
+      this.headerControlView.on("activeCodePanel:pause", function (pause) {
         if (pause) {
           this.pauseUIUpdates();
         } else {
@@ -117,7 +121,7 @@ def([
         }
       }, this);
 
-      this.activeCodePanelView.on("activeCodePanel:reset", function () {
+      this.headerControlView.on("activeCodePanel:reset", function () {
         this.pauseUIUpdates();
         this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
@@ -126,13 +130,13 @@ def([
 
     pauseUIUpdates: function () {
       this.uiPaused = true;
-      this.activeCodePanelView.pause();
+      this.headerControlView.pause();
     },
 
     resumeUIUpdates: function () {
       this.uiPaused = false;
       this.updateMirrors();
-      this.activeCodePanelView.resume();
+      this.headerControlView.resume();
     },
 
     updateMirrors: function () {
