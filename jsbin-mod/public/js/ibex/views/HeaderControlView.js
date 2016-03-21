@@ -10,9 +10,12 @@ def([
 
     el: ".control",
 
+    jsOrderReversed: true,
+
     events: {
       "click #pauseUpdates": "togglePauseClicked",
-      "click #resetTraces": "resetClicked"
+      "click #resetTraces": "resetClicked",
+      "click #jsScriptOrder": "toggleJSOrder"
     },
 
     initialize: function () {
@@ -24,7 +27,7 @@ def([
       this.$el.append(this.template());
     },
 
-    togglePauseClicked: function (e) {
+    togglePauseClicked: function () {
       if (this.paused) {
         this.trigger("activeCodePanel:pause", false);
         this.resume();
@@ -34,9 +37,23 @@ def([
       }
     },
 
+    toggleJSOrder: function () {
+      if (this.jsOrderReversed) {
+        this.$(".orderUpDown.reverse").hide();
+        this.$(".orderUpDown.normal").show();
+        this.jsOrderReversed = false;
+      } else {
+        this.$(".orderUpDown.reverse").show();
+        this.$(".orderUpDown.normal").hide();
+        this.jsOrderReversed = true;
+      }
+      this.trigger("controlView:order", this.jsOrderReversed);
+    },
+
+
     pause: function () {
       this.paused = true;
-      var $pauseUpdates = $("#pauseUpdates");
+      var $pauseUpdates = this.$("#pauseUpdates");
       $pauseUpdates.text("Resume Updates");
       $pauseUpdates.css("background-color", "red");
       $pauseUpdates.css("color", "white");
@@ -44,7 +61,7 @@ def([
 
     resume: function () {
       this.paused = false;
-      var $pauseUpdates = $("#pauseUpdates");
+      var $pauseUpdates = this.$("#pauseUpdates");
       $pauseUpdates.text("Pause Updates");
       $pauseUpdates.css("background-color", "lightyellow");
       $pauseUpdates.css("color", "black");

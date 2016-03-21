@@ -11,6 +11,10 @@
       width: 210px;
     }
 
+    #jsScriptOrder {
+      background-color: #edc9f3;
+    }
+
     #pauseUpdates {
       float: right;
       background-color: lightyellow;
@@ -29,8 +33,15 @@
       margin-top: 2px;
       border-radius: 3px;
       text-decoration: none;
+      float: right;
     }
+
   </style>
-  <a id="pauseUpdates" role="button" class="fondue-option" href="javascript:;">Pause Updates</a>
-  <a id="resetTraces" role="button" class="fondue-option" href="javascript:;">Reset Traces</a>
+
+  <a id="pauseUpdates" class="fondue-option" href="javascript:;">Pause Updates</a>
+  <a id="resetTraces" class="fondue-option" href="javascript:;">Reset Traces</a>
+  <a id="jsScriptOrder" class="fondue-option" href="javascript:;">JS Order
+    <span class="orderUpDown reverse">Normal &#8595;</span>
+    <span class="orderUpDown normal" style="display: none;">Reversed &#8593;</span>
+  </a>
 </div>

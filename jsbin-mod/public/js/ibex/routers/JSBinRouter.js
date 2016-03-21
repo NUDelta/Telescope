@@ -126,6 +126,12 @@ def([
         this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
       }, this);
+
+      this.headerControlView.on("controlView:order", function (jsOrderReversed) {
+        this.sourceCollection.setOrder(jsOrderReversed);
+        this.dropDownJSView.render();
+        this.updateMirrors();
+      }, this);
     },
 
     pauseUIUpdates: function () {
