@@ -4,13 +4,19 @@ define([
   "../injectors/observerInjector",
   "../injectors/jsTraceInjector",
   "../injectors/fondueInjector",
-  "../injectors/whittleInjector"
+  "../injectors/whittleInjector",
+  "../injectors/introJSInjector",
+  "../injectors/introJSBridgeInjector",
+  "../injectors/highlightJSInjector"
 ], function (jQueryInjector,
              underscoreInjector,
              observerInjector,
              jsTraceInjector,
              fondueInjector,
-             whittleInjector) {
+             whittleInjector,
+             introJSInjector,
+             introJSBridgeInjector,
+             highlightJSInjector) {
   function UnravelAgent() {
     if (!(this instanceof UnravelAgent)) {
       throw new TypeError("UnravelAgent constructor cannot be called as a function.");
@@ -19,13 +25,16 @@ define([
 
   UnravelAgent.reloadInjecting = function () {
     var agentFn = function () {
-      window.unravelAgent = {
-        selectElement: function (el) {
-          window.dispatchEvent(new CustomEvent("ElementSelected", {"detail": unravelAgent.$(el).getPath()}));
-        }
-      };
+      window.unravelAgent = {};
     };
 
+    var goFondue = function () {
+      unravelAgent.$().ready(function () {
+        unravelAgent.reWritePage();
+      });
+    };
+
+    //Order is important here
     var f1 = "(" + agentFn.toString() + ").apply(this, []); ";
     var f2 = "(" + jQueryInjector.toString() + ").apply(this, []); ";
     var f3 = "(" + underscoreInjector.toString() + ").apply(this, []); ";
@@ -33,10 +42,14 @@ define([
     var f6 = "(" + observerInjector.toString() + ").apply(this, []); ";
     var f7 = "(" + fondueInjector.toString() + ").apply(this, []); ";
     var f8 = "(" + whittleInjector.toString() + ").apply(this, []); ";
+    var f9 = "(" + introJSInjector.toString() + ").apply(this, []); ";
+    var f10 = "(" + highlightJSInjector.toString() + ").apply(this, []); ";
+    var f11 = "(" + introJSBridgeInjector.toString() + ").apply(this, []); ";
+    var f12 = "(" + goFondue.toString() + ").apply(this, []); ";
 
     chrome.devtools.inspectedWindow.reload({
       ignoreCache: true,
-      injectedScript: f1 + f2 + f3 + f5 + f6 + f7 + f8
+      injectedScript: f1 + f2 + f3 + f5 + f6 + f7 + f8 + f9 + f10 + f11 + f12
     });
 
     var checkTimeout = function (isActive) {

@@ -1943,7 +1943,6 @@ a:hover {
 }
 
 #bin {
-  top: 130px;
   width: 100%;
   z-index: 2;
   display: none;
@@ -6427,68 +6426,25 @@ pre.fondue-pre .fondue-object-toggle {
 }
 
 #bin{
-  top: 130px;
+  top:30px;
 }
 
 #control {
-  height: 130px;
   overflow: hidden;
 }
 
-.fondue-panel {
-  width: 75%;
-  padding-top: 0;
-  top: 38px;
-  position: absolute;
+#infocard, .control .menu, .help, #sharemenu {
+  display: none !important;
 }
 
-#fondue-toggle-group{
-  padding-left: 0;
-  margin: 0;
+#panels a:nth-child(4) {
+  display: none !important;
 }
 
-#fondue-toggle-group li{
-  padding-left: .5em;
-  padding-right: .5em;
-  padding-top: .2em;
-  padding-bottom: .2em;
-  list-style: none;
+#panels a:nth-child(5) {
+  display: none !important;
 }
 
-ul#fondue-toggle-group li:nth-child(odd){
-background-color: #f2f8ff;
-}
-
-ul#fondue-toggle-group li:nth-child(even){
-background-color: #fdfdfd;
-}
-
-.group-wrap {
-  /*box-shadow: inset 8px 8px 8px -9px #5c5b5b;*/
-  border-radius:3px;
-  margin: .5em;
-  width: 90%;
-  float: left;
-  height: 87%;
-  overflow: scroll;
-}
-
-#fonduePanelToggle {
-  color: #ffffff;
-  background-color: #ff9800;
-  transition: all 0.2s;
-}
-
-#fonduePanelToggle:hover {
-  background-image: radial-gradient(circle, #ff9800 80%, #e08600 81%);
-  background-size: 100%;
-  border-color: #e08600;
-  text-decoration: none;
-}
-
-#fonduePanelToggle:active {
-  background-color: #e08600;
-  background-image: radial-gradient(circle, #e08600 10%, #ff9800 11%);
-  background-repeat: no-repeat;
-  outline: 0;
+#tip, .notification {
+  display: none !important;
 }

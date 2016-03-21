@@ -2,27 +2,33 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "./GutterPillView"
-], function ($, Backbone, _, GutterPillView) {
+  "./GutterPillView",
+  "../routers/JSBinSocketRouter"
+], function ($, Backbone, _, GutterPillView, JSBinSocketRouter) {
   return Backbone.View.extend({
     htmlMirror: null,
     htmlSource: "",
     nodeMarkers: {},
+    gutterPills: [],
 
-    initialize: function (codeMirrors, activeNodeCollection) {
+    initialize: function (codeMirrors, activeNodeCollection, jsBinRouter) {
       this.codeMirrors = codeMirrors;
       this.activeNodeCollection = activeNodeCollection;
+      this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
+      this.jsBinRouter = jsBinRouter;
     },
 
     render: function () {
-      this.htmlMirror = this.codeMirrors.html;
-      this.removeAllGutterPills();
-      this.addGutterPills();
-    },
+      if (!this.htmlMirror) {
+        this.htmlMirror = this.codeMirrors.html;
+        this.htmlMirror.setOption('lineNumbers', true);
+      }
 
-    setCode: function (strCode) {
-      this.htmlMirror.setCode(strCode);
-      this.htmlSource = strCode;
+      if (!this.htmlSource) {
+        return;
+      }
+      this.htmlMirror.setCode(this.htmlSource);
+      this.addGutterPills();
     },
 
     hasHTML: function () {
@@ -35,12 +41,21 @@ def([
       }, this);
 
       this.gutterPills = [];
+      this.lineGutterPill = {};
+    },
+
+    collapseAllGutterPills: function () {
+      _(this.gutterPills).each(function (pill) {
+        pill.collapseQuiet();
+        this.eraseLinksToJS(pill);
+      }, this);
     },
 
     addGutterPills: function () {
+      this.removeAllGutterPills();
+
       var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
 
-      this.gutterPills = [];
       var domQueries = _(queryNodeMap).keys();
       _(domQueries).each(function (domFnQueryStr) {
         var domFnName = domFnQueryStr.split("|")[0];
@@ -48,10 +63,23 @@ def([
         var activeNodes = queryNodeMap[domFnQueryStr];
 
         this.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
-          var pill = new GutterPillView(this.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes);
-          pill.setCount(activeNodes.length);
-          pill.on("pill:expand", this.drawLinksToJS, this);
-          pill.on("pill:collapse", this.eraseLinksToJS, this);
+          var pill;
+          if (this.lineGutterPill[lineNumber]) {
+            pill = this.lineGutterPill[lineNumber];
+          } else {
+            pill = new GutterPillView(this.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes, this.jsBinRouter);
+            this.lineGutterPill[lineNumber] = pill;
+          }
+
+          pill.addRelatedDomQueries([{
+            domFnName: domFnName,
+            queryString: queryString,
+            html: codeLine
+          }]);
+
+          pill.setCount(pill.getRelatedDomQueries().length);
+          pill.setExpandFn(_.bind(this.drawLinksToJS, this));
+          pill.setCollapseFn(_.bind(this.eraseLinksToJS, this));
           this.gutterPills.push(pill);
         }, this);
       }, this);
@@ -80,10 +108,19 @@ def([
 
     drawLinksToJS: function (gutterPillView) {
       this.htmlJSLinksView.drawLineFromHTMLToJS(gutterPillView);
+      this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
     },
 
     eraseLinksToJS: function (gutterPillView) {
       this.htmlJSLinksView.removeHTMLToJSLine(gutterPillView);
+      this.emitHTMLSelect(false, gutterPillView.getRelatedDomQueries());
+    },
+
+    emitHTMLSelect: function (selected, relatedDomQueries) {
+      this.jsBinSocketRouter.emit("jsbin:html", {
+        selected: selected,
+        relatedDomQueries: relatedDomQueries
+      });
     },
 
     scrollTop: function () {

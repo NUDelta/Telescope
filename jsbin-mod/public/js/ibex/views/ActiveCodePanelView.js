@@ -3,26 +3,30 @@ def([
   "backbone",
   "underscore",
   "handlebars",
-  "text!../templates/SourceListPanel.html"
-], function ($, Backbone, _, Handlebars, panelTemplate) {
+  "text!../templates/SourceListPanel.html",
+  "text!../templates/UIControls.html"
+], function ($, Backbone, _, Handlebars, panelTemplate, uiControlsTemplate) {
   return Backbone.View.extend({
-    panelHeight: 90,
-
     template: Handlebars.compile(panelTemplate),
+    uiControlsTemplate: Handlebars.compile(uiControlsTemplate),
 
-    el: "#control",
+    el: ".dropdownmenu[data-type='javascript']",
 
     events: {
       "click #fondue-toggle-inactive": "toggleInactiveClicked",
       "click .fondue-file-link": "scrollFileClicked",
       "click .fondue-toggle-file": "toggleFileClicked",
-      "click #pauseUpdates": "togglePauseClicked",
-      "click #resetTraces": "resetClicked"
     },
 
     initialize: function (sourceCollection, codeMirrorJSView) {
       this.sourceCollection = sourceCollection;
       this.codeMirrorJSView = codeMirrorJSView;
+      this.$htmlDropDown = $(".dropdownmenu[data-type='html']");
+      this.$htmlDropDown.empty();
+      this.$cssDropDown = $(".dropdownmenu[data-type='css']");
+      this.$cssDropDown.empty();
+      this.$el = $(".dropdownmenu[data-type='javascript']");
+      this.$el.empty();
     },
 
     render: function () {
@@ -37,10 +41,12 @@ def([
         sources: arr
       });
 
-      this.$el.append(html);
-      this.$(".fondue-panel").css("height", this.panelHeight + "px");
-
+      this.$el.html(html);
       this.hideKnownLibs();
+
+      $(".control").append(this.uiControlsTemplate());
+      $("#pauseUpdates").click(_.bind(this.togglePauseClicked, this));
+      $("#resetTraces").click(_.bind(this.resetClicked, this));
     },
 
     _blockLibs: _([
@@ -53,7 +59,7 @@ def([
 
     hideKnownLibs: function () {
       _($(".fondue-file-link")).each(function (el) {
-        var $el = this.$(el);
+        var $el = this.$el.find(el);
         var text = $el.text();
 
         var blockedLib = this._blockLibs.find(function (lib) {
@@ -78,21 +84,33 @@ def([
       }
     },
 
-    togglePauseClicked:function(e){
-      if(this.paused){
+    togglePauseClicked: function (e) {
+      if (this.paused) {
         this.trigger("activeCodePanel:pause", false);
-        this.paused = false;
-        this.$(e.currentTarget).text("Pause Updates");
-        this.$(e.currentTarget).css("background-color", "lightyellow");
+        this.resume();
       } else {
         this.trigger("activeCodePanel:pause", true);
-        this.paused = true;
-        this.$(e.currentTarget).text("Resume Updates");
-        this.$(e.currentTarget).css("background-color", "lightsalmon");
+        this.pause();
       }
     },
 
-    resetClicked:function(e){
+    pause: function () {
+      this.paused = true;
+      var $pauseUpdates = $("#pauseUpdates");
+      $pauseUpdates.text("Resume Updates");
+      $pauseUpdates.css("background-color", "red");
+      $pauseUpdates.css("color", "white");
+    },
+
+    resume: function () {
+      this.paused = false;
+      var $pauseUpdates = $("#pauseUpdates");
+      $pauseUpdates.text("Pause Updates");
+      $pauseUpdates.css("background-color", "lightyellow");
+      $pauseUpdates.css("color", "black");
+    },
+
+    resetClicked: function (e) {
       this.trigger("activeCodePanel:reset", false);
     },
 
@@ -103,7 +121,7 @@ def([
         return;
       }
 
-      if (this.$(e.currentTarget).is(':checked')) {
+      if (this.$el.find(e.currentTarget).is(':checked')) {
         this.hideSource(foundModel);
       } else {
         this.showSource(foundModel);
@@ -111,7 +129,7 @@ def([
     },
 
     getModelFromEl: function (el) {
-      var sourceCID = this.$(el).attr("data");
+      var sourceCID = this.$el.find(el).attr("data");
       var foundModel = this.sourceCollection.getByCid(sourceCID);
 
       return foundModel || null;

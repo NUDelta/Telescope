@@ -79,7 +79,7 @@ define([],
         );
       };
 
-      window.unravelAgent.emitHTML = function () {
+      window.unravelAgent.emitHTMLSelect = function () {
         unravelAgent.$("[src]").each(function (index, value) {
           var $el = unravelAgent.$(this);
           $el.attr("src", $el[0].src);

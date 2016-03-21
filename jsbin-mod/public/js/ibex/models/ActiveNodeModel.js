@@ -4,6 +4,7 @@ def([
   "underscore"
 ], function ($, Backbone, _) {
   return Backbone.Model.extend({
+    // TODO Keep in sync with Fondue Injector
     _domFnNames: _([
       "getElementsByTagName",
       "getElementsByTagNameNS",
@@ -11,55 +12,40 @@ def([
       "getElementsByName",
       "getElementById",
       "querySelector",
-      "createElement",
+      //"createElement",
       "querySelectorAll"
     ]),
 
-    getDomQueries: function () {
-      var nodeName = this.get("name");
-
-      if (!nodeName) {
-        return [];
+    getDomQueryFn: function () {
+      if (this.domFnName) {
+        return this.domFnName;
       }
 
-      var domFnName = this._domFnNames.find(function (fnName) {
-        if (nodeName.indexOf(fnName) > -1) {
+      var name = this.get("name");
+      if (!name) {
+        return null;
+      }
+
+      this.domFnName = this._domFnNames.find(function (fnName) {
+        if (name.indexOf(fnName) > -1) {
           return true;
         }
       });
-
-      if (domFnName) {
-        var invokes = this.get("invokes") || [];
-        var arrDomQueryObjs = [];
-
-        _(invokes).each(function (invoke) {
-          var queryObj = this.getQueryFromInvoke(invoke, domFnName);
-          if (queryObj) {
-            if (!(queryObj.domFnName === "getElementsByTagName" && queryObj.queryString === "script")) {
-              arrDomQueryObjs.push(queryObj);
-            }
-          }
-        }, this);
-
-        arrDomQueryObjs = _(arrDomQueryObjs).uniq(false, function (o) {
-          return o.domFnName + o.queryString;
-        });
-
-        return arrDomQueryObjs;
-      }
-
-      return [];
+      return this.domFnName;
     },
 
-    getQueryFromInvoke: function (invoke, domFnName) {
-      try {
-        if (invoke.arguments[0].value.type === "string") {
-          return {
-            domFnName: domFnName,
-            queryString: invoke.arguments[0].value.value
-          };
+    getDomQueryStringFromInvoke: function (invoke) {
+      if (invoke &&
+        invoke.arguments &&
+        invoke.arguments[0] &&
+        invoke.arguments[0].value &&
+        invoke.arguments[0].value.type === "string") {
+        var value = invoke.arguments[0].value.value;
+
+        if (value !== "*" && value !== "script") {
+          return value;
         }
-      } catch (ignored) {
+      } else {
         return null;
       }
     }

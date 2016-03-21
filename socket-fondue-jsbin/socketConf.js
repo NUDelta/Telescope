@@ -174,6 +174,10 @@ module.exports = function (httpServer) {
       emitToBrowser(data.binId, "jsbin:resendAll", data);
     });
 
+    socket.on("jsbin:html", function (data) {
+      emitToBrowser(data.binId, "jsbin:html", data);
+    });
+
     socket.on('disconnect', function () {
       arrDisconnectedSocketIds.push(socket.id);
     });

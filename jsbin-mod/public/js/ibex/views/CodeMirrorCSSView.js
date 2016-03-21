@@ -13,6 +13,7 @@ def([
 
     render: function () {
       this.cssMirror = this.codeMirrors.css;
+      this.cssMirror.setOption('lineNumbers', true);
     },
 
     setCode: function (strCode) {

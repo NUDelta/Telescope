@@ -41,11 +41,11 @@ def([
         activeNodeCollection: this.activeNodeCollection
       });
 
-      this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection);
-      this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection);
+      this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection, this);
+      this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection, this);
       this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
-      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView);
+      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView, this.activeNodeCollection);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
 
@@ -57,29 +57,43 @@ def([
 
     bindSocketHandlers: function () {
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
-        this.activeNodeCollection.merge(obj.invocations);
-        this.updateMirrors();
+        this.activeNodeCollection.mergeInvocations(obj.invocations);
 
-        if (!this.codeMirrorHTMLView.hasHTML()) {
+        if (!this.sourceCollection.length) {
           // this jsbin doesn't have all the setup code the browser sent
           // trigger a fetch to get everything we need
-          console.log("Don't have html/css, requesting...");
-          this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+
+          if (!this.resendRequested) {
+            console.log("Don't have scripts, requesting...");
+            this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+            this.resendRequested = true;
+          }
+
+          return;
+        }
+
+        this.resendRequested = false;
+
+        if (this.activeNodeCollection.hasFullNodeList) {
+          this.updateMirrors();
         }
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:css", function (obj) {
-        console.log("Got CSS");
+        console.log("fondueDTO:css");
         this.codeMirrorCSSView.setCode(obj.css);
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:html", function (obj) {
-        console.log("Got HTML");
-        this.codeMirrorHTMLView.setCode(obj.html);
+        console.log("fondueDTO:html");
+        if (!this.uiPaused) {
+          this.codeMirrorHTMLView.htmlSource = obj.html;
+          this.codeMirrorHTMLView.render();
+        }
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:scripts", function (obj) {
-        console.log("Got Scripts");
+        console.log("fondueDTO:scripts");
 
         this.sourceCollection.empty();
         this.sourceCollection.add(obj.scripts);
@@ -88,9 +102,8 @@ def([
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
-        console.log("Received", obj.nodes.length, "new nodes.");
-        this.activeNodeCollection.empty();
-        this.activeNodeCollection.add(obj.nodes);
+        console.log("fondueDTO:newNodeList", obj.nodes.length, "new nodes.");
+        this.activeNodeCollection.mergeNodes(obj.nodes);
         this.resumeUIUpdates();
       }, this);
     },
@@ -98,29 +111,32 @@ def([
     bindViewListeners: function () {
       this.activeCodePanelView.on("activeCodePanel:pause", function (pause) {
         if (pause) {
-          this.puaseUIUpdates();
+          this.pauseUIUpdates();
         } else {
           this.resumeUIUpdates();
         }
       }, this);
 
       this.activeCodePanelView.on("activeCodePanel:reset", function () {
-        this.puaseUIUpdates();
+        this.pauseUIUpdates();
+        this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
       }, this);
     },
 
-    puaseUIUpdates: function () {
-      this.pauseUIUpdates = true;
+    pauseUIUpdates: function () {
+      this.uiPaused = true;
+      this.activeCodePanelView.pause();
     },
 
     resumeUIUpdates: function () {
-      this.pauseUIUpdates = false;
+      this.uiPaused = false;
       this.updateMirrors();
+      this.activeCodePanelView.resume();
     },
 
     updateMirrors: function () {
-      if (!this.pauseUIUpdates) {
+      if (!this.uiPaused) {
         this.codeMirrorJSView.showSources();
         this.codeMirrorHTMLView.render();
       }

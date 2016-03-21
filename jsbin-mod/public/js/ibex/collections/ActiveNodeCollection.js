@@ -10,6 +10,8 @@ def([
 
     idAttribute: "id",
 
+    queryNodeMap: {},
+
     initialize: function () {
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
       this.jsBinSocketRouter.onSocketData("fondueDTO:nodeBacktrace", function (obj) {
@@ -33,7 +35,31 @@ def([
       });
     },
 
-    merge: function (arrInvocations) {
+    mergeNodes: function (arrNodes) {
+      this.hasFullNodeList = true;
+
+      var nodesCreated = 0;
+      _(arrNodes).each(function (node) {
+        var activeNodeModel = this.get(node.id);
+        if (!activeNodeModel) {
+          activeNodeModel = new ActiveNodeModel(node);
+          this.add(activeNodeModel);
+          nodesCreated++;
+        }
+      }, this);
+      if (nodesCreated) {
+        console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
+      }
+
+      this.populateQueryNodeMap();
+    },
+
+    mergeInvocations: function (arrInvocations) {
+      //We have to relate them as the come with the full list
+      if (!this.hasFullNodeList) {
+        return;
+      }
+
       var nodesCreated = 0;
       _(arrInvocations).each(function (invocation) {
         var node = invocation.node;
@@ -58,7 +84,7 @@ def([
         console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
       }
 
-      this.relateNodesByDomQuery();
+      this.populateQueryNodeMap();
     },
 
     empty: function () {
@@ -68,66 +94,75 @@ def([
         model.set("id", null);
         model.destroy();
       }
+
+      this.queryNodeMap = {};
     },
 
     getDomQueryNodeMap: function () {
-      var queryNodeMap = {};
-
-      var activeNodes = this.getActiveNodes();
-      _(activeNodes).each(function (nodeModel) {
-        var arrDomQueryObjs = nodeModel.get("relatedDomQueries");
-
-        _(arrDomQueryObjs).each(function (domQueryObj) {
-          var key = domQueryObj.domFnName + "|" + domQueryObj.queryString;
-          if (queryNodeMap[key]) {
-            queryNodeMap[key].push(nodeModel);
-          } else {
-            queryNodeMap[key] = [nodeModel];
-          }
-        });
-      }, this);
-
-      return queryNodeMap;
+      return this.queryNodeMap;
     },
 
-    relateNodesByDomQuery: function () {
+    findQueriesPerNode: function (nodeModel) {
+      var id = nodeModel.get("id");
+      var domQueryArr = [];
+      _(this.queryNodeMap).each(function (value, key) {
+        var found = _(value).find(function (nodeM) {
+          return id === nodeM.get("id");
+        });
+        if (found) {
+          var domFnName = key.split("|")[0];
+          var queryString = key.split("|")[1];
+          domQueryArr.push({
+            domFnName: domFnName,
+            queryString: queryString
+          });
+        }
+      });
+
+      return domQueryArr;
+    },
+
+    populateQueryNodeMap: function () {
       var searchNodes = this.filter(function (model) {
         var hasHits = !!model.get("hits");
         var hasPath = !!model.get("path");
         return hasHits && hasPath;
       });
 
-      //Reset model related queries
-      _(searchNodes).each(function (model) {
-        model.unset("relatedDomQueries");
-      });
-
       //Run a check against each active node to see if it modifies the dom
-      //  If so, mark it and all of its callers
       _(searchNodes).each(function (nodeModel) {
-        var arrNodeIds = [];
-        var domQueries = nodeModel.getDomQueries();
-
-
-        if (domQueries.length) {
+        //  If so, find all of its callers
+        var domQueryFn = nodeModel.getDomQueryFn();
+        if (domQueryFn) {
           var invokes = nodeModel.get("invokes");
           _(invokes).each(function (invoke) {
-            arrNodeIds.push(invoke.nodeId);
+            if (invoke.processed) {
+              return;
+            }
+            invoke.processed = true;
 
-            _(invoke.callStack || []).each(function (caller) {
-              arrNodeIds.push(caller.nodeId);
-            });
-          });
+            var domQueryString = nodeModel.getDomQueryStringFromInvoke(invoke);
+
+            // Mark them as related
+            if (domQueryString) {
+              var key = domQueryFn + "|" + domQueryString;
+              var arrNodes = this.queryNodeMap[key] || [];
+              arrNodes.push(nodeModel);
+
+              nodeModel.set("domModifier", true);
+
+              _(invoke.callStack).each(function (caller) {
+                var callerNodeModel = this.get(caller.nodeId);
+                if (callerNodeModel) {
+                  arrNodes.push(callerNodeModel);
+                  callerNodeModel.set("domModifier", true);
+                }
+              }, this);
+
+              this.queryNodeMap[key] = arrNodes;
+            }
+          }, this);
         }
-
-        arrNodeIds = _(arrNodeIds).uniq();
-        _(arrNodeIds).each(function (nodeId) {
-          var nodeModel = this.get(nodeId);
-          if (nodeModel) {
-            var relatedDomQueries = nodeModel.get("relatedDomQueries") || [];
-            nodeModel.set("relatedDomQueries", relatedDomQueries.concat(domQueries));
-          }
-        }, this);
       }, this);
     }
 

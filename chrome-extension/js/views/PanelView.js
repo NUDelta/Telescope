@@ -23,16 +23,18 @@ define([
 
     initialize: function () {
       this.storeNodeActivity = _.bind(this.storeNodeActivity, this);
-      this.transportScriptData = _.bind(this.transportScriptData, this);
+      this.sendScriptsToJSBin = _.bind(this.sendScriptsToJSBin, this);
       this.getScriptMetaData = _.bind(this.getScriptMetaData, this);
 
       this.ibexSocketRouter = IbexSocketRouter.getInstance();
 
       this.ibexSocketRouter.onSocketData("jsbin:reset", this.resetTracerResendNodes, this);
-      this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.resendAllCodeToJSBin, this);
+      this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.sendNodesHTMLCSSToJSBin, this);
+      this.ibexSocketRouter.onSocketData("jsbin:html", this.introPageHTML, this);
 
       this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
+      this.binSetupInProgress = true;
     },
 
     render: function (unravelAgentActive) {
@@ -50,6 +52,18 @@ define([
       }
     },
 
+    introPageHTML: function (o) {
+      if (o.selected === true) {
+        UnravelAgent.runInPage(function (relatedDomQueries) {
+          unravelAgent.introJsBridge.addHighlight(relatedDomQueries);
+        }, null, o.relatedDomQueries);
+      } else if (o.selected === false) {
+        UnravelAgent.runInPage(function (relatedDomQueries) {
+          unravelAgent.introJsBridge.removeHilight(relatedDomQueries);
+        }, null, o.relatedDomQueries);
+      }
+    },
+
     resetTracerResendNodes: function () {
       console.log("JSBin requesting tracer reset and new node list.");
       UnravelAgent.runInPage(function () {
@@ -58,55 +72,73 @@ define([
       });
     },
 
-    resendAllCodeToJSBin: function (data) {
-      console.log("JSBin requesting new set of HTML/CSS/JS");
-      this.transportScriptData();
+    sendNodesHTMLCSSToJSBin: function (data) {
+      if (this.binSetupInProgress) {
+        console.log("Ignoring JSBin resendAll request, still setting up...");
+        return;
+      }
 
-      UnravelAgent.runInPage(function () {
-        unravelAgent.emitCSS();
-        unravelAgent.emitHTML();
-        unravelAgent.fondueBridge.resetInvokeCounts();
-        unravelAgent.fondueBridge.emitNodeList();
-      });
+      var send = _.bind(function () {
+        if (!this.binReady) {
+          console.log("Bin not ready for data, waiting...");
+          setTimeout(send, 100);
+          return;
+        }
+
+        console.log("Sending JSBin new set of HTML/CSS/JS");
+        this.sendScriptsToJSBin();
+        UnravelAgent.runInPage(function () {
+          unravelAgent.emitCSS();
+          unravelAgent.emitHTMLSelect();
+          unravelAgent.fondueBridge.resetInvokeCounts();
+          unravelAgent.fondueBridge.emitNodeList();
+        });
+      }, this);
+
+      send();
     },
 
     onBinReady: function () {
-      UnravelAgent.runInPage(function () {
-        unravelAgent.emitCSS();
-        unravelAgent.emitHTML();
-      }, _.bind(this.installTracer, this));
+      this.binReady = true;
     },
 
     onFondueReady: function () {
-      var that = this;
-      var transportFn = _.bind(function () {
-        var callback = _.bind(function (nodeArr) {
+      var panelView = this;
+      var tryToGetNodes = function () {
+        var onNodesLoaded = function (nodeArr) {
           if (!nodeArr) {
-            setTimeout(transportFn, 100);
+            setTimeout(tryToGetNodes, 100);
           } else {
-            this.nodeCollection.add(nodeArr);
-            this.getScriptMetaData(_.bind(function () {
-              this.transportScriptData(function () {
-                UnravelAgent.runInPage(function () {
-                  unravelAgent.fondueBridge.startTracking();
-                });
+            panelView.nodeCollection.add(nodeArr);
+            console.log("", nodeArr.length, " nodes loaded.");
+            panelView.getScriptMetaData(function () {
+              UnravelAgent.runInPage(function () {
+                unravelAgent.fondueBridge.startTracking();
+                unravelAgent.startObserving();
+              }, function () {
+                panelView.binSetupInProgress = false;
+                panelView.sendNodesHTMLCSSToJSBin();
               });
-            }, this));
+            });
           }
-        }, that);
+        };
 
         UnravelAgent.runInPage(function () {
-          if (unravelAgent.$("body").length) {
-            unravelAgent.fondueBridge.emitNodeList(); //for jsbin
+          var hasBodyChildren = !!$("body").children().length;
+
+          var scripts = unravelAgent.$("script");
+          if (hasBodyChildren && scripts && scripts[0]) {
             return unravelAgent.fondueBridge.getNodes(); //for our script metadata
           } else {
+            console.log("Body or scripts not fully reloaded yet");
+
             return false;
           }
-        }, callback);
+        }, onNodesLoaded);
 
-      }, this);
+      };
 
-      transportFn();
+      tryToGetNodes();
     },
 
     createBin: function () {
@@ -177,39 +209,7 @@ define([
       http.send();
     },
 
-    installTracer: function (callback) {
-      this.redirectTraces();
-      UnravelAgent.runInPage(function () {
-        unravelAgent.reWritePage();
-      }, callback);
-    },
-
-    redirectTraces: function () {
-      if (!this.redirectingSources) {
-        this.redirectingSources = true;
-      } else {
-        this.redirectingSources = false;
-      }
-      UnravelAgent.runInPage(function (redirecting) {
-        window.dispatchEvent(new CustomEvent("UnravelRedirectRequests", {
-          "detail": {
-            redirecting: redirecting,
-            origin: window.location.origin
-          }
-        }));
-        return redirecting;
-      }, function (redirecting) {
-        if (redirecting) {
-          this.$("#redirectTraces .inactive").hide();
-          this.$("#redirectTraces .active").show();
-        } else {
-          this.$("#redirectTraces .inactive").show();
-          this.$("#redirectTraces .active").hide();
-        }
-      }, this.redirectingSources);
-    },
-
-    transportScriptData: function (callback) {
+    sendScriptsToJSBin: function (callback) {
       var hitScripts = _.chain(this.nodeCollection.models)
         .map(function (model) {
           return model.toJSON()

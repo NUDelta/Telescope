@@ -4,7 +4,7 @@ define([
 ], function (_, Backbone) {
   var instance = null;
 
-  var IbexSocketRouter = Backbone.Router.extend({
+  var PanelSocketRouter = Backbone.Router.extend({
     heardIds: [],
 
     connected: false,
@@ -79,12 +79,12 @@ define([
     }
   });
 
-  IbexSocketRouter.getInstance = function () {
+  PanelSocketRouter.getInstance = function () {
     if (instance === null) {
-      instance = new IbexSocketRouter();
+      instance = new PanelSocketRouter();
     }
     return instance;
   };
 
-  return IbexSocketRouter;
+  return PanelSocketRouter;
 });

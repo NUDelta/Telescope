@@ -64,7 +64,6 @@ define([],
       };
 
       window.unravelAgent.reWritePage = function () {
-
         //https://developer.mozilla.org/en-US/docs/Web/API/Window
         var keepKeys = [
           "applicationCache",
@@ -211,7 +210,7 @@ define([],
                 }
               }
 
-              console.log("Deleting", JSON.stringify(deleteKeys));
+              // console.log("Deleting", JSON.stringify(deleteKeys));
 
               var wontDeleteKeys = [];
               window.unravelAgent._(deleteKeys).each(function (key) {

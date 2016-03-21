@@ -98,15 +98,18 @@ var Panel = function (name, settings) {
   if (settings.editor) {
     cmSettings = {
       parserfile: [],
-      readOnly: jsbin.state.embed ? 'nocursor' : false,
+      readOnly: true,
+      // readOnly: jsbin.state.embed ? 'nocursor' : false,
       dragDrop: false, // we handle it ourselves
       mode: editorModes[panelLanguage],
       lineWrapping: true,
+      tabSize:2,
       gutters: ['pill-gutter', "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       lineNumbers: true,
       foldGutter: true,
       theme: jsbin.settings.theme || 'jsbin',
-      highlightLine: true
+      highlightLine: true,
+      viewportMargin: Infinity
     };
 
     $.extend(cmSettings, jsbin.settings.editor || {});

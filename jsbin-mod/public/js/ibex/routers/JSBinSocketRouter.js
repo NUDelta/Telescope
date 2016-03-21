@@ -4,7 +4,7 @@ def([
 ], function (_, Backbone) {
   var instance = null;
 
-  var IbexSocketRouter = Backbone.Router.extend({
+  var JSBinSocketRouter = Backbone.Router.extend({
     initialize: function () {
       if (instance !== null) {
         throw new Error("Cannot instantiate more than one SocketRouter, use SocketRouter.getInstance()");
@@ -48,12 +48,12 @@ def([
     }
   });
 
-  IbexSocketRouter.getInstance = function () {
+  JSBinSocketRouter.getInstance = function () {
     if (instance === null) {
-      instance = new IbexSocketRouter();
+      instance = new JSBinSocketRouter();
     }
     return instance;
   };
 
-  return IbexSocketRouter;
+  return JSBinSocketRouter;
 });
