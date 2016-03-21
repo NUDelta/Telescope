@@ -98,7 +98,8 @@ var Panel = function (name, settings) {
   if (settings.editor) {
     cmSettings = {
       parserfile: [],
-      readOnly: jsbin.state.embed ? 'nocursor' : false,
+      readOnly: true,
+      // readOnly: jsbin.state.embed ? 'nocursor' : false,
       dragDrop: false, // we handle it ourselves
       mode: editorModes[panelLanguage],
       lineWrapping: true,

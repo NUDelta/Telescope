@@ -94,6 +94,8 @@ def([
         model.set("id", null);
         model.destroy();
       }
+
+      this.queryNodeMap = {};
     },
 
     getDomQueryNodeMap: function () {

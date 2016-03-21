@@ -132,6 +132,7 @@ def([
     resumeUIUpdates: function () {
       this.uiPaused = false;
       this.updateMirrors();
+      this.activeCodePanelView.resume();
     },
 
     updateMirrors: function () {

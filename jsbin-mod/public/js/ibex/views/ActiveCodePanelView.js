@@ -87,11 +87,7 @@ def([
     togglePauseClicked: function (e) {
       if (this.paused) {
         this.trigger("activeCodePanel:pause", false);
-        this.paused = false;
-        var $pauseUpdates = $("#pauseUpdates");
-        $pauseUpdates.text("Pause Updates");
-        $pauseUpdates.css("background-color", "lightyellow");
-        $pauseUpdates.css("color", "black");
+        this.resume();
       } else {
         this.trigger("activeCodePanel:pause", true);
         this.pause();
@@ -104,6 +100,14 @@ def([
       $pauseUpdates.text("Resume Updates");
       $pauseUpdates.css("background-color", "red");
       $pauseUpdates.css("color", "white");
+    },
+
+    resume: function () {
+      this.paused = false;
+      var $pauseUpdates = $("#pauseUpdates");
+      $pauseUpdates.text("Pause Updates");
+      $pauseUpdates.css("background-color", "lightyellow");
+      $pauseUpdates.css("color", "black");
     },
 
     resetClicked: function (e) {

@@ -423,3 +423,35 @@ Contributions
         Behavior-based code broadcasts
         Live-theseus integration from public websites
         Query-based Source linking (js-to-html-to-browser)
+
+Pilot Study 2
+
+    Jon
+        Toy example & XKCD
+            XKCD queries everything!
+
+
+        Expanding views within JS don't really help
+        Constrain more of HTML/JS
+            Can you show just HTML structure only?
+
+        Fix pausing and resuming functionality
+
+        Outline the step-by-step nature of javascript
+            Pains of looking through source code is to scroll here and there and go back and forth
+
+        Select individual pills to narrow focus of the JS/HTML
+
+        See call stacks in a better way
+
+        Still too much information
+
+    Kevin
+
+        Toy example & XKCD
+
+        I'm confused by overlapping interactions from components
+
+        JS view doesn't make sense to me
+            Lines aren't super obvious, need to be more pronounced
+            JavaScript seems to be appended to the end of whats happening
