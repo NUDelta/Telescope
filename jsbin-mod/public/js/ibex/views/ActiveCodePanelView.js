@@ -44,6 +44,7 @@ def([
       this.$el.html(html);
       this.hideKnownLibs();
 
+      $("#fondue-ui-controls").remove();
       $(".control").append(this.uiControlsTemplate());
       $("#pauseUpdates").click(_.bind(this.togglePauseClicked, this));
       $("#resetTraces").click(_.bind(this.resetClicked, this));

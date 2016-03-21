@@ -430,7 +430,6 @@ Pilot Study 2
         Toy example & XKCD
             XKCD queries everything!
 
-
         Expanding views within JS don't really help
         Constrain more of HTML/JS
             Can you show just HTML structure only?
@@ -455,3 +454,21 @@ Pilot Study 2
         JS view doesn't make sense to me
             Lines aren't super obvious, need to be more pronounced
             JavaScript seems to be appended to the end of whats happening
+
+    Sort JS calls bottom at top
+    Sort JS by timestamp
+
+    Two Sliders (time and detail)
+
+
+Hq Test Affordances
+    The bottom parts are actually readable instead of library code
+        Identify un-minified parts!
+    Yellow JS is most important
+    Most important bits seem to be at the bottom
+    Timestamps? When did these happen?
+
+    Code calls that are near code in yellow
+        Can we expand yellow views out to find related code?
+
+    How do pro examples differ from ordinary user code?
