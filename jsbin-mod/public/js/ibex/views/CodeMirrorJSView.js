@@ -2,15 +2,12 @@ def([
   "jquery",
   "backbone",
   "underscore",
-  "./GutterPillView",
-], function ($, Backbone, _, GutterPillView) {
+], function ($, Backbone, _) {
   return Backbone.View.extend({
     jsMirror: null,
     sources: null,
     mirrorLastLine: 0,
     activeCodeOnly: true,
-    nodeIdGutterPill: {},
-    gutterPills: [],
 
     initialize: function (codeMirrors, sourceCollection, activeNodeCollection, jsBinRouter) {
       this.codeMirrors = codeMirrors;
@@ -23,8 +20,8 @@ def([
       this.jsMirror = this.codeMirrors.js;
       this.jsMirror.setOption("lineNumbers", true);
 
+      this.htmlJSLinksView.removeAllJSGutterPills();
       this.deleteAllLines();
-      this.removeAllGutterPills();
 
       //Write the source and delete its lines in each iteration
       var sourceModels = this.sourceCollection.getOrdered();
@@ -38,7 +35,7 @@ def([
         //By iterating through, the mirror position will stay correct
         // as we append sources
         sourceModel.setMirrorPos(mirrorPosition);
-        this.addGutterPills(sourceModel);
+        this.htmlJSLinksView.addJSGutterPills(sourceModel, this.domModifiersOnly);
 
         if (this.activeCodeOnly || this.domModifiersOnly) {
           this.deleteInactiveLines(sourceModel);
@@ -46,50 +43,6 @@ def([
       }, this);
 
       this.scrollTop();
-    },
-
-    addGutterPills: function (sourceModel) {
-      var activeNodeModels = this.activeNodeCollection.getActiveNodes(sourceModel.get("path"), this.domModifiersOnly);
-      _(activeNodeModels).each(function (activeNodeModel) {
-        //subtract one, because the mirror start line === node.startLine
-        var startLine = sourceModel.getMirrorPos().startLine + activeNodeModel.get("startLine") - 1;
-        var pill = new GutterPillView(this.jsMirror, startLine, activeNodeModel, this.sourceCollection, null, this.jsBinRouter);
-        pill.setCount(activeNodeModel.get("hits"));
-        pill.setExpandFn(_.bind(this.htmlJSLinksView.drawLineFromJSToHTML, this));
-        pill.setCollapseFn(_.bind(this.removeJSToHTMLLine, this));
-        this.nodeIdGutterPill[activeNodeModel.get("id")] = pill;
-      }, this);
-    },
-
-    removeAllGutterPills: function () {
-      var gutterPills = _(this.nodeIdGutterPill).values();
-      _(gutterPills).each(function (pill) {
-        pill.destroy();
-      }, this);
-
-      this.nodeIdGutterPill = {};
-    },
-
-    collapseAllGutterPills: function () {
-      var gutterPills = _(this.nodeIdGutterPill).values();
-      _(gutterPills).each(function (pill) {
-        this.removeJSToHTMLLine(pill);
-        pill.collapseQuiet();
-      }, this);
-    },
-
-    removeJSToHTMLLine: function (pill) {
-      this.htmlJSLinksView.removeJSToHTMLLine(pill);
-    },
-
-    showInactive: function () {
-      this.activeCodeOnly = false;
-      this.showSources();
-    },
-
-    hideInactive: function () {
-      this.activeCodeOnly = true;
-      this.showSources();
     },
 
     showOptional: function (options) {
@@ -118,9 +71,7 @@ def([
     },
 
     deleteAllLines: function () {
-      var doc = this.jsMirror.getDoc();
-      var lastLine = doc.lineCount();
-      this.deleteLines(-1, lastLine);
+      this.jsMirror.setCode("");
     },
 
     deleteLines: function (startLine, endLine) {

@@ -61,48 +61,32 @@ def([
 
       switch (headerControlVal) {
         case 1:  //active js dom modifiers only
-          _(this.getBlockedSourceModels()).each(function (sourceModel) {
-            sourceModel.hide();
-          });
-
+          this.markBlockedSourceModels();
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: true,
             activeCodeOnly: true
           });
-
-          this.markInactive(true);
           break;
         case 2:  //active js only
-          _(this.getBlockedSourceModels()).each(function (sourceModel) {
-            sourceModel.hide();
-          });
-
+          this.markBlockedSourceModels();
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: false,
             activeCodeOnly: true
           });
-
-          this.markInactive(true);
           break;
         case 3:  // active js with known libs
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: false,
             activeCodeOnly: true
           });
-
-          this.markInactive(true);
           break;
         case 4:  // all js
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: false,
             activeCodeOnly: false
           });
-
-          this.markInactive(false);
           break;
       }
-
-      this.markBlockedSourceModels();
     },
 
     getBlockedSourceModels: function () {
@@ -128,14 +112,18 @@ def([
     },
 
     markBlockedSourceModels: function () {
+      _(this.getBlockedSourceModels()).each(function (sourceModel) {
+        sourceModel.hide();
+      });
+
       _($(".fondue-file-link")).each(function (el) {
         var $el = this.$el.find(el);
         var sourceModel = this.getModelFromEl($el);
 
         if (sourceModel.isVisible()) {
-          $el.parent().find("input").removeAttr("checked");
+          $el.parent().find("input").prop("checked", false);
         } else {
-          $el.parent().find("input").attr("checked", "checked");
+          $el.parent().find("input").prop("checked", true);
         }
       }, this);
     },
@@ -178,23 +166,6 @@ def([
     showSource: function (sourceModel) {
       sourceModel.show();
       this.codeMirrorJSView.showSources();
-    },
-
-    markInactive: function (inactive) {
-      if (inactive) {
-        this.$("#fondue-toggle-inactive").attr("checked", "checked");
-      } else {
-        this.$("#fondue-toggle-inactive").removeAttr("checked");
-      }
-    },
-
-    toggleInactiveClicked: function () {
-      var $el = this.$("#fondue-toggle-inactive");
-      if ($el.is(':checked')) {
-        this.codeMirrorJSView.hideInactive();
-      } else {
-        this.codeMirrorJSView.showInactive();
-      }
     }
   });
 });

@@ -2,31 +2,128 @@ def([
   "jquery",
   "backbone",
   "underscore",
+  "./GutterPillView",
   "./CurveLineView",
   "../routers/JSBinSocketRouter"
-], function ($, Backbone, _, CurveLineView, JSBinSocketRouter) {
+], function ($, Backbone, _, GutterPillView, CurveLineView, JSBinSocketRouter) {
   return Backbone.View.extend({
-    initialize: function (codeMirrorJSView, codeMirrorHTMLView, activeNodeCollection) {
+    htmlLineGutterPill: {},
+
+    jsNodeIdGutterPill: {},
+
+    initialize: function (codeMirrorJSView, codeMirrorHTMLView, activeNodeCollection, sourceCollection, jsBinRouter) {
       this.codeMirrorJSView = codeMirrorJSView;
       this.codeMirrorHTMLView = codeMirrorHTMLView;
+      this.sourceCollection = sourceCollection;
+
       this.drawLineFromJSToHTML = _.bind(this.drawLineFromJSToHTML, this);
       this.drawLineFromHTMLToJS = _.bind(this.drawLineFromHTMLToJS, this);
-      this.removeJSToHTMLLine = _.bind(this.removeJSToHTMLLine, this);
-      this.removeHTMLToJSLine = _.bind(this.removeHTMLToJSLine, this);
+      this.destroyPillLines = _.bind(this.destroyPillLines, this);
+      this.pillCollapseFn = _.bind(this.pillCollapseFn, this);
+      this.pillExpandFn = _.bind(this.pillExpandFn, this);
+
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
+      this.jsBinRouter = jsBinRouter;
       this.activeNodeCollection = activeNodeCollection;
     },
 
     collapseAll: function () {
-      this.codeMirrorJSView.collapseAllGutterPills();
-      this.codeMirrorHTMLView.collapseAllGutterPills();
+      var htmlGutterViews = _(this.htmlLineGutterPill).values();
+      var jsGutterViews = _(this.jsNodeIdGutterPill).values();
+      _(htmlGutterViews.concat(jsGutterViews)).each(function (gutterPillView) {
+        this.pillCollapseFn(gutterPillView);
+      }, this);
+
+      this.codeMirrorHTMLView.removeAllHighlights();
+    },
+
+    addHTMLGutterPills: function () {
+      var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
+
+      var domQueries = _(queryNodeMap).keys();
+      _(domQueries).each(function (domFnQueryStr) {
+        var domFnName = domFnQueryStr.split("|")[0];
+        var queryString = domFnQueryStr.split("|")[1];
+        var activeNodes = queryNodeMap[domFnQueryStr];
+
+        this.codeMirrorHTMLView.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
+          var pill = new GutterPillView(this.codeMirrorHTMLView.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes, this.jsBinRouter);
+          this.htmlLineGutterPill[lineNumber] = pill;
+
+          pill.addRelatedDomQueries([{
+            domFnName: domFnName,
+            queryString: queryString,
+            html: codeLine
+          }]);
+
+          pill.setCount(pill.getRelatedDomQueries().length);
+          pill.setExpandFn(this.pillExpandFn);
+          pill.setCollapseFn(this.pillCollapseFn);
+
+        }, this);
+      }, this);
+    },
+
+    addJSGutterPills: function (sourceModel, domModifiersOnly) {
+      var activeNodeModels = this.activeNodeCollection.getActiveNodes(sourceModel.get("path"), domModifiersOnly);
+      _(activeNodeModels).each(function (activeNodeModel) {
+        //subtract one, because the mirror start line === node.startLine
+        var startLine = sourceModel.getMirrorPos().startLine + activeNodeModel.get("startLine") - 1;
+
+        var pill;
+        if (this.jsNodeIdGutterPill[activeNodeModel.get("id")]) {
+          pill = this.jsNodeIdGutterPill[activeNodeModel.get("id")];
+        } else {
+          pill = new GutterPillView(this.codeMirrorJSView.jsMirror, startLine, activeNodeModel, this.sourceCollection, null, this.jsBinRouter);
+          this.jsNodeIdGutterPill[activeNodeModel.get("id")] = pill;
+        }
+
+        pill.setCount(activeNodeModel.get("hits"));
+        pill.setExpandFn(this.pillExpandFn);
+        pill.setCollapseFn(this.pillCollapseFn);
+      }, this);
+    },
+
+    pillExpandFn: function (gutterPillView) {
+      this.jsBinRouter.pauseUIUpdates();
+      if (gutterPillView.expanded) {
+        return;
+      }
+
+      this.collapseAll();
+
+      if (gutterPillView.htmlRelatedNodeModels) {
+        this.drawLineFromHTMLToJS(gutterPillView);
+      } else {
+        this.drawLineFromJSToHTML(gutterPillView);
+      }
+      this.jsBinSocketRouter.emit("jsbin:html", {
+        selected: true,
+        relatedDomQueries: gutterPillView.getRelatedDomQueries()
+      });
+
+      gutterPillView.expanded = true;
+    },
+
+    pillCollapseFn: function (gutterPillView) {
+      if (!gutterPillView.expanded) {
+        return;
+      }
+
+      this.destroyPillLines(gutterPillView);
+      this.jsBinSocketRouter.emit("jsbin:html", {
+        selected: false,
+        relatedDomQueries: gutterPillView.getRelatedDomQueries()
+      });
+
+      gutterPillView.expanded = false;
+
+      this.codeMirrorHTMLView.removeAllHighlights();
     },
 
     drawLineFromJSToHTML: function (gutterPillView) {
       var pillEl = gutterPillView.$el[0];
       var activeNodeModel = gutterPillView.activeNodeModel;
-
-      this.collapseAll();
 
       var domQueries = this.activeNodeCollection.findQueriesPerNode(activeNodeModel);
       if (domQueries.length < 1) {
@@ -41,8 +138,7 @@ def([
         var queryString = domQueryObj.queryString;
 
         this.codeMirrorHTMLView.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
-          var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
-          this.codeMirrorHTMLView.addNodeMarker(activeNodeModel.get("id"), marker);
+          this.codeMirrorHTMLView.highlightLine(lineNumber, codeLine.length);
 
           rdqArr.push({
             domFnName: domFnName,
@@ -72,65 +168,36 @@ def([
       this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
     },
 
-    removeJSToHTMLLine: function (gutterPillView) {
-      this.codeMirrorHTMLView.clearMarkersForNode(gutterPillView.activeNodeModel.get("id"));
-
-      _(gutterPillView.arrLines || []).each(function (lineView) {
-        lineView.destroy();
-      });
-
-      gutterPillView.arrLines = [];
-      this.emitHTMLSelect(false, gutterPillView.getRelatedDomQueries());
-    },
-
-    emitHTMLSelect: function (selected, relatedDomQueries) {
-      this.jsBinSocketRouter.emit("jsbin:html", {
-        selected: selected,
-        relatedDomQueries: relatedDomQueries
-      });
-    },
-
-    removeHTMLToJSLine: function (gutterPillView) {
-      var arrIds = _(gutterPillView.htmlRelatedNodeModels).map(function (activeNodeModel) {
-        return activeNodeModel.get("id");
-      });
-      this.codeMirrorHTMLView.clearMarkersForNodes(arrIds);
-
-      _(gutterPillView.arrLines || []).each(function (lineView) {
-        lineView.destroy();
-      });
-
-      gutterPillView.arrLines = [];
-    },
-
     drawLineFromHTMLToJS: function (gutterPillView) {
       if (!gutterPillView.htmlRelatedNodeModels) {
         return;
       }
 
-      this.collapseAll();
-
       var lineNumber = gutterPillView.line;
       var codeLine = this.codeMirrorHTMLView.htmlMirror.getLine(lineNumber);
-      var marker = this.codeMirrorHTMLView.highlightLines(lineNumber, codeLine.length);
-      var arrIds = _(gutterPillView.htmlRelatedNodeModels).map(function (activeNodeModel) {
-        return activeNodeModel.get("id");
-      });
-      this.codeMirrorHTMLView.addNodesMarker(arrIds, marker);
+      this.codeMirrorHTMLView.highlightLine(lineNumber, codeLine.length);
 
       var arrJSPillEl = [];
       var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
 
       var arrRelatedDQ = gutterPillView.getRelatedDomQueries();
+      var arrJsPill = [];
+
       _(arrRelatedDQ).each(function (dq) {
         var nodeModels = queryNodeMap[dq.domFnName + "|" + dq.queryString];
         _(nodeModels).each(function (nodeModel) {
-          var jsPill = this.codeMirrorJSView.nodeIdGutterPill[nodeModel.get("id")];
+          var jsPill = this.jsNodeIdGutterPill[nodeModel.get("id")];
           if (jsPill) {
-            arrJSPillEl.push(jsPill.$el[0]);
+            arrJsPill.push(jsPill);
           }
         }, this);
       }, this);
+
+      _(arrJsPill).chain().uniq(function (jsPill) {
+        return jsPill.cid;
+      }).each(function (jsPill) {
+        arrJSPillEl.push(jsPill.$el[0]);
+      });
 
       var arrLines = [];
 
@@ -147,6 +214,47 @@ def([
       }, this);
 
       gutterPillView.arrLines = arrLines;
+    },
+
+    destroyPillLines: function (gutterPillView) {
+      _(gutterPillView.arrLines || []).each(function (lineView) {
+        lineView.destroy();
+      });
+
+      gutterPillView.arrLines = [];
+    },
+
+    emitHTMLSelect: function (selected, relatedDomQueries) {
+      this.jsBinSocketRouter.emit("jsbin:html", {
+        selected: selected,
+        relatedDomQueries: relatedDomQueries
+      });
+    },
+
+    removeAllHTMLGutterPills: function () {
+      this.destroyPillInMap("htmlLineGutterPill");
+    },
+
+    removeAllJSGutterPills: function () {
+      this.destroyPillInMap("jsNodeIdGutterPill");
+    },
+
+    destroyPillInMap: function (mapKey) {
+      var gutterViews = _(this[mapKey]).values();
+
+      _(gutterViews).each(function (gutterPillView) {
+        if (gutterPillView.expanded) {
+          this.jsBinSocketRouter.emit("jsbin:html", {
+            selected: false,
+            relatedDomQueries: gutterPillView.getRelatedDomQueries()
+          });
+          gutterPillView.expanded = false;
+        }
+
+        gutterPillView.destroy();
+      }, this);
+
+      this[mapKey] = {};
     }
   })
 });
