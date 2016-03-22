@@ -113,6 +113,8 @@ def([
 
       this.headerControlView.on("jsDetailChange", function (val) {
         this.pauseUIUpdates();
+        this.htmlJSLinksView.collapseAll();
+        this.codeMirrorHTMLView.removeAllHighlights();
         this.dropDownJSView.detailChange(val);
       }, this);
     },
