@@ -40,7 +40,7 @@ def([
         sourceModel.setMirrorPos(mirrorPosition);
         this.addGutterPills(sourceModel);
 
-        if (this.activeCodeOnly) {
+        if (this.activeCodeOnly || this.domModifiersOnly) {
           this.deleteInactiveLines(sourceModel);
         }
       }, this);
@@ -49,7 +49,7 @@ def([
     },
 
     addGutterPills: function (sourceModel) {
-      var activeNodeModels = this.activeNodeCollection.getActiveNodes(sourceModel.get("path"));
+      var activeNodeModels = this.activeNodeCollection.getActiveNodes(sourceModel.get("path"), this.domModifiersOnly);
       _(activeNodeModels).each(function (activeNodeModel) {
         //subtract one, because the mirror start line === node.startLine
         var startLine = sourceModel.getMirrorPos().startLine + activeNodeModel.get("startLine") - 1;
@@ -92,13 +92,9 @@ def([
       this.showSources();
     },
 
-    showSourceModel: function (sourceModel) {
-      sourceModel.show();
-      this.showSources();
-    },
-
-    hideSourceModel: function (sourceModel) {
-      sourceModel.hide();
+    showOptional: function (options) {
+      this.activeCodeOnly = options.activeCodeOnly;
+      this.domModifiersOnly = options.domModifiersOnly;
       this.showSources();
     },
 
@@ -144,7 +140,7 @@ def([
 
     deleteInactiveLines: function (sourceModel) {
       var pos = sourceModel.getMirrorPos();
-      var activeLines = sourceModel.getActiveLines();
+      var activeLines = sourceModel.getActiveLines(this.domModifiersOnly);
       var allLines = _.range(pos.startLine, pos.endLine); //inclusive, exclusive
       var linesToDelete = _.difference(allLines, activeLines);
       _(linesToDelete).sortBy(function (num) {

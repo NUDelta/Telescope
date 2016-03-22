@@ -24,14 +24,15 @@ def([
       this.empty = _.bind(this.empty, this);
     },
 
-    getActiveNodes: function (path) {
+    getActiveNodes: function (path, domModifiersOnly) {
       return this.filter(function (model) {
         var hasHits = !!model.get("hits");
         var hasPath = !!model.get("path");
         var matchesPath = path ? path === model.get("path") : true;
+        var domModifier = domModifiersOnly ? !!model.get("domModifier") : true;
         //var isFunction = model.get("type") === "function" || model.get("type") === "callsite";
         var isFunction = model.get("type") === "function";
-        return hasHits && isFunction && hasPath && matchesPath;
+        return hasHits && isFunction && hasPath && matchesPath && domModifier;
       });
     },
 

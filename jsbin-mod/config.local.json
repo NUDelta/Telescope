@@ -1,6 +1,6 @@
 {
   "url": {
-    "host": "localhost:8080"
+    "host": "localhost:3005"
   },
   "max-request-size": "100MB",
   "security": {

@@ -108,8 +108,8 @@ var Panel = function (name, settings) {
       lineNumbers: true,
       foldGutter: true,
       theme: jsbin.settings.theme || 'jsbin',
-      highlightLine: true,
-      viewportMargin: Infinity
+      highlightLine: true
+      // viewportMargin: Infinity
     };
 
     $.extend(cmSettings, jsbin.settings.editor || {});

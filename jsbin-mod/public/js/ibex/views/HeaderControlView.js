@@ -15,7 +15,8 @@ def([
     events: {
       "click #pauseUpdates": "togglePauseClicked",
       "click #resetTraces": "resetClicked",
-      "click #jsScriptOrder": "toggleJSOrder"
+      "click #jsScriptOrder": "toggleJSOrder",
+      "input #detailSlider": "jsDetailChange"
     },
 
     initialize: function () {
@@ -25,6 +26,20 @@ def([
       this.$("#fondue-ui-controls").remove();
 
       this.$el.append(this.template());
+      this.$detailSlider = this.$("#detailSlider");
+    },
+
+    jsDetailChange: function () {
+      var newVal = Math.ceil(this.$detailSlider.val() / 25);
+
+      if (this.lastDetailSlideVal) {
+        if (newVal !== this.lastDetailSlideVal) {
+          this.lastDetailSlideVal = newVal;
+          this.trigger("jsDetailChange", newVal);
+        }
+      } else {
+        this.lastDetailSlideVal = newVal
+      }
     },
 
     togglePauseClicked: function () {

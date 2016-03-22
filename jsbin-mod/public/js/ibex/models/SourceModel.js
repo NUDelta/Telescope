@@ -47,12 +47,12 @@ def([
       };
     },
 
-    getActiveLines: function () {
-      var traces = this.activeNodeCollection.getActiveNodes(this.get("path"));
+    getActiveLines: function (domModifiersOnly) {
+      var activeNodeModel = this.activeNodeCollection.getActiveNodes(this.get("path"), domModifiersOnly);
 
       //Determine a list of line numbers to keep based on trace activity
       var arr = [];
-      _(traces).each(function (trace) {
+      _(activeNodeModel).each(function (trace) {
         var startLine = this.startLine + parseInt(trace.get("startLine")) - 1; //minus 1 codemirror lines are 0 based
         var endLine = this.startLine + parseInt(trace.get("endLine")) -1;
 

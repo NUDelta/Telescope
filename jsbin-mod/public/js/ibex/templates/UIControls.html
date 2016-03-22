@@ -4,7 +4,7 @@
       float: right;
       display: block;
       height: 35px;
-      width: 50%;
+      width: 70%;
     }
 
     #panels {
@@ -26,6 +26,7 @@
     }
 
     .fondue-option {
+      display: block;
       line-height: 30px;
       padding-left: 8px;
       padding-right: 8px;
@@ -36,12 +37,39 @@
       float: right;
     }
 
+    .control-slider {
+      float: right;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-right: 4px;
+      margin-top: 2px;
+      border-radius: 3px;
+      background-color: white;
+    }
+
+    .control-slider input {
+      width: 90px;
+      margin-top:13px;
+    }
+
+    .slider-label {
+      padding-top: 0px;
+      position: absolute;
+      width: 100px;
+      text-align:center;
+    }
+
+
   </style>
 
   <a id="pauseUpdates" class="fondue-option" href="javascript:;">Pause Updates</a>
   <a id="resetTraces" class="fondue-option" href="javascript:;">Reset Traces</a>
   <a id="jsScriptOrder" class="fondue-option" href="javascript:;">JS Order
-    <span class="orderUpDown reverse">Normal &#8595;</span>
-    <span class="orderUpDown normal" style="display: none;">Reversed &#8593;</span>
+    <span class="orderUpDown reverse">Reverse &#8593;</span>
+    <span class="orderUpDown normal" style="display: none;">Normal &#8595;</span>
   </a>
+  <div class="control-slider">
+    <div class="slider-label">JS Detail</div>
+    <input id="detailSlider" type="range" min="1" max="100" step="1" value="1"/>
+  </div>
 </div>

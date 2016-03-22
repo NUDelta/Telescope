@@ -110,6 +110,11 @@ def([
         this.activeNodeCollection.mergeNodes(obj.nodes);
         this.resumeUIUpdates();
       }, this);
+
+      this.headerControlView.on("jsDetailChange", function (val) {
+        this.pauseUIUpdates();
+        this.dropDownJSView.detailChange(val);
+      }, this);
     },
 
     bindViewListeners: function () {

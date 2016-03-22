@@ -16,6 +16,18 @@ def([
       "click .fondue-toggle-file": "toggleFileClicked"
     },
 
+    _blockLibs: _([
+      "jquery",
+      "moment",
+      "underscore",
+      "backbone",
+      "require",
+      "angular",
+      "react",
+      "handlebars",
+      "underscore",
+    ]),
+
     initialize: function (sourceCollection, codeMirrorJSView) {
       this.sourceCollection = sourceCollection;
       this.codeMirrorJSView = codeMirrorJSView;
@@ -39,18 +51,63 @@ def([
       });
 
       this.$el.html(html);
-      this.hideKnownLibs();
+      this.detailChange(1);
     },
 
-    _blockLibs: _([
-      "jquery",
-      "moment",
-      "underscore",
-      "backbone",
-      "require"
-    ]),
+    detailChange: function (headerControlVal) {
+      this.sourceCollection.each(function (sourceModel) {
+        sourceModel.show();
+      });
 
-    hideKnownLibs: function () {
+      switch (headerControlVal) {
+        case 1:  //active js dom modifiers only
+          _(this.getBlockedSourceModels()).each(function (sourceModel) {
+            sourceModel.hide();
+          });
+
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: true,
+            activeCodeOnly: true
+          });
+
+          this.markInactive(true);
+          break;
+        case 2:  //active js only
+          _(this.getBlockedSourceModels()).each(function (sourceModel) {
+            sourceModel.hide();
+          });
+
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: false,
+            activeCodeOnly: true
+          });
+
+          this.markInactive(true);
+          break;
+        case 3:  // active js with known libs
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: false,
+            activeCodeOnly: true
+          });
+
+          this.markInactive(true);
+          break;
+        case 4:  // all js
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: false,
+            activeCodeOnly: false
+          });
+
+          this.markInactive(false);
+          break;
+      }
+
+      this.markBlockedSourceModels();
+    },
+
+    getBlockedSourceModels: function () {
+      var blockedSourceModels = [];
+
       _($(".fondue-file-link")).each(function (el) {
         var $el = this.$el.find(el);
         var text = $el.text();
@@ -61,9 +118,24 @@ def([
           }
         }, this);
 
+        var sourceModel = this.getModelFromEl($el);
         if (blockedLib) {
+          blockedSourceModels.push(sourceModel);
+        }
+      }, this);
+
+      return blockedSourceModels;
+    },
+
+    markBlockedSourceModels: function () {
+      _($(".fondue-file-link")).each(function (el) {
+        var $el = this.$el.find(el);
+        var sourceModel = this.getModelFromEl($el);
+
+        if (sourceModel.isVisible()) {
+          $el.parent().find("input").removeAttr("checked");
+        } else {
           $el.parent().find("input").attr("checked", "checked");
-          this.hideSource(this.getModelFromEl($el));
         }
       }, this);
     },
@@ -99,15 +171,25 @@ def([
     },
 
     hideSource: function (sourceModel) {
-      this.codeMirrorJSView.hideSourceModel(sourceModel);
+      sourceModel.hide();
+      this.codeMirrorJSView.showSources();
     },
 
     showSource: function (sourceModel) {
-      this.codeMirrorJSView.showSourceModel(sourceModel);
+      sourceModel.show();
+      this.codeMirrorJSView.showSources();
     },
 
-    toggleInactiveClicked: function (e) {
-      var $el = $(e.currentTarget);
+    markInactive: function (inactive) {
+      if (inactive) {
+        this.$("#fondue-toggle-inactive").attr("checked", "checked");
+      } else {
+        this.$("#fondue-toggle-inactive").removeAttr("checked");
+      }
+    },
+
+    toggleInactiveClicked: function () {
+      var $el = this.$("#fondue-toggle-inactive");
       if ($el.is(':checked')) {
         this.codeMirrorJSView.hideInactive();
       } else {
