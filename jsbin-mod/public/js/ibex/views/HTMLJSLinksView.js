@@ -156,6 +156,7 @@ def([
           fromHTMLLine: lineNumber,
           fromEl: null,
           toEl: pillEl,
+          toJSLine: gutterPillView.line,
           jsMirror: this.codeMirrorHTMLView.htmlMirror,
           htmlMirror: this.codeMirrorJSView.jsMirror
         });
@@ -178,6 +179,7 @@ def([
       this.codeMirrorHTMLView.highlightLine(lineNumber, codeLine.length);
 
       var arrJSPillEl = [];
+      var arrJSPillLine = [];
       var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
 
       var arrRelatedDQ = gutterPillView.getRelatedDomQueries();
@@ -197,15 +199,17 @@ def([
         return jsPill.cid;
       }).each(function (jsPill) {
         arrJSPillEl.push(jsPill.$el[0]);
+        arrJSPillLine.push(jsPill.line);
       });
 
       var arrLines = [];
 
-      _(arrJSPillEl).each(function (el) {
+      _(arrJSPillEl).each(function (el, i) {
         var lineView = new CurveLineView({
           fromHTMLLine: lineNumber,
           fromEl: null,
           toEl: el,
+          toJSLine: arrJSPillLine[i],
           jsMirror: this.codeMirrorHTMLView.htmlMirror,
           htmlMirror: this.codeMirrorJSView.jsMirror
         });
