@@ -57,6 +57,19 @@ def([
 
       this.bindSocketHandlers();
       this.bindViewListeners();
+      this.fetchData();
+    },
+
+    fetchData: function () {
+      this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+
+      var setupInterval = setInterval(_.bind(function () {
+        if (!this.sourceCollection.length) {
+          this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+        } else {
+          clearInterval(setupInterval);
+        }
+      }, this), 3000);
     },
 
     bindSocketHandlers: function () {
@@ -64,19 +77,8 @@ def([
         this.activeNodeCollection.mergeInvocations(obj.invocations);
 
         if (!this.sourceCollection.length) {
-          // this jsbin doesn't have all the setup code the browser sent
-          // trigger a fetch to get everything we need
-
-          if (!this.resendRequested) {
-            console.log("Don't have scripts, requesting...");
-            this.jsBinSocketRouter.emit("jsbin:resendAll", {});
-            this.resendRequested = true;
-          }
-
           return;
         }
-
-        this.resendRequested = false;
 
         if (this.activeNodeCollection.hasFullNodeList) {
           this.updateMirrors();

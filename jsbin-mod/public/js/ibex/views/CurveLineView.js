@@ -136,6 +136,8 @@ def([
       if (!fromPos || !toPos ||
         fromPos.height < 1 || fromPos.height < 1 ||
         toPos.height < 1 || toPos.width < 1) {
+
+        console.log("Could not draw lineView:", this);
         return;
       }
 

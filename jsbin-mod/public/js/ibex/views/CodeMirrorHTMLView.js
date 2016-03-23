@@ -2,19 +2,31 @@ def([
   "jquery",
   "backbone",
   "underscore",
+  "handlebars",
   "./GutterPillView",
-  "../routers/JSBinSocketRouter"
-], function ($, Backbone, _, GutterPillView, JSBinSocketRouter) {
+  "../routers/JSBinSocketRouter",
+  "text!../templates/MissingElMessage.html"
+
+], function ($, Backbone, _, Handlebars, GutterPillView, JSBinSocketRouter, MissingElMessageTemplate) {
   return Backbone.View.extend({
     htmlMirror: null,
     htmlSource: "",
     markers: [],
+    missingElTemplate: Handlebars.compile(MissingElMessageTemplate),
 
     initialize: function (codeMirrors, activeNodeCollection, jsBinRouter) {
       this.codeMirrors = codeMirrors;
       this.activeNodeCollection = activeNodeCollection;
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
       this.jsBinRouter = jsBinRouter;
+      this.collapseMask = _.bind(this.collapseMask, this);
+      if (!this.$missingEl) {
+        $("body").append(this.missingElTemplate());
+        this.$missingEl = $("#missingEl");
+        this.$missingElMask = $("#missingElMask");
+        this.$missingEl.click(this.collapseMask);
+        this.$missingElMask.click(this.collapseMask);
+      }
     },
 
     render: function () {
@@ -32,6 +44,40 @@ def([
 
       this.htmlMirror.setCode(this.htmlSource);
       this.htmlJSLinksView.addHTMLGutterPills();
+    },
+
+    showMissingElMessage: function (domQueries, gutterPillView) {
+      gutterPillView.nonDom = true;
+
+      var message = "<h4>Queried element(s) are not in the DOM</h4>";
+
+      _(domQueries).each(function (domQueryObj) {
+        var domFnName = domQueryObj.domFnName;
+        var queryString = domQueryObj.queryString;
+
+        message += "<p>document." + domFnName + "(\"" + queryString + "\")</p>";
+      }, this);
+
+      this.$missingEl.find("#cm-el-message").html(message);
+      var rect = $(".CodeMirror-code")[0].getBoundingClientRect();
+      this.$missingEl.css({
+        top: rect.top + (window.innerHeight - rect.top) / 4,
+        left: rect.left + 10,
+        width: rect.width - 40
+      });
+
+      this.$missingElMask.css({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      });
+      this.$missingElMask.show();
+      this.$missingEl.show();
+    },
+
+    collapseMask: function () {
+      this.htmlJSLinksView.collapseAll();
     },
 
     deleteAllLines: function () {

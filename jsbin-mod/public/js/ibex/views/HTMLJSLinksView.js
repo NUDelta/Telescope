@@ -110,11 +110,18 @@ def([
         return;
       }
 
-      this.destroyPillLines(gutterPillView);
-      this.jsBinSocketRouter.emit("jsbin:html", {
-        selected: false,
-        relatedDomQueries: gutterPillView.getRelatedDomQueries()
-      });
+      if (gutterPillView.nonDom) {
+        gutterPillView.expanded = false;
+        this.codeMirrorHTMLView.$missingEl.hide();
+        this.codeMirrorHTMLView.$missingElMask.hide();
+      } else {
+        this.destroyPillLines(gutterPillView);
+
+        this.jsBinSocketRouter.emit("jsbin:html", {
+          selected: false,
+          relatedDomQueries: gutterPillView.getRelatedDomQueries()
+        });
+      }
 
       gutterPillView.expanded = false;
 
@@ -150,6 +157,13 @@ def([
       }, this);
 
       var arrLines = [];
+
+      if (arrLineNumbers.length) {
+        // if (!arrLineNumbers.length) {
+        //JS node queried the dom for something that wasn't there
+        this.codeMirrorHTMLView.showMissingElMessage(domQueries, gutterPillView);
+        return;
+      }
 
       _(arrLineNumbers).each(function (lineNumber) {
         var lineView = new CurveLineView({
