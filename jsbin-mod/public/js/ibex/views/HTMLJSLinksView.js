@@ -158,8 +158,7 @@ def([
 
       var arrLines = [];
 
-      if (arrLineNumbers.length) {
-        // if (!arrLineNumbers.length) {
+      if (!arrLineNumbers.length) {
         //JS node queried the dom for something that wasn't there
         this.codeMirrorHTMLView.showMissingElMessage(domQueries, gutterPillView);
         return;

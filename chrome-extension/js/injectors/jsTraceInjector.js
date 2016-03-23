@@ -200,6 +200,12 @@ define([],
             try {
               window.unravelAgent.response = http.responseText;
 
+              var interval_id = window.setInterval("", 9999); // Get a reference to the last
+              for (var i = 1; i < interval_id; i++) {
+                window.clearInterval(i);
+              }
+              window.clearInterval(interval_id);
+
               var deleteKeys = [];
 
               for (var key in window) {
@@ -210,8 +216,6 @@ define([],
                 }
               }
 
-              // console.log("Deleting", JSON.stringify(deleteKeys));
-
               var wontDeleteKeys = [];
               window.unravelAgent._(deleteKeys).each(function (key) {
                 var wasDeleted = delete window[key];
@@ -220,10 +224,13 @@ define([],
                 }
               });
 
+              var secondDeleteFails = [];
               window.unravelAgent._(wontDeleteKeys).each(function (key) {
+                window[key] = null;
                 window[key] = undefined;
                 delete window[key];
                 if (window[key]) {
+                  secondDeleteFails.push(key);
                   console.log("Secondary delete didn't work:", key);
                 }
               });
@@ -232,11 +239,6 @@ define([],
                 window.localStorage.clear();
               }
 
-              var interval_id = window.setInterval("", 9999); // Get a reference to the last
-              for (var i = 1; i < interval_id; i++) {
-                window.clearInterval(i);
-              }
-              window.clearInterval(interval_id);
 
               //Send async request to re-init the content script after we nuke the page
               window.dispatchEvent(new CustomEvent("ReloadContentListeners"));

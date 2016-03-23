@@ -5,51 +5,7 @@ define([],
         return;
       }
 
-
-      /*!
-       * jQuery JavaScript Library v2.1.4
-       * http://jquery.com/
-       *
-       * Includes Sizzle.js
-       * http://sizzlejs.com/
-       *
-       * Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
-       * Released under the MIT license
-       * http://jquery.org/license
-       *
-       * Date: 2015-04-28T16:01Z
-       */
-
-      (function (global, factory) {
-
-        if (typeof module === "object" && typeof module.exports === "object") {
-          // For CommonJS and CommonJS-like environments where a proper `window`
-          // is present, execute the factory and get jQuery.
-          // For environments that do not have a `window` with a `document`
-          // (such as Node.js), expose a factory as module.exports.
-          // This accentuates the need for the creation of a real `window`.
-          // e.g. var jQuery = require("jquery")(window);
-          // See ticket #14549 for more info.
-          module.exports = global.document ?
-            factory(global, true) :
-            function (w) {
-              if (!w.document) {
-                throw new Error("jQuery requires a window with a document");
-              }
-              return factory(w);
-            };
-        } else {
-          factory(global);
-        }
-
-// Pass this if window is not defined yet
-      }(typeof window !== "undefined" ? window : this, function (window, noGlobal) {
-
-// Support: Firefox 18+
-// Can't be in strict mode, several libs including ASP.NET trace
-// the stack via arguments.caller.callee and Firefox dies if
-// you try to trace through "use strict" call chains. (#13335)
-//
+      (function () {
 
         var arr = [];
 
@@ -647,19 +603,19 @@ define([],
 
             // Attribute selectors: http://www.w3.org/TR/selectors/#attribute-selectors
               attributes = "\\[" + whitespace + "*(" + characterEncoding + ")(?:" + whitespace +
-                  // Operator (capture 2)
+                // Operator (capture 2)
                 "*([*^$|!~]?=)" + whitespace +
-                  // "Attribute values must be CSS identifiers [capture 5] or strings [capture 3 or capture 4]"
+                // "Attribute values must be CSS identifiers [capture 5] or strings [capture 3 or capture 4]"
                 "*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|(" + identifier + "))|)" + whitespace +
                 "*\\]",
 
               pseudos = ":(" + characterEncoding + ")(?:\\((" +
-                  // To reduce the number of selectors needing tokenize in the preFilter, prefer arguments:
-                  // 1. quoted (capture 3; capture 4 or capture 5)
+                // To reduce the number of selectors needing tokenize in the preFilter, prefer arguments:
+                // 1. quoted (capture 3; capture 4 or capture 5)
                 "('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|" +
-                  // 2. simple (capture 6)
+                // 2. simple (capture 6)
                 "((?:\\\\.|[^\\\\()[\\]]|" + attributes + ")*)|" +
-                  // 3. anything else (capture 2)
+                // 3. anything else (capture 2)
                 ".*" +
                 ")\\)|)",
 
@@ -1425,8 +1381,8 @@ define([],
 
                   // IE 9's matchesSelector returns false on disconnected nodes
                   if (ret || support.disconnectedMatch ||
-                      // As well, disconnected nodes are said to be in a document
-                      // fragment in IE 9
+                    // As well, disconnected nodes are said to be in a document
+                    // fragment in IE 9
                     elem.document && elem.document.nodeType !== 11) {
                     return ret;
                   }
@@ -1618,9 +1574,9 @@ define([],
 
                     // Strip excess characters from unquoted arguments
                   } else if (unquoted && rpseudo.test(unquoted) &&
-                      // Get excess from tokenize (recursively)
+                    // Get excess from tokenize (recursively)
                     (excess = tokenize(unquoted, true)) &&
-                      // advance to the next closing parenthesis
+                    // advance to the next closing parenthesis
                     (excess = unquoted.indexOf(")", unquoted.length - excess) - unquoted.length)) {
 
                     // excess is a negative index
@@ -1729,7 +1685,7 @@ define([],
 
                           while ((node = ++nodeIndex && node && node[dir] ||
 
-                              // Fallback to seeking `elem` from the start
+                            // Fallback to seeking `elem` from the start
                             (diff = nodeIndex = 0) || start.pop())) {
 
                             // When found, cache indexes on `parent` and break
@@ -1957,8 +1913,8 @@ define([],
                   return elem.nodeName.toLowerCase() === "input" &&
                     elem.type === "text" &&
 
-                      // Support: IE<8
-                      // New HTML5 attribute values (e.g., "search") appear with elem.type === "text"
+                    // Support: IE<8
+                    // New HTML5 attribute values (e.g., "search") appear with elem.type === "text"
                     ( (attr = elem.getAttribute("type")) == null || attr.toLowerCase() === "text" );
                 },
 
@@ -2963,7 +2919,7 @@ define([],
 
           addBack: function (selector) {
             return this.add(selector == null ?
-                this.prevObject : this.prevObject.filter(selector)
+              this.prevObject : this.prevObject.filter(selector)
             );
           }
         });
@@ -4690,7 +4646,7 @@ define([],
             // by a handler lower down the tree; reflect the correct value.
             this.isDefaultPrevented = src.defaultPrevented ||
             src.defaultPrevented === undefined &&
-              // Support: Android<4.0
+            // Support: Android<4.0
             src.returnValue === false ?
               returnTrue :
               returnFalse;
@@ -6067,13 +6023,13 @@ define([],
             set: function (elem, value, extra) {
               var styles = extra && getStyles(elem);
               return setPositiveNumber(elem, value, extra ?
-                  augmentWidthOrHeight(
-                    elem,
-                    name,
-                    extra,
-                    jQuery.css(elem, "boxSizing", false, styles) === "border-box",
-                    styles
-                  ) : 0
+                augmentWidthOrHeight(
+                  elem,
+                  name,
+                  extra,
+                  jQuery.css(elem, "boxSizing", false, styles) === "border-box",
+                  styles
+                ) : 0
               );
             }
           };
@@ -7412,7 +7368,7 @@ define([],
 
                   // IE6-9 doesn't update selected after form reset (#2551)
                   if (( option.selected || i === index ) &&
-                      // Don't return options that are disabled or in a disabled optgroup
+                    // Don't return options that are disabled or in a disabled optgroup
                     ( support.optDisabled ? !option.disabled : option.getAttribute("disabled") === null ) &&
                     ( !option.parentNode.disabled || !jQuery.nodeName(option.parentNode, "optgroup") )) {
 
@@ -8485,10 +8441,10 @@ define([],
           },
           serializeArray: function () {
             return this.map(function () {
-              // Can add propHook for "elements" to filter or add form elements
-              var elements = jQuery.prop(this, "elements");
-              return elements ? jQuery.makeArray(elements) : this;
-            })
+                // Can add propHook for "elements" to filter or add form elements
+                var elements = jQuery.prop(this, "elements");
+                return elements ? jQuery.makeArray(elements) : this;
+              })
               .filter(function () {
                 var type = this.type;
 
@@ -9150,46 +9106,13 @@ define([],
 // AMD loader is present. jQuery is a special case. For more information, see
 // https://github.com/jrburke/requirejs/wiki/Updating-existing-libraries#wiki-anon
 
-        if (typeof define === "function" && define.amd) {
-          define("jquery", [], function () {
-            return jQuery;
-          });
-        }
 
+        window.unravelAgent.$ = jQuery;
+      })();
 
-        var
-        // Map over jQuery in case of overwrite
-          _jQuery = window.jQuery,
-
-        // Map over the $ in case of overwrite
-          _$ = window.$;
-
-        jQuery.noConflict = function (deep) {
-          if (window.$ === jQuery) {
-            window.$ = _$;
-          }
-
-          if (deep && window.jQuery === jQuery) {
-            window.jQuery = _jQuery;
-          }
-
-          return jQuery;
-        };
-
-// Expose jQuery and $ identifiers, even in AMD
-// (#7102#comment:10, https://github.com/jquery/jquery/pull/557)
-// and CommonJS for browser emulators (#13566)
-        if (typeof noGlobal === strundefined) {
-          window.jQuery = window.$ = jQuery;
-        }
-
-
-        return jQuery;
-
-      }));
-
-
-      window.unravelAgent.$ = jQuery.noConflict(true);
+      /*!
+       * jQuery JavaScript Library v2.1.4
+       */
 
       window.unravelAgent.$.fn.getSelector = function () {
         var $el = window.unravelAgent.$(this);
@@ -9219,7 +9142,7 @@ define([],
       };
 
       window.unravelAgent.$.fn.getPath = function () {
-       var unravelDelete = null;
+        var unravelDelete = null;
         //some text
 
         if (this.length != 1) throw 'Requires one element.';

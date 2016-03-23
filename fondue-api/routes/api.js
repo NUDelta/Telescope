@@ -11,16 +11,23 @@ module.exports = function (app) {
     var beautifyOnly = req.param("beautifyOnly");  //deprecated
 
     if (html === "true") {
-      instrumentService.instrumentHTML(url, basePath, function (html) {
-        res.send(html);
-        //res.jsonp({
-        //  html:html
-        //});
-      });
+      try {
+        instrumentService.instrumentHTML(url, basePath, function (html) {
+          res.send(html);
+        });
+      } catch (err) {
+        console.warn("Error on instrumentHTML:", url);
+        res.send("");
+      }
     } else if (js === "true") {
-      instrumentService.instrumentJS(url, basePath, function (js) {
-        res.send(js);
-      });
+      try {
+        instrumentService.instrumentJS(url, basePath, function (js) {
+          res.send(js);
+        });
+      } catch (err) {
+        console.warn("Error on instrumentJS:", url);
+        res.send("");
+      }
     }
   });
 
