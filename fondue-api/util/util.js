@@ -92,7 +92,7 @@ module.exports = {
       }).code;
     } catch (ig) {
       console.warn("Could not JS beautify, passing original source through.", path ? " (" + path + ")" : "");
-      cleanJS = src;
+      return null;
     }
 
     return cleanJS;

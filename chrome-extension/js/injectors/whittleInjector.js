@@ -11,7 +11,7 @@ define([],
 
       window.unravelAgent.metaScripts = function () {
         var metaScripts = [];
-        var scripts = unravelAgent.$("script");
+        var scripts = unravelAgent.$("script:not(#unravelUntraced)");
 
         var i = 0;
         unravelAgent._(scripts).each(function (scriptEl) {
@@ -52,6 +52,16 @@ define([],
           i++;
         });
 
+        unravelAgent._(window.unravelAgent.skipSources).each(function (url) {
+          metaScripts.push({
+            path: url,
+            url: url,
+            inline: true,
+            domPath: url,
+            order: parseInt(url.split("-script-")[1]),
+            unTraced: true
+          });
+        });
 
         return metaScripts;
       };

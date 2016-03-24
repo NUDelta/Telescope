@@ -81,7 +81,10 @@ def([
         }
 
         if (this.activeNodeCollection.hasFullNodeList) {
-          this.updateMirrors();
+          if (!this.uiPaused) {
+            this.codeMirrorJSView.showSources();
+            this.codeMirrorHTMLView.render();
+          }
         }
       }, this);
 
@@ -104,13 +107,21 @@ def([
         this.sourceCollection.empty();
         this.sourceCollection.add(obj.scripts);
         this.dropDownJSView.render();
-        this.updateMirrors();
+
+        if (!this.uiPaused) {
+          this.dropDownJSView.detailChange(1);
+          this.codeMirrorHTMLView.render();
+        }
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
         console.log("fondueDTO:newNodeList", obj.nodes.length, "new nodes.");
         this.activeNodeCollection.mergeNodes(obj.nodes);
-        this.resumeUIUpdates();
+
+        this.uiPaused = false;
+        this.codeMirrorJSView.showSources();
+        this.codeMirrorHTMLView.render();
+        this.headerControlView.resume();
       }, this);
 
       this.headerControlView.on("jsDetailChange", function (val) {
@@ -126,7 +137,10 @@ def([
         if (pause) {
           this.pauseUIUpdates();
         } else {
-          this.resumeUIUpdates();
+          this.uiPaused = false;
+          this.codeMirrorJSView.showSources();
+          this.codeMirrorHTMLView.render();
+          this.headerControlView.resume();
         }
       }, this);
 
@@ -138,27 +152,15 @@ def([
 
       this.headerControlView.on("controlView:order", function (jsOrderReversed) {
         this.sourceCollection.setOrder(jsOrderReversed);
+        this.codeMirrorHTMLView.render();
         this.dropDownJSView.render();
-        this.updateMirrors();
+        this.codeMirrorJSView.showSources();
       }, this);
     },
 
     pauseUIUpdates: function () {
       this.uiPaused = true;
       this.headerControlView.pause();
-    },
-
-    resumeUIUpdates: function () {
-      this.uiPaused = false;
-      this.updateMirrors();
-      this.headerControlView.resume();
-    },
-
-    updateMirrors: function () {
-      if (!this.uiPaused) {
-        this.codeMirrorJSView.showSources();
-        this.codeMirrorHTMLView.render();
-      }
     },
 
     nav: function (panelType, codeMirrorInstance) {

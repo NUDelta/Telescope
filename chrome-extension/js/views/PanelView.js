@@ -4,25 +4,22 @@ define([
   "jquery",
   "handlebars",
   "../agents/UnravelAgent",
-  "../collections/CallStackCollection",
   "../collections/NodeCollection",
   "../routers/PanelSocketRouter",
   "text!../templates/view.html"
 ], function (Backbone, _, $,
              Handlebars,
              UnravelAgent,
-             CallStackCollection,
              NodeCollection,
              IbexSocketRouter, viewTemplate) {
   return Backbone.View.extend({
     template: Handlebars.compile(viewTemplate),
 
     events: {
-      "click #reload": "reloadInjecting",
+      "click #reload": "reloadInjecting"
     },
 
     initialize: function () {
-      this.storeNodeActivity = _.bind(this.storeNodeActivity, this);
       this.sendScriptsToJSBin = _.bind(this.sendScriptsToJSBin, this);
       this.getScriptMetaData = _.bind(this.getScriptMetaData, this);
 
@@ -32,7 +29,6 @@ define([
       this.ibexSocketRouter.onSocketData("jsbin:resendAll", this.sendNodesHTMLCSSToJSBin, this);
       this.ibexSocketRouter.onSocketData("jsbin:html", this.introPageHTML, this);
 
-      this.callStackCollection = new CallStackCollection();
       this.nodeCollection = new NodeCollection();
       this.binSetupInProgress = true;
     },
@@ -78,6 +74,11 @@ define([
         return;
       }
 
+      if (this.sendingToBin) {
+        console.log("Ignoring JSBin resendAll request, transmission in progress...");
+        return;
+      }
+
       var send = _.bind(function () {
         if (!this.binReady) {
           console.log("Bin not ready for data, waiting...");
@@ -86,13 +87,25 @@ define([
         }
 
         console.log("Sending JSBin new set of HTML/CSS/JS");
+        console.log("sendingToBin set to True");
+        this.sendingToBin = true;
         this.sendScriptsToJSBin();
+
+        var setFalse = _.bind(function () {
+          console.log("sendingToBin set to False");
+          this.sendingToBin = false;
+        }, this);
+
+        var transmissionDone = _.bind(function () {
+          setTimeout(setFalse, 10000);
+        }, this);
+
         UnravelAgent.runInPage(function () {
           unravelAgent.emitCSS();
           unravelAgent.emitHTMLSelect();
           unravelAgent.fondueBridge.resetInvokeCounts();
           unravelAgent.fondueBridge.emitNodeList();
-        });
+        }, transmissionDone);
       }, this);
 
       send();
@@ -105,6 +118,8 @@ define([
     onFondueReady: function () {
       var panelView = this;
       var tryToGetNodes = function () {
+        console.log("Waiting on fondue'd doc to load...");
+
         var onNodesLoaded = function (nodeArr) {
           if (!nodeArr) {
             setTimeout(tryToGetNodes, 100);
@@ -112,6 +127,8 @@ define([
             panelView.nodeCollection.add(nodeArr);
             console.log("", nodeArr.length, " nodes loaded.");
             panelView.getScriptMetaData(function () {
+              console.log("getScriptMetaData callback");
+
               UnravelAgent.runInPage(function () {
                 unravelAgent.fondueBridge.startTracking();
                 unravelAgent.startObserving();
@@ -124,18 +141,16 @@ define([
         };
 
         UnravelAgent.runInPage(function () {
-          var hasBodyChildren = !!$("body").children().length;
-
-          var scripts = unravelAgent.$("script");
-          if (hasBodyChildren && scripts && scripts[0]) {
+          // var hasBodyChildren = !!$("body").children().length;
+          // var scripts = unravelAgent.$("script");
+          // if (hasBodyChildren && scripts && scripts[0]) {
+          if (unravelAgent.scriptLoadComplete) {
             return unravelAgent.fondueBridge.getNodes(); //for our script metadata
           } else {
-            console.log("Body or scripts not fully reloaded yet");
-
+            console.log("PanelView: Waiting on scripts to finish loading...");
             return false;
           }
         }, onNodesLoaded);
-
       };
 
       tryToGetNodes();
@@ -257,7 +272,23 @@ define([
         return o.order
       }).value();
 
-      var internalScripts = _(hitScripts).chain().where({
+      var internalScripts = [];
+      _.each(this.metaScripts, function (s) {
+        if (s.unTraced) {
+          internalScripts.push({
+            path: s.path,
+            url: s.url, //ignore hash parts
+            builtIn: false,
+            inline: s.inline,
+            domPath: s.domPath,
+            order: s.order,
+            unTraced: true,
+            js: ""
+          });
+        }
+      }, this);
+
+      internalScripts = _(hitScripts.concat(internalScripts)).chain().where({
         inline: true
       }).sortBy(function (o) {
         return o.order
@@ -330,37 +361,8 @@ define([
       }, this);
     },
 
-    stop: function () {
-      UnravelAgent.runInPage(function () {
-        //unravelAgent.stopObserving();
-        //unravelAgent.traceJsOff();
-      }, function () {
-        this.$("#record .active").hide();
-        this.$("#record .inactive").show();
-      });
-
-      UnravelAgent.runInPage(function () {
-        return unravelAgent.fondueBridge.getNodeActivity();
-      }, this.storeNodeActivity);
-    },
-
-    reset: function () {
-      this.callStackCollection.reset(null, {});
-      this.nodeCollection.reset(null, {});
-      this.stop();
-    },
-
-    storeNodeActivity: function (nodeActivity) {
-      if (!nodeActivity) {
-        console.warn("Fondue injector is broken or not injected yet. JS Capturing disabled.");
-        return;
-      }
-
-      this.nodeCollection.add(nodeActivity);
-    },
-
     reloadInjecting: function () {
-      UnravelAgent.reloadInjecting();
+        UnravelAgent.reloadInjecting();
     }
   });
 });

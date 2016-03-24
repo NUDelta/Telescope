@@ -22,7 +22,13 @@ module.exports = {
     }, function (err, subRes, body) {
       if (err) throw err;
 
-      callback(util.beautifyJS(body));
+      var beautifiedSrc = util.beautifyJS(body);
+
+      if (beautifiedSrc === null) {
+        callback(body);
+      } else {
+        callback(beautifiedSrc);
+      }
     });
   }
 };

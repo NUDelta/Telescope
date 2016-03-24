@@ -51,7 +51,6 @@ def([
       });
 
       this.$el.html(html);
-      this.detailChange(1);
     },
 
     detailChange: function (headerControlVal) {

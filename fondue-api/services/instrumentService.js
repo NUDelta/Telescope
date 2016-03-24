@@ -51,7 +51,11 @@ module.exports = {
         "Accept-Language": "en-US,en;q=0.8"
       }
     }, function (err, subRes, body) {
-      if (err) throw err;
+      if (err) {
+        console.log("Error on fetching HTML. Returning \"\" for:", url);
+        callback("");
+        return;
+      }
 
       body = util.beautifyHTML(body);  //Remove crap that breaks fondue
 
@@ -104,7 +108,11 @@ module.exports = {
       rejectUnauthorized: false,
       gzip: true
     }, function (err, subRes, body) {
-      if (err) throw err;
+      if (err) {
+        console.log("Error on fetching JS. Returning \"\" for:", url);
+        callback("");
+        return;
+      }
 
       var fondueOptions = {
         path: url,
