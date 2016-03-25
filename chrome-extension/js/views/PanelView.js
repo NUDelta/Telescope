@@ -103,7 +103,6 @@ define([
         UnravelAgent.runInPage(function () {
           unravelAgent.emitCSS();
           unravelAgent.emitHTMLSelect();
-          unravelAgent.fondueBridge.resetInvokeCounts();
           unravelAgent.fondueBridge.emitNodeList();
         }, transmissionDone);
       }, this);
@@ -130,7 +129,6 @@ define([
               console.log("getScriptMetaData callback");
 
               UnravelAgent.runInPage(function () {
-                unravelAgent.fondueBridge.startTracking();
                 unravelAgent.startObserving();
               }, function () {
                 panelView.binSetupInProgress = false;

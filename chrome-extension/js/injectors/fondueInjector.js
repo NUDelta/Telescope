@@ -11,54 +11,66 @@ define([], function () {
       FondueBridge.prototype = {
         constructor: FondueBridge,
 
-        getNodes: function () {
-          if (!this.nodeArr) {
-            this.nodesHandle = window.__tracer.trackNodes();
-            this.nodeArr = window.__tracer.newNodes(this.nodesHandle);
-          }
+        initialize: function () {
+          this.updateTrackedNodes = unravelAgent._.bind(this.updateTrackedNodes, this);
+          this.startTracking = unravelAgent._.bind(this.startTracking, this);
+          this.getNodes = unravelAgent._.bind(this.getNodes, this);
+          this.resetTracer = unravelAgent._.bind(this.resetTracer, this);
+          this.startTrackInterval = unravelAgent._.bind(this.startTrackInterval, this);
+          this.getNewNodes = unravelAgent._.bind(this.getNewNodes, this);
+        },
 
-          return this.nodeArr;
+        getNodes: function () {
+          return unravelAgent._(this.nodeMap).values();
+        },
+
+        getNewNodes: function () {
+          // if (!this.nodesHandle) {
+          //   debugger;
+          //   this.nodesHandle = window.__tracer.trackNodes();
+          // }
+
+          return window.__tracer.newNodes(window.__tracer.trackNodes());
         },
 
         startTracking: function () {
-          var nodeArr = this.getNodes();
-          this.startTrackInterval(nodeArr);
+          console.log("FondueInjector: startTracking()");
+          this.startTrackInterval();
         },
 
         resetTracer: function () {
           window.__tracer.resetTrace();
           this.logHandle = window.__tracer.trackLogs({ids: this.ids});
-          this.resetInvokeCounts();
         },
 
-        resetInvokeCounts: function () {
-          unravelAgent._(this.nodeArr).each(function (node) {
-            if (node.invokeCountTowardsMax) {
-              node.invokeCountTowardsMax = 0;
+        updateTrackedNodes: function () {
+          console.log("FondueInjector: updateTrackedNodes()");
+
+          var newNodes = this.getNewNodes();
+          if (!newNodes || !newNodes.length) {
+            return;
+          }
+          var _nodeArr = unravelAgent._(newNodes);
+          this.nodeMap = this.nodeMap || {};
+          _nodeArr.each(function (node) {
+            if (!this.nodeMap[node.id]) {
+              this.nodeMap[node.id] = node;
             }
-          });
+          }, this);
+          this.ids = unravelAgent._(this.nodeMap).keys();
+          this.logHandle = window.__tracer.trackLogs({ids: this.ids});
         },
 
-        startTrackInterval: function (nodeArr) {
-          var domReady = !!unravelAgent.$("body").length;
-
-          if (!domReady) {
+        startTrackInterval: function () {
+          this.updateTrackedNodes();
+          if (!this.ids || this.ids.length < 1) {
+            console.log("fondueInjector: startTrackInterval: no nodes yet.");
             setTimeout(unravelAgent._.bind(function () {
-              this.startTrackInterval(nodeArr);
+              this.startTrackInterval();
             }, this), 100);
           }
 
-          var _nodeArr = unravelAgent._(nodeArr);
-          var nodeMap = {};
-          _nodeArr.each(function (node) {
-            nodeMap[node.id] = node;
-          });
-          this.ids = _nodeArr.pluck("id");
-          this.nodeMap = nodeMap;
-          if (!_nodeArr || _nodeArr.length < 1) {
-            return;
-          }
-
+          console.log("fondueInjector: startTrackInterval: got nodes!");
           this.resetTracer();
           if (this.interval) {
             window.clearInterval(this.interval);
@@ -98,7 +110,7 @@ define([], function () {
           }));
         },
 
-        //Todo keep in sync with activeNodeModel
+        //keep in sync with activeNodeModel
         _domFnNames: unravelAgent._([
           "getElementsByTagName",
           "getElementsByTagNameNS",
@@ -128,8 +140,10 @@ define([], function () {
             //Get the last n javascript calls logged
             var arrInvocations = window.__tracer.logDelta(this.logHandle, FondueBridge.MAX_LOG_COUNT);
             if (arrInvocations.length < 1) {
+              console.log("emitNodeActivity:no invocations")
               return;
             }
+            console.log("emitNodeActivity:", arrInvocations.length, "invocations!")
 
             var _arrInvocations = unravelAgent._(arrInvocations);
 

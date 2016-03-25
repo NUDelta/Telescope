@@ -194,7 +194,7 @@ define([],
         //   return;
         // }
 
-        if(!window.location || !window.location.href || !window.location.origin || !window.location.pathname){
+        if (!window.location || !window.location.href || !window.location.origin || !window.location.pathname) {
           console.log("Ignoring rewrite for page/frame without enough location info");
           return;
         }
@@ -307,29 +307,32 @@ define([],
               };
 
               var bodyInsertFn = function (scriptEl) {
+                unravelAgent.fondueBridge.updateTrackedNodes();
                 document.body.appendChild(scriptEl);
               };
 
               var postBodyInsertFn = function (scriptEl) {
+                unravelAgent.fondueBridge.updateTrackedNodes();
                 unravelAgent.$("html").append(scriptEl);
               };
 
-              console.log("Loading pre-head scripts...");
+              // console.log("Loading pre-head scripts...");
               loadScripts(res.preHeadScripts, preHeadInsertFn, function () {
-                console.log("Loading head scripts...");
+                // console.log("Loading head scripts...");
                 loadScripts(res.headScripts, headInsertFn, function () {
-                  console.log("Loading pre-body scripts...");
+                  // console.log("Loading pre-body scripts...");
                   loadScripts(res.preBodyScripts, preBodyInsertFn, function () {
-                    console.log("Append body string...");
+                    unravelAgent.fondueBridge.startTracking();
 
+                    console.log("Append body string...");
                     unravelAgent.$("body").attr(res.bodyAttr);
                     unravelAgent.$("body").append(res.bodyStr);
-                    console.log("Loading body scripts...");
+                    // console.log("Loading body scripts...");
                     loadScripts(res.bodyScripts, bodyInsertFn, function () {
-                      console.log("Appending post-body...");
                       unravelAgent.$("html").append(res.postBodyStr);
-
+                      // console.log("Appending post-body...");
                       loadScripts(res.postBodyScripts, postBodyInsertFn, function () {
+                        unravelAgent.fondueBridge.updateTrackedNodes();
                         unravelAgent.scriptLoadComplete = true;
                       });
                     });
