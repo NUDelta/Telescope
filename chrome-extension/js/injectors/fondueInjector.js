@@ -18,6 +18,7 @@ define([], function () {
           this.resetTracer = unravelAgent._.bind(this.resetTracer, this);
           this.startTrackInterval = unravelAgent._.bind(this.startTrackInterval, this);
           this.getNewNodes = unravelAgent._.bind(this.getNewNodes, this);
+          this.totalInovactions = 0;
         },
 
         getNodes: function () {
@@ -173,6 +174,12 @@ define([], function () {
                 invocation.callStack = [];
               }
             }, this);
+
+            this.totalInovactions += _arrInvocations.length;
+            if (this.totalInovactions > 10000) {
+              this.resetTracer();
+              this.totalInovactions = 0;
+            }
 
             window.dispatchEvent(new CustomEvent("fondueDTO", {
                 detail: {

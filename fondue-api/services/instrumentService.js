@@ -6,6 +6,16 @@ var util = require("../util/util");
 var routes = require("../routes/routes");
 var fondueService = require("./fondueService");
 
+var blockedDomains = [
+  "static.dynamicyield.com",
+  "static.chartbeat.com",
+  "scorecardresearch.com",
+  "connect.facebook.net",
+  "google-analytics.com",
+  "beacon.krxd.net",
+];
+
+
 module.exports = {
   getInlineScriptSources: function (url, callback) {
     request({
@@ -101,6 +111,17 @@ module.exports = {
   },
 
   instrumentJS: function (url, basePath, callback) {
+    if (_(blockedDomains).find(function (domain) {
+        if (url.indexOf(domain) > -1) {
+          return true;
+        }
+      })) {
+      console.log("Blocking source request and return \"\" for:", url);
+
+      callback("");
+      return;
+    }
+
     request({
       url: url,
       fileName: basePath,
