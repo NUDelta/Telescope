@@ -67,6 +67,19 @@ function matchUpward(selector, node) {
 }
 
 function nodeTag(node) {
+  function decorate(tag) {
+		if (node.parent) {
+			if (node.parent.type === 'IfStatement') {
+				if (node.parent.consequent === node) {
+					tag.classes.push('branch', 'consequent');
+				} else if (node.parent.alternate === node) {
+					tag.classes.push('branch', 'alternate');
+				}
+			}
+		}
+		return tag;
+	}
+
 	if (node.type === 'Identifier') {
 		var exprTag = { name: 'expression', classes: ['identifier'] };
 		switch (node.parent.type) {
@@ -99,7 +112,7 @@ function nodeTag(node) {
 		case 'LabeledStatement': break;
 		case 'BreakStatement': break;
 		case 'SwitchCase': break;
-		default: throw new Error('unrecognized identifier parent ' + node.parent.type);
+		default: return undefined;
 		}
 		return undefined;
 	} else if (node.type === 'Literal') {
@@ -185,24 +198,12 @@ function nodeTag(node) {
 	} else if (node.type === 'Program') {
 		return decorate({ name: 'program', classes: [] });
 	} else if (node.type === 'WithStatement') {
-		return decorate({ name: 'statement', classes: ['with'] });
+		return undefined;
 	}
 
+  return undefined;
 	//TODO tag: DebuggerStatement
-	throw new Error('tag not found for ' + node.type);
-
-	function decorate(tag) {
-		if (node.parent) {
-			if (node.parent.type === 'IfStatement') {
-				if (node.parent.consequent === node) {
-					tag.classes.push('branch', 'consequent');
-				} else if (node.parent.alternate === node) {
-					tag.classes.push('branch', 'alternate');
-				}
-			}
-		}
-		return tag;
-	}
+	// throw new Error('tag not found for ' + node.type);
 }
 
 function isMatch(tag, selector) {

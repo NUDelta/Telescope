@@ -285,6 +285,7 @@ define([],
                     loadScripts(arrScripts, insertFn, callback);
                   };
                   script.onerror = function () {
+                    console.warn("COULD NOT LOAD SCRIPT", script.src);
                     loadScripts(arrScripts, insertFn, callback);
                   };
                   insertFn(script);

@@ -1,3 +1,5 @@
+console.log("2-index.js running")
+
 require = function t(e, i, s) {
   function o(a, r) {
     if (!i[a]) {

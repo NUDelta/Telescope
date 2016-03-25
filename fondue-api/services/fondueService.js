@@ -31,7 +31,6 @@ module.exports = {
           callback(instrumentedSrc, passedSource, i, iterLoc, errOpt);
         } else {
           console.log("Adding New Instrumented Source:", digest);
-
           redisClient.set(digest, instrumentedSrc, function (err, reply) {
             callback(instrumentedSrc, passedSource, i, iterLoc, errOpt);
           });

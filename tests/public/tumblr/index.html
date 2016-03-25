@@ -2,7 +2,6 @@
 
 <html>
 <head><title>Sign up | Tumblr</title>
-  <script src="jquery-2.1.3.min.js"></script>
   <link rel="shortcut icon" href="favicon.ico" type="image/png">
   <link rel="stylesheet" media="screen" href="global.css">
   <link rel="stylesheet" media="screen" href="2-global.css">
@@ -86,7 +85,8 @@
       t.exports = r("f/LVtH")
     }, {}]
   }, {}, []);</script>
-  <script crossorigin="anonymous" src="index.js"></script>
+  <script src="index.js"></script>
+  <script src="2-index.js"></script>
 </head>
 <body id="account_actions_logged_out_dashboard"
       class="flag--reblog-ui-refresh show_password_strength signup_account dash_b show_form loading recaptcha2 login-with-about identity base identity-refresh logged_out account_actions_logged_out_dashboard logged_out without_auto_paginate layout_onboarding">
@@ -466,7 +466,6 @@
     </div>
   </div>
 </div>
-<script crossorigin="anonymous" src="2-index.js"></script>
 <script>require("context").bootloader({
   Components: {
     HelpForm: {
@@ -516,12 +515,6 @@
         }
       }
     },
-    LogLady: {
-      keys: {
-        search_landing_usage: {init_event: false, keep_counts: true, flags: []},
-        search_session_v1: {init_event: false, keep_counts: false, flags: []}
-      }, default_session: "llsid563cb8aab64da8.93970941"
-    }
   },
   Flags: [],
   Context: {
