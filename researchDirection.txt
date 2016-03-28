@@ -250,13 +250,12 @@ Ibex Plan Actual
         Build Features, Fixes
     Mar 18
         Pilot Study 2
-    Mar 19 - 22
-        Code Complete
-    Mar 23
-        Video Coding
-        Data Analysis
-        Recruit/Test
-    Mar 27- April 8
+    Mar 19 - 25
+        Perf Refactors
+    Mar 25 - 31
+        Final Features, code complete
+    April 1 - April 8
+        Pro Sites Tests, Coding
         Write paper
         Related work
         Recruit/Test

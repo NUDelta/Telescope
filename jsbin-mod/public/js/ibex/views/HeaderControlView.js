@@ -27,6 +27,12 @@ def([
 
       this.$el.append(this.template());
       this.$detailSlider = this.$("#detailSlider");
+
+      var $timeLineSlider = this.$("#timeLineSlider");
+      $timeLineSlider.slider({
+        range: true,
+        values: [17, 67]
+      });
     },
 
     jsDetailChange: function () {
