@@ -38,14 +38,7 @@ def([
     },
 
     addHTMLGutterPills: function () {
-      var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
-
-      var domQueries = _(queryNodeMap).keys();
-      _(domQueries).each(function (domFnQueryStr) {
-        var domFnName = domFnQueryStr.split("|")[0];
-        var queryString = domFnQueryStr.split("|")[1];
-        var activeNodes = queryNodeMap[domFnQueryStr];
-
+      this.activeNodeCollection.eachDomQuery(function (domFnName, queryString, activeNodes) {
         this.codeMirrorHTMLView.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
           var pill = new GutterPillView(this.codeMirrorHTMLView.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes, this.jsBinRouter);
           this.htmlLineGutterPill[lineNumber] = pill;
@@ -59,7 +52,6 @@ def([
           pill.setCount(pill.getRelatedDomQueries().length);
           pill.setExpandFn(this.pillExpandFn);
           pill.setCollapseFn(this.pillCollapseFn);
-
         }, this);
       }, this);
     },
@@ -78,7 +70,7 @@ def([
           this.jsNodeIdGutterPill[activeNodeModel.get("id")] = pill;
         }
 
-        pill.setCount(activeNodeModel.get("hits"));
+        pill.setCount(activeNodeModel.getHits());
         pill.setExpandFn(this.pillExpandFn);
         pill.setCollapseFn(this.pillCollapseFn);
       }, this);
@@ -193,13 +185,11 @@ def([
 
       var arrJSPillEl = [];
       var arrJSPillLine = [];
-      var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
-
-      var arrRelatedDQ = gutterPillView.getRelatedDomQueries();
       var arrJsPill = [];
+      var arrRelatedDQ = gutterPillView.getRelatedDomQueries();
 
       _(arrRelatedDQ).each(function (dq) {
-        var nodeModels = queryNodeMap[dq.domFnName + "|" + dq.queryString];
+        var nodeModels = this.activeNodeCollection.getModelsByDomQuery(dq.domFnName, dq.queryString);
         _(nodeModels).each(function (nodeModel) {
           var jsPill = this.jsNodeIdGutterPill[nodeModel.get("id")];
           if (jsPill) {

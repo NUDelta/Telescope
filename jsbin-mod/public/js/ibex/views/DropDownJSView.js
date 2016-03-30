@@ -25,7 +25,8 @@ def([
       "angular",
       "react",
       "handlebars",
-      "underscore",
+      "html5shiv",
+      "underscore"
     ]),
 
     initialize: function (sourceCollection, codeMirrorJSView) {

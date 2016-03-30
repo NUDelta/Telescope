@@ -3,14 +3,19 @@ def([
   "backbone",
   "underscore",
   "handlebars",
+  "moment",
   "text!../templates/UIControls.html"
-], function ($, Backbone, _, Handlebars, UIControlsTemplate) {
+], function ($, Backbone, _, Handlebars, moment, UIControlsTemplate) {
   return Backbone.View.extend({
     template: Handlebars.compile(UIControlsTemplate),
 
     el: ".control",
 
     jsOrderReversed: true,
+
+    slideValLower: 0,
+
+    slideValUpper: 0,
 
     events: {
       "click #pauseUpdates": "togglePauseClicked",
@@ -19,7 +24,16 @@ def([
       "input #detailSlider": "jsDetailChange"
     },
 
-    initialize: function () {
+    initialize: function (activeNodeCollection) {
+      this.activeNodeCollection = activeNodeCollection;
+
+      this.timeSlideChange = _.bind(this.timeSlideChange, this);
+      this.pause = _.bind(this.pause, this);
+      this.resume = _.bind(this.resume, this);
+
+      this.triggerSlideChange = _.throttle(_.bind(function () {
+        this.trigger("timeSlideChange");
+      }, this), 500);
     },
 
     render: function () {
@@ -28,11 +42,41 @@ def([
       this.$el.append(this.template());
       this.$detailSlider = this.$("#detailSlider");
 
-      var $timeLineSlider = this.$("#timeLineSlider");
-      $timeLineSlider.slider({
+      this.renderSlider();
+    },
+
+    renderSlider: function () {
+      this.$(".timeline-slider-wrap #timeLineSlider").remove();
+      this.$(".timeline-slider-wrap").append("<div id='timeLineSlider'></div>");
+      this.$timeLineSlider = this.$("#timeLineSlider");
+
+      var earliestTS = this.activeNodeCollection.getEarliestTimeStamp();
+      var latestTS = this.activeNodeCollection.getLatestTimeStamp();
+
+      this.$timeLineSlider.slider({
         range: true,
-        values: [17, 67]
+        min: earliestTS,
+        max: latestTS,
+        values: [this.slideValLower || earliestTS, this.slideValUpper || latestTS],
+        slide: this.timeSlideChange
       });
+    },
+
+    timeSlideChange: function (event, ui) {
+      this.slideValLower = ui.values[0];
+      this.slideValUpper = ui.values[1];
+
+      this.activeNodeCollection.setTimeStampBounds(this.slideValLower, this.slideValUpper);
+      this.triggerSlideChange();
+    },
+
+    triggerSlideChange: function () {
+      this.trigger("timeSlideChange");
+    },
+
+    setTimeSlideVal: function (lowerVal, upperVal) {
+      this.$timeLineSlider.slider("values", lowerVal);
+      this.$timeLineSlider.slider("values", upperVal);
     },
 
     jsDetailChange: function () {

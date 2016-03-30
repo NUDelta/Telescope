@@ -46,7 +46,7 @@ def([
       this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection, this);
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection, this);
       this.dropDownJSView = new DropDownJSView(this.sourceCollection, this.codeMirrorJSView);
-      this.headerControlView = new HeaderControlView();
+      this.headerControlView = new HeaderControlView(this.activeNodeCollection);
       this.headerControlView.render();
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
       this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView, this.activeNodeCollection, this.sourceCollection, this);
@@ -84,6 +84,7 @@ def([
           if (!this.uiPaused) {
             this.codeMirrorJSView.showSources();
             this.codeMirrorHTMLView.render();
+            this.headerControlView.renderSlider();
           }
         }
       }, this);
@@ -121,6 +122,7 @@ def([
         this.uiPaused = false;
         this.codeMirrorJSView.showSources();
         this.codeMirrorHTMLView.render();
+        this.headerControlView.renderSlider();
         this.headerControlView.resume();
       }, this);
 
@@ -140,6 +142,7 @@ def([
           this.uiPaused = false;
           this.codeMirrorJSView.showSources();
           this.codeMirrorHTMLView.render();
+          this.headerControlView.renderSlider();
           this.headerControlView.resume();
         }
       }, this);
@@ -154,6 +157,13 @@ def([
         this.sourceCollection.setOrder(jsOrderReversed);
         this.codeMirrorHTMLView.render();
         this.dropDownJSView.render();
+        this.codeMirrorJSView.showSources();
+      }, this);
+
+      this.headerControlView.on("timeSlideChange", function () {
+        this.uiPaused = true;
+        this.headerControlView.pause();
+        this.codeMirrorHTMLView.render();
         this.codeMirrorJSView.showSources();
       }, this);
     },

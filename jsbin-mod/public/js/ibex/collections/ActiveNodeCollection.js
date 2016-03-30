@@ -12,6 +12,14 @@ def([
 
     queryNodeMap: {},
 
+    earliestTimeStamp: 0,
+
+    latestTimeStamp: 0,
+
+    minInvokeTime: 0,
+
+    maxInvokeTime: 0,
+
     initialize: function () {
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
       this.jsBinSocketRouter.onSocketData("fondueDTO:nodeBacktrace", function (obj) {
@@ -24,16 +32,30 @@ def([
       this.empty = _.bind(this.empty, this);
     },
 
+    getEarliestTimeStamp: function () {
+      return this.earliestTimeStamp;
+    },
+
+    getLatestTimeStamp: function () {
+      return this.latestTimeStamp;
+    },
+
     getActiveNodes: function (path, domModifiersOnly) {
       return this.filter(function (model) {
-        var hasHits = !!model.get("hits");
+        var hasHits = !!model.getHits();
         var hasPath = !!model.get("path");
         var matchesPath = path ? path === model.get("path") : true;
         var domModifier = domModifiersOnly ? !!model.get("domModifier") : true;
-        //var isFunction = model.get("type") === "function" || model.get("type") === "callsite";
         var isFunction = model.get("type") === "function";
+
         return hasHits && isFunction && hasPath && matchesPath && domModifier;
       });
+    },
+
+    setTimeStampBounds: function (minInvokeTime, maxInvokeTime) {
+      this.minInvokeTime = minInvokeTime;
+      this.maxInvokeTime = maxInvokeTime;
+      this.populateQueryNodeMap();
     },
 
     mergeNodes: function (arrNodes) {
@@ -66,6 +88,15 @@ def([
         var node = invocation.node;
         invocation.nodeName = node && node.name ? node.name : "";
 
+        var timestamp = invocation.timestamp;
+
+        if (!this.earliestTimeStamp || timestamp < this.earliestTimeStamp) {
+          this.earliestTimeStamp = timestamp;
+        }
+        if (!this.latestTimeStamp || timestamp > this.latestTimeStamp) {
+          this.latestTimeStamp = timestamp;
+        }
+
         var activeNodeModel = this.get(invocation.nodeId);
         if (!activeNodeModel) {
           activeNodeModel = new ActiveNodeModel(node);
@@ -79,7 +110,6 @@ def([
           invokeArr.push(invocation);
           activeNodeModel.set("invokes", invokeArr);
         }
-        activeNodeModel.set("hits", (activeNodeModel.get("hits") || 0) + 1);
       }, this);
       if (nodesCreated) {
         console.log("\tActiveNodeCollection: Added " + nodesCreated + " new nodes.");
@@ -99,8 +129,23 @@ def([
       this.queryNodeMap = {};
     },
 
-    getDomQueryNodeMap: function () {
-      return this.queryNodeMap;
+    eachDomQuery: function (iterFn, context) {
+      if (context) {
+        iterFn = _.bind(iterFn, context);
+      }
+
+      var domQueries = _(this.queryNodeMap).keys();
+      _(domQueries).each(function (domFnQueryStr) {
+        var domFnName = domFnQueryStr.split("|")[0];
+        var queryString = domFnQueryStr.split("|")[1];
+        var activeNodes = this.getModelsByDomQuery(domFnName, queryString);
+
+        iterFn(domFnName, queryString, activeNodes);
+      }, this);
+    },
+
+    getModelsByDomQuery: function (domFnName, queryString) {
+      return this.queryNodeMap[domFnName + "|" + queryString];
     },
 
     findQueriesPerNode: function (nodeModel) {
@@ -123,12 +168,34 @@ def([
       return domQueryArr;
     },
 
+    timeStampInRange: function (timestamp) {
+      if (this.minInvokeTime) {
+        if (this.maxInvokeTime) {
+          return timestamp >= this.minInvokeTime && timestamp <= this.maxInvokeTime;
+        } else {
+          return timestamp >= this.minInvokeTime;
+        }
+      } else if (this.maxInvokeTime) {
+        return timestamp <= this.maxInvokeTime;
+      } else {
+        return true;
+      }
+    },
+
     populateQueryNodeMap: function () {
-      var searchNodes = this.filter(function (model) {
-        var hasHits = !!model.get("hits");
+      this.queryNodeMap = {};
+
+      var searchNodes = [];
+      this.each(function (model) {
+        model.set("domModifier", false);
+
+        var hasHits = !!model.getHits();
         var hasPath = !!model.get("path");
-        return hasHits && hasPath;
-      });
+
+        if (hasHits && hasPath) {
+          searchNodes.push(model);
+        }
+      }, this);
 
       //Run a check against each active node to see if it modifies the dom
       _(searchNodes).each(function (nodeModel) {
@@ -137,10 +204,9 @@ def([
         if (domQueryFn) {
           var invokes = nodeModel.get("invokes");
           _(invokes).each(function (invoke) {
-            if (invoke.processed) {
+            if (!this.timeStampInRange(invoke.timestamp)) {
               return;
             }
-            invoke.processed = true;
 
             var domQueryString = nodeModel.getDomQueryStringFromInvoke(invoke);
 
