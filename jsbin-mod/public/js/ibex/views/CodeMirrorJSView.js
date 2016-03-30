@@ -122,16 +122,19 @@ def([
 
     scrollToSourceModel: function (sourceModel) {
       var position = sourceModel.getMirrorPos();
-      var margin = $(window).height() / 2;
-      this.jsMirror.scrollIntoView({line: position.line, ch: 0}, margin);
-      this.jsMirror.setCursor({line: position.line});
+      this.scrollToLine(position.line);
     },
 
     scrollTop: function () {
       window.setTimeout(_.bind(function () {
-        this.jsMirror.scrollTo({line: 0, ch: 0});
-        this.jsMirror.setCursor({line: 0});
+        this.scrollToLine(0);
       }, this), 1);
+    },
+
+    scrollToLine: function (line) {
+      var t = this.jsMirror.charCoords({line: line || 0, ch: 0}, "local").top;
+      var middleHeight = this.jsMirror.getScrollerElement().offsetHeight / 2;
+      this.jsMirror.scrollTo(null, t - middleHeight - 5);
     }
   });
 })

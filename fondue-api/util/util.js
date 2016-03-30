@@ -51,7 +51,7 @@ var minifyJSOutputOpts = {
 module.exports = {
   beautifyHTML: function (body) {
     body = htmlMinify(body, {
-      collapseWhitespace: true,
+      collapseWhitespace: false,
       removeComments: true,
       minifyJS: {
         fromString: true,
@@ -68,8 +68,8 @@ module.exports = {
       "indent_with_tabs": false,
       "preserve_newlines": false,
       "max_preserve_newlines": 1,
-      "wrap_line_length": 80,
-      "jslint_happy": true,
+      // "wrap_line_length": 80,
+      "jslint_happy": false,
       "keep_array_indentation": false,
       "brace_style": "collapse",
       "extra_liners": []

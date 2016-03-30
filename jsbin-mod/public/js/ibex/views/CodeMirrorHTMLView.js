@@ -80,6 +80,11 @@ def([
       this.htmlJSLinksView.collapseAll();
     },
 
+    hideMask: function () {
+      this.$missingEl.hide();
+      this.$missingElMask.hide();
+    },
+
     deleteAllLines: function () {
       this.htmlMirror.setCode("");
     },
@@ -107,9 +112,14 @@ def([
 
     scrollTop: function () {
       window.setTimeout(_.bind(function () {
-        this.jsMirror.scrollTo({line: 0, ch: 0});
-        this.jsMirror.setCursor({line: 0});
+        this.scrollToLine(0);
       }, this), 1);
+    },
+
+    scrollToLine: function (line) {
+      var t = this.htmlMirror.charCoords({line: line || 0, ch: 0}, "local").top;
+      var middleHeight = this.htmlMirror.getScrollerElement().offsetHeight / 2;
+      this.htmlMirror.scrollTo(null, t - middleHeight - 5);
     },
 
     highlightLine: function (lineNumber, length) {

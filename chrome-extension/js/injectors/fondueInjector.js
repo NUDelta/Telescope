@@ -3,10 +3,9 @@ define([], function () {
       var FondueBridge = function () {
       };
 
-      FondueBridge.MAX_LOG_COUNT = 1000;
+      FondueBridge.MAX_LOG_COUNT = 3000;
       FondueBridge.MAX_STACK_DEPTH = 20;
-      FondueBridge.EMIT_INTERVAL_MILLIS = 1000;
-      FondueBridge.MAX_INVOKE_LOG_COUNT = 4;
+      FondueBridge.EMIT_INTERVAL_MILLIS = 3000;
 
       FondueBridge.prototype = {
         constructor: FondueBridge,
@@ -68,7 +67,8 @@ define([], function () {
             console.log("fondueInjector: startTrackInterval: no nodes yet.");
             setTimeout(unravelAgent._.bind(function () {
               this.startTrackInterval();
-            }, this), 100);
+            }, this), FondueBridge.EMIT_INTERVAL_MILLIS);
+            return;
           }
 
           console.log("fondueInjector: startTrackInterval: got nodes!");
@@ -175,11 +175,11 @@ define([], function () {
               }
             }, this);
 
-            this.totalInovactions += _arrInvocations.length;
-            if (this.totalInovactions > 10000) {
-              this.resetTracer();
-              this.totalInovactions = 0;
-            }
+            //this.totalInovactions += _arrInvocations.length;
+            // if (this.totalInovactions > 10000) {
+            //   this.resetTracer();
+            //   this.totalInovactions = 0;
+            // }
 
             window.dispatchEvent(new CustomEvent("fondueDTO", {
                 detail: {

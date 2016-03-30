@@ -138,6 +138,7 @@ module.exports = function (httpServer) {
       $("head").remove();
       $("noscript").remove();
       $("svg").remove();
+      $("#unravel-introjs-style").remove();
       var body = $.html();
 
       data.html = util.beautifyHTML(body);

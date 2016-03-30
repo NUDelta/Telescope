@@ -35,6 +35,7 @@ def([
       }, this);
 
       this.codeMirrorHTMLView.removeAllHighlights();
+      this.codeMirrorHTMLView.hideMask();
     },
 
     addHTMLGutterPills: function () {
@@ -132,6 +133,7 @@ def([
       var arrLineNumbers = [];
       var rdqArr = [];
 
+      var firstScrollLine = null;
       _(domQueries).each(function (domQueryObj) {
         var domFnName = domQueryObj.domFnName;
         var queryString = domQueryObj.queryString;
@@ -145,8 +147,14 @@ def([
             html: codeLine
           });
           arrLineNumbers.push(lineNumber);
+
+          if (firstScrollLine === null || lineNumber < firstScrollLine) {
+            firstScrollLine = lineNumber;
+          }
         }, this);
       }, this);
+
+      this.codeMirrorHTMLView.scrollToLine(firstScrollLine);
 
       var arrLines = [];
 
@@ -198,15 +206,21 @@ def([
         }, this);
       }, this);
 
+      var firstScrollLine = null;
       _(arrJsPill).chain().uniq(function (jsPill) {
         return jsPill.cid;
       }).each(function (jsPill) {
         arrJSPillEl.push(jsPill.$el[0]);
         arrJSPillLine.push(jsPill.line);
+
+        if (firstScrollLine === null || jsPill.line < firstScrollLine) {
+          firstScrollLine = jsPill.line;
+        }
       });
 
-      var arrLines = [];
+      this.codeMirrorJSView.scrollToLine(firstScrollLine);
 
+      var arrLines = [];
       _(arrJSPillEl).each(function (el, i) {
         var lineView = new CurveLineView({
           fromHTMLLine: lineNumber,

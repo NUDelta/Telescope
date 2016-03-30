@@ -140,6 +140,7 @@ def([
           this.pauseUIUpdates();
         } else {
           this.uiPaused = false;
+          this.htmlJSLinksView.collapseAll();
           this.codeMirrorJSView.showSources();
           this.codeMirrorHTMLView.render();
           this.headerControlView.renderSlider();
@@ -162,6 +163,7 @@ def([
 
       this.headerControlView.on("timeSlideChange", function () {
         this.uiPaused = true;
+        this.htmlJSLinksView.collapseAll();
         this.headerControlView.pause();
         this.codeMirrorHTMLView.render();
         this.codeMirrorJSView.showSources();
