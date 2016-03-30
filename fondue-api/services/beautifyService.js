@@ -22,7 +22,7 @@ module.exports = {
     }, function (err, subRes, body) {
       if (err) throw err;
 
-      var beautifiedSrc = util.beautifyJS(body);
+      var beautifiedSrc = util.beautifyJS(body, url);
 
       if (beautifiedSrc === null) {
         callback(body);

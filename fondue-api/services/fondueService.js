@@ -3,6 +3,7 @@ var crypto = require("crypto");
 var redis = require('redis');
 var redisClient = redis.createClient();
 var util = require("../util/util");
+var _ = require("underscore");
 
 redisClient.on('connect', function () {
   console.log('Redis Connected.');
@@ -14,27 +15,39 @@ module.exports = {
    */
   instrumentJavaScript: function (src, fondueOptions, callback, passedSource, i, iterLoc) {
     var md5 = crypto.createHash("md5");
-    md5.update(JSON.stringify(arguments));
+    var store = {
+      passedSource: passedSource,
+      path: fondueOptions.path,
+      include_prefix: fondueOptions.include_prefix,
+      i: i,
+      iterLoc: iterLoc
+    };
+    var phrase = JSON.stringify(store);
+    md5.update(phrase);
     var digest = md5.digest("hex");
 
     redisClient.get(digest, function (err, foundSrc) {
       var errOpt = {};
-
       if (foundSrc != null) {
-        console.log("Found src:", digest);
+        console.log("Retrieved instrumentation for", fondueOptions.path);
         callback(foundSrc, passedSource, i, iterLoc, errOpt);
       } else {
+        console.log("Instrument Start:\t", fondueOptions.path);
+
         var instrumentedSrc = fondue.instrument(src, fondueOptions, errOpt).toString();
 
-        if (errOpt.beautifyErr) {
-          console.log("Piping through source and adding to skipSources", errOpt.path);
-          callback(instrumentedSrc, passedSource, i, iterLoc, errOpt);
-        } else {
-          console.log("Adding New Instrumented Source:", digest);
-          redisClient.set(digest, instrumentedSrc, function (err, reply) {
-            callback(instrumentedSrc, passedSource, i, iterLoc, errOpt);
-          });
+        if (!errOpt.beautifyErr) {
+          console.log("Instrument Finish:\t", fondueOptions.path);
         }
+
+        callback(instrumentedSrc, passedSource, i, iterLoc, errOpt);
+        redisClient.set(digest, instrumentedSrc, function (err, reply) {
+          if (err) {
+            console.log("Error on saving source!");
+          } else {
+            
+          }
+        });
       }
     });
   },

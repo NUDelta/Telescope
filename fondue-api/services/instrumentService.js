@@ -51,13 +51,9 @@ module.exports = {
   instrumentHTML: function (url, basePath, callback) {
     request({
       url: url, method: "GET", rejectUnauthorized: false, headers: {
-        //"Host": "interfacelift.com",
-        //"Connection": "keep-alive",
-        //"Pragma": "no-cache",
         "Cache-Control": "no-cache",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36",
-        //"DNT": "1",
         "Accept-Language": "en-US,en;q=0.8"
       }
     }, function (err, subRes, body) {
@@ -100,9 +96,6 @@ module.exports = {
         $("html > head").prepend($("script")[0]);
 
         var html = $.html();
-
-        //var fs = require("fs");
-        //fs.writeFileSync("foo.html", html, "utf8");
 
         callback(html);
       });
