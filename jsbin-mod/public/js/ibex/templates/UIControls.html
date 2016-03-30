@@ -4,7 +4,7 @@
       float: right;
       display: block;
       height: 35px;
-      width: 70%;
+      width: 89%;
     }
 
     #panels {
@@ -27,14 +27,18 @@
 
     .fondue-option {
       display: block;
-      line-height: 30px;
+      line-height: 40px;
       padding-left: 8px;
       padding-right: 8px;
       margin-right: 4px;
-      margin-top: 2px;
+      margin-top: 5px;
       border-radius: 3px;
       text-decoration: none;
       float: right;
+    }
+
+    .fondue-option:hover {
+      opacity: 0.75;
     }
 
     .detail-slider-wrap {
@@ -42,14 +46,14 @@
       padding-left: 8px;
       padding-right: 8px;
       margin-right: 4px;
-      margin-top: 2px;
+      margin-top: 5px;
       border-radius: 3px;
       background-color: white;
     }
 
     .detail-slider-wrap input {
       width: 90px;
-      margin-top: 13px;
+      margin-top: 22px;
     }
 
     .slider-label {
@@ -57,6 +61,7 @@
       position: absolute;
       width: 100px;
       text-align: center;
+      top: 9px;
     }
 
     .timeline-slider-wrap {
@@ -64,11 +69,52 @@
       padding-left: 4px;
       padding-right: 4px;
       margin-right: 4px;
-      margin-top: 2px;
+      margin-top: 5px;
       border-radius: 3px;
       background-color: white;
       width: 200px;
       padding-bottom: 3px;
+    }
+
+    .timeline-slider-label {
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    #timeLineSlider {
+      margin-top: 6px;
+      margin-bottom: 3px;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+
+    .filter-selection-wrap {
+      float: right;
+      padding-left: 4px;
+      padding-right: 4px;
+      margin-right: 4px;
+      margin-top: 5px;
+      border-radius: 3px;
+      background-color: white;
+      width: 83px;
+      padding-bottom: 3px;
+      background-color: white;
+    }
+
+    #filterOnSelection {
+      float: left;
+      height: 32px;
+      width: 17%;
+    }
+
+    .filter-selection-label {
+      float: left;
+      width: 73%;
+      padding-top:5px;
+    }
+
+    .filter-selection-label p {
+      text-align: center;
     }
   </style>
 
@@ -402,8 +448,8 @@
   <a id="pauseUpdates" class="fondue-option" href="javascript:;">Pause Updates</a>
   <a id="resetTraces" class="fondue-option" href="javascript:;">Reset Traces</a>
   <a id="jsScriptOrder" class="fondue-option" href="javascript:;">JS Order
-    <span class="orderUpDown reverse">Reverse &#8593;</span>
-    <span class="orderUpDown normal" style="display: none;">Normal &#8595;</span>
+    <span class="orderUpDown reverse"> &#8593;</span>
+    <span class="orderUpDown normal" style="display: none;"> &#8595;</span>
   </a>
   <div class="detail-slider-wrap">
     <div class="slider-label">JS Detail</div>
@@ -413,5 +459,11 @@
     <div class="timeline-slider-label">JS Time</div>
     <div id="timeLineSlider"></div>
   </div>
-
+  <div class="filter-selection-wrap">
+    <input type="checkbox" id="filterOnSelection" checked="checked"/>
+    <div class="filter-selection-label">
+      <p>Selection</p>
+      <p>Filter</p>
+    </div>
+  </div>
 </div>
