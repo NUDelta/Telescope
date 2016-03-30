@@ -3,20 +3,31 @@ def([
   "backbone",
   "underscore",
   "handlebars",
-  "text!../templates/SourceListPanel.html",
-  "text!../templates/UIControls.html"
-], function ($, Backbone, _, Handlebars, panelTemplate, uiControlsTemplate) {
+  "text!../templates/SourceListPanel.html"
+], function ($, Backbone, _, Handlebars, panelTemplate) {
   return Backbone.View.extend({
     template: Handlebars.compile(panelTemplate),
-    uiControlsTemplate: Handlebars.compile(uiControlsTemplate),
 
     el: ".dropdownmenu[data-type='javascript']",
 
     events: {
       "click #fondue-toggle-inactive": "toggleInactiveClicked",
       "click .fondue-file-link": "scrollFileClicked",
-      "click .fondue-toggle-file": "toggleFileClicked",
+      "click .fondue-toggle-file": "toggleFileClicked"
     },
+
+    _blockLibs: _([
+      "jquery",
+      "moment",
+      "underscore",
+      "backbone",
+      "require",
+      "angular",
+      "react",
+      "handlebars",
+      "html5shiv",
+      "underscore"
+    ]),
 
     initialize: function (sourceCollection, codeMirrorJSView) {
       this.sourceCollection = sourceCollection;
@@ -30,7 +41,6 @@ def([
     },
 
     render: function () {
-      this.$("#fondue-panel-view").remove();
       var sourceModels = this.sourceCollection.getOrdered();
       var arr = _(sourceModels).map(function (model) {
         var json = model.toJSON();
@@ -42,22 +52,46 @@ def([
       });
 
       this.$el.html(html);
-      this.hideKnownLibs();
-
-      $(".control").append(this.uiControlsTemplate());
-      $("#pauseUpdates").click(_.bind(this.togglePauseClicked, this));
-      $("#resetTraces").click(_.bind(this.resetClicked, this));
     },
 
-    _blockLibs: _([
-      "jquery",
-      "moment",
-      "underscore",
-      "backbone",
-      "require"
-    ]),
+    detailChange: function (headerControlVal) {
+      this.sourceCollection.each(function (sourceModel) {
+        sourceModel.show();
+      });
 
-    hideKnownLibs: function () {
+      switch (headerControlVal) {
+        case 1:  //active js dom modifiers only
+          this.markBlockedSourceModels();
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: true,
+            activeCodeOnly: true
+          });
+          break;
+        case 2:  //active js only
+          this.markBlockedSourceModels();
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: false,
+            activeCodeOnly: true
+          });
+          break;
+        case 3:  // active js with known libs
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: false,
+            activeCodeOnly: true
+          });
+          break;
+        case 4:  // all js
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: false,
+            activeCodeOnly: false
+          });
+          break;
+      }
+    },
+
+    getBlockedSourceModels: function () {
+      var blockedSourceModels = [];
+
       _($(".fondue-file-link")).each(function (el) {
         var $el = this.$el.find(el);
         var text = $el.text();
@@ -68,9 +102,28 @@ def([
           }
         }, this);
 
+        var sourceModel = this.getModelFromEl($el);
         if (blockedLib) {
-          $el.parent().find("input").attr("checked", "checked");
-          this.hideSource(this.getModelFromEl($el));
+          blockedSourceModels.push(sourceModel);
+        }
+      }, this);
+
+      return blockedSourceModels;
+    },
+
+    markBlockedSourceModels: function () {
+      _(this.getBlockedSourceModels()).each(function (sourceModel) {
+        sourceModel.hide();
+      });
+
+      _($(".fondue-file-link")).each(function (el) {
+        var $el = this.$el.find(el);
+        var sourceModel = this.getModelFromEl($el);
+
+        if (sourceModel.isVisible()) {
+          $el.parent().find("input").prop("checked", false);
+        } else {
+          $el.parent().find("input").prop("checked", true);
         }
       }, this);
     },
@@ -82,36 +135,6 @@ def([
       if (foundModel) {
         this.codeMirrorJSView.scrollToSourceModel(foundModel);
       }
-    },
-
-    togglePauseClicked: function (e) {
-      if (this.paused) {
-        this.trigger("activeCodePanel:pause", false);
-        this.resume();
-      } else {
-        this.trigger("activeCodePanel:pause", true);
-        this.pause();
-      }
-    },
-
-    pause: function () {
-      this.paused = true;
-      var $pauseUpdates = $("#pauseUpdates");
-      $pauseUpdates.text("Resume Updates");
-      $pauseUpdates.css("background-color", "red");
-      $pauseUpdates.css("color", "white");
-    },
-
-    resume: function () {
-      this.paused = false;
-      var $pauseUpdates = $("#pauseUpdates");
-      $pauseUpdates.text("Pause Updates");
-      $pauseUpdates.css("background-color", "lightyellow");
-      $pauseUpdates.css("color", "black");
-    },
-
-    resetClicked: function (e) {
-      this.trigger("activeCodePanel:reset", false);
     },
 
     toggleFileClicked: function (e) {
@@ -136,22 +159,13 @@ def([
     },
 
     hideSource: function (sourceModel) {
-      this.codeMirrorJSView.hideSourceModel(sourceModel);
+      sourceModel.hide();
+      this.codeMirrorJSView.showSources();
     },
 
     showSource: function (sourceModel) {
-      this.codeMirrorJSView.showSourceModel(sourceModel);
-    },
-
-    toggleInactiveClicked: function (e) {
-      var $el = $(e.currentTarget);
-      if ($el.is(':checked')) {
-        this.codeMirrorJSView.hideInactive();
-      } else {
-        this.codeMirrorJSView.showInactive();
-      }
+      sourceModel.show();
+      this.codeMirrorJSView.showSources();
     }
-
-
   });
 });

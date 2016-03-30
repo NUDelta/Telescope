@@ -80,19 +80,12 @@ def([
       this.expandFn = fn;
     },
 
-    toggleTrace: function (e) {
+    toggleTrace: function () {
       if (this.expanded) {
         this.collapseFn(this);
-        this.expanded = false;
       } else {
-        this.jsBinRouter.pauseUIUpdates();
         this.expandFn(this);
-        this.expanded = true;
       }
-    },
-
-    collapseQuiet: function () {
-      this.expanded = false;
     }
   });
 });

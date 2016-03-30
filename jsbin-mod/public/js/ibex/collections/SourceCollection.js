@@ -7,6 +7,8 @@ def([
   return Backbone.Collection.extend({
     model: SourceModel,
 
+    sortReversed: true,
+
     initialize: function (ignored, o) {
       this.activeNodeCollection = o.activeNodeCollection; //used in sourceModel
       this.add(o.scripts);
@@ -21,8 +23,12 @@ def([
       }
     },
 
+    setOrder: function (reversed) {
+      this.sortReversed = !!reversed;
+    },
+
     getOrdered: function () {
-      return this.chain()
+      var ordered = this.chain()
         .reject(function (model) {
           return model.get("builtIn")
         })
@@ -38,6 +44,12 @@ def([
           }
         })
         .value();
+
+      if (this.sortReversed) {
+        return ordered.reverse();
+      } else {
+        return ordered;
+      }
     },
 
     getByCid: function (cid) {

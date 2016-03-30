@@ -3,6 +3,7 @@ var crypto = require("crypto");
 var redis = require('redis');
 var redisClient = redis.createClient();
 var util = require("../util/util");
+var _ = require("underscore");
 
 redisClient.on('connect', function () {
   console.log('Redis Connected.');
@@ -14,19 +15,38 @@ module.exports = {
    */
   instrumentJavaScript: function (src, fondueOptions, callback, passedSource, i, iterLoc) {
     var md5 = crypto.createHash("md5");
-    md5.update(JSON.stringify(arguments));
+    var store = {
+      passedSource: passedSource,
+      path: fondueOptions.path,
+      include_prefix: fondueOptions.include_prefix,
+      i: i,
+      iterLoc: iterLoc
+    };
+    var phrase = JSON.stringify(store);
+    md5.update(phrase);
     var digest = md5.digest("hex");
 
     redisClient.get(digest, function (err, foundSrc) {
+      var errOpt = {};
       if (foundSrc != null) {
-        console.log("Found src:", digest);
-        callback(foundSrc, passedSource, i, iterLoc);
+        console.log("Retrieved instrumentation for", fondueOptions.path);
+        callback(foundSrc, passedSource, i, iterLoc, errOpt);
       } else {
-        console.log("Adding New Instrumented Source:", digest);
-        var instrumentedSrc = fondue.instrument(src, fondueOptions).toString();
+        console.log("Instrument Start:\t", fondueOptions.path);
 
+        var instrumentedSrc = fondue.instrument(src, fondueOptions, errOpt).toString();
+
+        if (!errOpt.beautifyErr) {
+          console.log("Instrument Finish:\t", fondueOptions.path);
+        }
+
+        callback(instrumentedSrc, passedSource, i, iterLoc, errOpt);
         redisClient.set(digest, instrumentedSrc, function (err, reply) {
-          callback(instrumentedSrc, passedSource, i, iterLoc);
+          if (err) {
+            console.log("Error on saving source!");
+          } else {
+            
+          }
         });
       }
     });
@@ -57,12 +77,17 @@ module.exports = {
 
     var hits = 0;
     var retSrc = [];
-    var instCallback = function (instSrc, passedSrc, preI, iterLoc) {
+    var unTracedSources = [];
+    var instCallback = function (instSrc, passedSrc, preI, iterLoc, passedOpts) {
       hits++;
       retSrc[preI] = instSrc;
+      if (passedOpts.beautifyErr && passedOpts.path) {
+        unTracedSources.push(passedOpts.path);
+      }
 
       if (hits === scriptLocs.length || scriptLocs.length < 1) {
         for (var i = scriptLocs.length - 1; i >= 0; i--) {
+          //retSrc is just source only, the other parts are dom
           passedSrc = passedSrc.slice(0, scriptLocs[i].start) + retSrc[i] + passedSrc.slice(scriptLocs[i].end);
         }
 
@@ -74,8 +99,10 @@ module.exports = {
           passedSrc = passedSrc.slice(doctypeMatch[1].length);
         }
 
+        var untraced = "<script id='unravelUntraced'>\n(function(){ window.unravelAgent.skipSources = " + JSON.stringify(unTracedSources) + " })();\n</script>\n";
+
         // assemble!
-        passedSrc = doctype + "<script>\n" + fondue.instrumentationPrefix(fondueOptions) + "\n</script>\n" + passedSrc;
+        passedSrc = doctype + "<script>\n" + fondue.instrumentationPrefix(fondueOptions) + "\n</script>\n" + untraced + passedSrc;
 
         callback(passedSrc, true);
       }

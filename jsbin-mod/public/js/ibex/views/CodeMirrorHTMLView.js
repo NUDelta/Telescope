@@ -2,20 +2,31 @@ def([
   "jquery",
   "backbone",
   "underscore",
+  "handlebars",
   "./GutterPillView",
-  "../routers/JSBinSocketRouter"
-], function ($, Backbone, _, GutterPillView, JSBinSocketRouter) {
+  "../routers/JSBinSocketRouter",
+  "text!../templates/MissingElMessage.html"
+
+], function ($, Backbone, _, Handlebars, GutterPillView, JSBinSocketRouter, MissingElMessageTemplate) {
   return Backbone.View.extend({
     htmlMirror: null,
     htmlSource: "",
-    nodeMarkers: {},
-    gutterPills: [],
+    markers: [],
+    missingElTemplate: Handlebars.compile(MissingElMessageTemplate),
 
     initialize: function (codeMirrors, activeNodeCollection, jsBinRouter) {
       this.codeMirrors = codeMirrors;
       this.activeNodeCollection = activeNodeCollection;
       this.jsBinSocketRouter = JSBinSocketRouter.getInstance();
       this.jsBinRouter = jsBinRouter;
+      this.collapseMask = _.bind(this.collapseMask, this);
+      if (!this.$missingEl) {
+        $("body").append(this.missingElTemplate());
+        this.$missingEl = $("#missingEl");
+        this.$missingElMask = $("#missingElMask");
+        this.$missingEl.click(this.collapseMask);
+        this.$missingElMask.click(this.collapseMask);
+      }
     },
 
     render: function () {
@@ -27,62 +38,55 @@ def([
       if (!this.htmlSource) {
         return;
       }
+
+      this.htmlJSLinksView.removeAllHTMLGutterPills();
+      this.deleteAllLines();
+
       this.htmlMirror.setCode(this.htmlSource);
-      this.addGutterPills();
+      this.htmlJSLinksView.addHTMLGutterPills();
     },
 
-    hasHTML: function () {
-      return !!this.htmlSource;
-    },
+    showMissingElMessage: function (domQueries, gutterPillView) {
+      gutterPillView.nonDom = true;
 
-    removeAllGutterPills: function () {
-      _(this.gutterPills).each(function (pill) {
-        pill.destroy();
+      var message = "<h4>Queried element(s) are not in the DOM</h4>";
+
+      _(domQueries).each(function (domQueryObj) {
+        var domFnName = domQueryObj.domFnName;
+        var queryString = domQueryObj.queryString;
+
+        message += "<p>document." + domFnName + "(\"" + queryString + "\")</p>";
       }, this);
 
-      this.gutterPills = [];
-      this.lineGutterPill = {};
+      this.$missingEl.find("#cm-el-message").html(message);
+      var rect = $(".CodeMirror-code")[0].getBoundingClientRect();
+      this.$missingEl.css({
+        top: rect.top + (window.innerHeight - rect.top) / 4,
+        left: rect.left + 10,
+        width: rect.width - 40
+      });
+
+      this.$missingElMask.css({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      });
+      this.$missingElMask.show();
+      this.$missingEl.show();
     },
 
-    collapseAllGutterPills: function () {
-      _(this.gutterPills).each(function (pill) {
-        pill.collapseQuiet();
-        this.eraseLinksToJS(pill);
-      }, this);
+    collapseMask: function () {
+      this.htmlJSLinksView.collapseAll();
     },
 
-    addGutterPills: function () {
-      this.removeAllGutterPills();
+    hideMask: function () {
+      this.$missingEl.hide();
+      this.$missingElMask.hide();
+    },
 
-      var queryNodeMap = this.activeNodeCollection.getDomQueryNodeMap();
-
-      var domQueries = _(queryNodeMap).keys();
-      _(domQueries).each(function (domFnQueryStr) {
-        var domFnName = domFnQueryStr.split("|")[0];
-        var queryString = domFnQueryStr.split("|")[1];
-        var activeNodes = queryNodeMap[domFnQueryStr];
-
-        this.whereLines(domFnName, queryString, function (codeLine, lineNumber) {
-          var pill;
-          if (this.lineGutterPill[lineNumber]) {
-            pill = this.lineGutterPill[lineNumber];
-          } else {
-            pill = new GutterPillView(this.htmlMirror, lineNumber, null, this.sourceCollection, activeNodes, this.jsBinRouter);
-            this.lineGutterPill[lineNumber] = pill;
-          }
-
-          pill.addRelatedDomQueries([{
-            domFnName: domFnName,
-            queryString: queryString,
-            html: codeLine
-          }]);
-
-          pill.setCount(pill.getRelatedDomQueries().length);
-          pill.setExpandFn(_.bind(this.drawLinksToJS, this));
-          pill.setCollapseFn(_.bind(this.eraseLinksToJS, this));
-          this.gutterPills.push(pill);
-        }, this);
-      }, this);
+    deleteAllLines: function () {
+      this.htmlMirror.setCode("");
     },
 
     whereLines: function (domFnName, queryString, iterFn, context) {
@@ -106,32 +110,20 @@ def([
       }, this);
     },
 
-    drawLinksToJS: function (gutterPillView) {
-      this.htmlJSLinksView.drawLineFromHTMLToJS(gutterPillView);
-      this.emitHTMLSelect(true, gutterPillView.getRelatedDomQueries());
-    },
-
-    eraseLinksToJS: function (gutterPillView) {
-      this.htmlJSLinksView.removeHTMLToJSLine(gutterPillView);
-      this.emitHTMLSelect(false, gutterPillView.getRelatedDomQueries());
-    },
-
-    emitHTMLSelect: function (selected, relatedDomQueries) {
-      this.jsBinSocketRouter.emit("jsbin:html", {
-        selected: selected,
-        relatedDomQueries: relatedDomQueries
-      });
-    },
-
     scrollTop: function () {
       window.setTimeout(_.bind(function () {
-        this.jsMirror.scrollTo({line: 0, ch: 0});
-        this.jsMirror.setCursor({line: 0});
+        this.scrollToLine(0);
       }, this), 1);
     },
 
-    highlightLines: function (lineNumber, length) {
-      var marker = this.htmlMirror.markText(
+    scrollToLine: function (line) {
+      var t = this.htmlMirror.charCoords({line: line || 0, ch: 0}, "local").top;
+      var middleHeight = this.htmlMirror.getScrollerElement().offsetHeight / 2;
+      this.htmlMirror.scrollTo(null, t - middleHeight - 5);
+    },
+
+    highlightLine: function (lineNumber, length) {
+      this.markers.push(this.htmlMirror.markText(
         {
           line: lineNumber,
           ch: 0
@@ -143,38 +135,15 @@ def([
         {
           css: "background-color:#fffcbd"
         }
-      );
-
-      return marker;
+      ));
     },
 
-    addNodeMarker: function (nodeId, marker) {
-      this.nodeMarkers[nodeId] = this.nodeMarkers[nodeId] || [];
-      this.nodeMarkers[nodeId].push(marker);
-    },
-
-    addNodesMarker: function (arrIds, marker) {
-      var key = _(arrIds).join("");
-      this.nodeMarkers[key] = this.nodeMarkers[key] || [];
-      this.nodeMarkers[key].push(marker);
-    },
-
-    clearMarkersForNode: function (nodeId) {
-      _(this.nodeMarkers[nodeId]).each(function (marker) {
+    removeAllHighlights: function () {
+      _(this.markers).each(function (marker) {
         marker.clear();
       });
 
-      delete this.nodeMarkers[nodeId];
-    },
-
-    clearMarkersForNodes: function (nodesArr) {
-      var key = _(nodesArr).join("");
-
-      _(this.nodeMarkers[key]).each(function (marker) {
-        marker.clear();
-      });
-
-      delete this.nodeMarkers[key];
+      this.markers = [];
     },
 
     getjQueryFn: function (expression) {

@@ -16,6 +16,19 @@ def([
       "querySelectorAll"
     ]),
 
+    getHits: function () {
+      var invokes = this.get("invokes");
+      var i = 0;
+
+      _(invokes).each(function (invoke) {
+        if (this.collection.timeStampInRange(invoke.timestamp)) {
+          i++;
+        }
+      }, this);
+
+      return i;
+    },
+
     getDomQueryFn: function () {
       if (this.domFnName) {
         return this.domFnName;

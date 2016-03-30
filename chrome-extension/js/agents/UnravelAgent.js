@@ -35,6 +35,7 @@ define([
     };
 
     //Order is important here
+    var start = "if (window.self === window.top) {";
     var f1 = "(" + agentFn.toString() + ").apply(this, []); ";
     var f2 = "(" + jQueryInjector.toString() + ").apply(this, []); ";
     var f3 = "(" + underscoreInjector.toString() + ").apply(this, []); ";
@@ -46,10 +47,11 @@ define([
     var f10 = "(" + highlightJSInjector.toString() + ").apply(this, []); ";
     var f11 = "(" + introJSBridgeInjector.toString() + ").apply(this, []); ";
     var f12 = "(" + goFondue.toString() + ").apply(this, []); ";
+    var end = " } ";
 
     chrome.devtools.inspectedWindow.reload({
       ignoreCache: true,
-      injectedScript: f1 + f2 + f3 + f5 + f6 + f7 + f8 + f9 + f10 + f11 + f12
+      injectedScript: start + f1 + f2 + f3 + f5 + f6 + f7 + f8 + f9 + f10 + f11 + f12 + end
     });
 
     var checkTimeout = function (isActive) {

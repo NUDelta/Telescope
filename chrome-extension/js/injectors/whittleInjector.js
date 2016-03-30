@@ -11,7 +11,7 @@ define([],
 
       window.unravelAgent.metaScripts = function () {
         var metaScripts = [];
-        var scripts = unravelAgent.$("script");
+        var scripts = unravelAgent.$("script:not(#unravelUntraced)");
 
         var i = 0;
         unravelAgent._(scripts).each(function (scriptEl) {
@@ -52,6 +52,16 @@ define([],
           i++;
         });
 
+        unravelAgent._(window.unravelAgent.skipSources).each(function (url) {
+          metaScripts.push({
+            path: url,
+            url: url,
+            inline: true,
+            domPath: url,
+            order: parseInt(url.split("-script-")[1]),
+            unTraced: true
+          });
+        });
 
         return metaScripts;
       };
@@ -80,12 +90,36 @@ define([],
       };
 
       window.unravelAgent.emitHTMLSelect = function () {
-        unravelAgent.$("[src]").each(function (index, value) {
-          var $el = unravelAgent.$(this);
-          $el.attr("src", $el[0].src);
-        });
+        if (!window.unravelAgent.htmlCleaned) {
+          unravelAgent.$("[src]").each(function (index, value) {
+            var $el = unravelAgent.$(this);
+            $el.attr("src", $el[0].src);
+          });
 
-        window.dispatchEvent(new CustomEvent("fondueDTO", {
+          var trashEls = [];
+          var allDescendants = function (parentEl) {
+            for (var i = 0; i < parentEl.childNodes.length; i++) {
+              var el = parentEl.childNodes[i];
+
+              if (el && el.nodeType && el.nodeType === 8) {//comment node
+                trashEls.push(el);
+              }
+
+              allDescendants(el);
+            }
+          };
+
+          allDescendants(unravelAgent.$("html")[0]);
+
+          unravelAgent._(trashEls).each(function (el) {
+            el.remove();
+          });
+
+          window.unravelAgent.htmlCleaned = true;
+        }
+
+        window.dispatchEvent(new CustomEvent("fondueDTO",
+          {
             detail: {
               eventStr: "fondueDTO:html",
               obj: {html: unravelAgent.$("html")[0].outerHTML}

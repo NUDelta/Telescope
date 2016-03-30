@@ -6,6 +6,16 @@ var util = require("../util/util");
 var routes = require("../routes/routes");
 var fondueService = require("./fondueService");
 
+var blockedDomains = [
+  "static.dynamicyield.com",
+  "static.chartbeat.com",
+  "scorecardresearch.com",
+  "connect.facebook.net",
+  "google-analytics.com",
+  "beacon.krxd.net",
+];
+
+
 module.exports = {
   getInlineScriptSources: function (url, callback) {
     request({
@@ -41,17 +51,17 @@ module.exports = {
   instrumentHTML: function (url, basePath, callback) {
     request({
       url: url, method: "GET", rejectUnauthorized: false, headers: {
-        //"Host": "interfacelift.com",
-        //"Connection": "keep-alive",
-        //"Pragma": "no-cache",
         "Cache-Control": "no-cache",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36",
-        //"DNT": "1",
         "Accept-Language": "en-US,en;q=0.8"
       }
     }, function (err, subRes, body) {
-      if (err) throw err;
+      if (err) {
+        console.log("Error on fetching HTML. Returning \"\" for:", url);
+        callback("");
+        return;
+      }
 
       body = util.beautifyHTML(body);  //Remove crap that breaks fondue
 
@@ -87,9 +97,6 @@ module.exports = {
 
         var html = $.html();
 
-        //var fs = require("fs");
-        //fs.writeFileSync("foo.html", html, "utf8");
-
         callback(html);
       });
     });
@@ -97,6 +104,17 @@ module.exports = {
   },
 
   instrumentJS: function (url, basePath, callback) {
+    if (_(blockedDomains).find(function (domain) {
+        if (url.indexOf(domain) > -1) {
+          return true;
+        }
+      })) {
+      console.log("Blocking source request and return \"\" for:", url);
+
+      callback("");
+      return;
+    }
+
     request({
       url: url,
       fileName: basePath,
@@ -104,7 +122,11 @@ module.exports = {
       rejectUnauthorized: false,
       gzip: true
     }, function (err, subRes, body) {
-      if (err) throw err;
+      if (err) {
+        console.log("Error on fetching JS. Returning \"\" for:", url);
+        callback("");
+        return;
+      }
 
       var fondueOptions = {
         path: url,

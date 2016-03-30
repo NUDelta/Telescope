@@ -3,7 +3,8 @@ def([
   "backbone",
   "underscore",
   "../views/GutterPillView",
-  "../views/ActiveCodePanelView",
+  "../views/DropDownJSView",
+  "../views/HeaderControlView",
   "../views/CodeMirrorJSView",
   "../views/CodeMirrorHTMLView",
   "../views/CodeMirrorCSSView",
@@ -13,7 +14,8 @@ def([
   "../routers/JSBinSocketRouter"
 ], function ($, Backbone, _,
              GutterPillView,
-             ActiveCodePanelView,
+             DropDownJSView,
+             HeaderControlView,
              CodeMirrorJSView,
              CodeMirrorHTMLView,
              CodeMirrorCSSView,
@@ -43,9 +45,11 @@ def([
 
       this.codeMirrorJSView = new CodeMirrorJSView(this.codeMirrors, this.sourceCollection, this.activeNodeCollection, this);
       this.codeMirrorHTMLView = new CodeMirrorHTMLView(this.codeMirrors, this.activeNodeCollection, this);
-      this.activeCodePanelView = new ActiveCodePanelView(this.sourceCollection, this.codeMirrorJSView);
+      this.dropDownJSView = new DropDownJSView(this.sourceCollection, this.codeMirrorJSView);
+      this.headerControlView = new HeaderControlView(this.activeNodeCollection);
+      this.headerControlView.render();
       this.codeMirrorCSSView = new CodeMirrorCSSView(this.codeMirrors);
-      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView, this.activeNodeCollection);
+      this.htmlJSLinksView = new HTMLJSLinksView(this.codeMirrorJSView, this.codeMirrorHTMLView, this.activeNodeCollection, this.sourceCollection, this);
       this.codeMirrorJSView.htmlJSLinksView = this.htmlJSLinksView;
       this.codeMirrorHTMLView.htmlJSLinksView = this.htmlJSLinksView;
 
@@ -53,6 +57,19 @@ def([
 
       this.bindSocketHandlers();
       this.bindViewListeners();
+      this.fetchData();
+    },
+
+    fetchData: function () {
+      this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+
+      var setupInterval = setInterval(_.bind(function () {
+        if (!this.sourceCollection.length) {
+          this.jsBinSocketRouter.emit("jsbin:resendAll", {});
+        } else {
+          clearInterval(setupInterval);
+        }
+      }, this), 3000);
     },
 
     bindSocketHandlers: function () {
@@ -60,22 +77,15 @@ def([
         this.activeNodeCollection.mergeInvocations(obj.invocations);
 
         if (!this.sourceCollection.length) {
-          // this jsbin doesn't have all the setup code the browser sent
-          // trigger a fetch to get everything we need
-
-          if (!this.resendRequested) {
-            console.log("Don't have scripts, requesting...");
-            this.jsBinSocketRouter.emit("jsbin:resendAll", {});
-            this.resendRequested = true;
-          }
-
           return;
         }
 
-        this.resendRequested = false;
-
         if (this.activeNodeCollection.hasFullNodeList) {
-          this.updateMirrors();
+          if (!this.uiPaused) {
+            this.codeMirrorJSView.showSources();
+            this.codeMirrorHTMLView.render();
+            this.headerControlView.renderSlider();
+          }
         }
       }, this);
 
@@ -97,49 +107,72 @@ def([
 
         this.sourceCollection.empty();
         this.sourceCollection.add(obj.scripts);
-        this.activeCodePanelView.render();
-        this.updateMirrors();
+        this.dropDownJSView.render();
+
+        if (!this.uiPaused) {
+          this.dropDownJSView.detailChange(1);
+          this.codeMirrorHTMLView.render();
+        }
       }, this);
 
       this.jsBinSocketRouter.onSocketData("fondueDTO:newNodeList", function (obj) {
         console.log("fondueDTO:newNodeList", obj.nodes.length, "new nodes.");
         this.activeNodeCollection.mergeNodes(obj.nodes);
-        this.resumeUIUpdates();
+
+        this.uiPaused = false;
+        this.codeMirrorJSView.showSources();
+        this.codeMirrorHTMLView.render();
+        this.headerControlView.renderSlider();
+        this.headerControlView.resume();
+      }, this);
+
+      this.headerControlView.on("jsDetailChange", function (val) {
+        this.pauseUIUpdates();
+        this.htmlJSLinksView.collapseAll();
+        this.codeMirrorHTMLView.removeAllHighlights();
+        this.dropDownJSView.detailChange(val);
       }, this);
     },
 
     bindViewListeners: function () {
-      this.activeCodePanelView.on("activeCodePanel:pause", function (pause) {
+      this.headerControlView.on("activeCodePanel:pause", function (pause) {
         if (pause) {
           this.pauseUIUpdates();
         } else {
-          this.resumeUIUpdates();
+          this.uiPaused = false;
+          this.htmlJSLinksView.collapseAll();
+          this.codeMirrorJSView.showSources();
+          this.codeMirrorHTMLView.render();
+          this.headerControlView.renderSlider();
+          this.headerControlView.resume();
         }
       }, this);
 
-      this.activeCodePanelView.on("activeCodePanel:reset", function () {
+      this.headerControlView.on("activeCodePanel:reset", function () {
         this.pauseUIUpdates();
         this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
+      }, this);
+
+      this.headerControlView.on("controlView:order", function (jsOrderReversed) {
+        this.sourceCollection.setOrder(jsOrderReversed);
+        this.codeMirrorHTMLView.render();
+        this.dropDownJSView.render();
+        this.codeMirrorJSView.showSources();
+      }, this);
+
+      this.headerControlView.on("timeSlideChange", function () {
+        this.uiPaused = true;
+        this.htmlJSLinksView.collapseAll();
+        this.headerControlView.pause();
+        this.codeMirrorHTMLView.render();
+        this.codeMirrorJSView.showSources();
       }, this);
     },
 
     pauseUIUpdates: function () {
       this.uiPaused = true;
-      this.activeCodePanelView.pause();
-    },
-
-    resumeUIUpdates: function () {
-      this.uiPaused = false;
-      this.updateMirrors();
-      this.activeCodePanelView.resume();
-    },
-
-    updateMirrors: function () {
-      if (!this.uiPaused) {
-        this.codeMirrorJSView.showSources();
-        this.codeMirrorHTMLView.render();
-      }
+      this.headerControlView.pause();
     },
 
     nav: function (panelType, codeMirrorInstance) {

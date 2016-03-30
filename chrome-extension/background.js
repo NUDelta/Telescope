@@ -72,22 +72,37 @@ chrome.tabs.onUpdated.addListener(function (updatedTabId, changeInfo) {
 });
 
 //Redirect script requests to fondue
-//chrome.webRequest.onBeforeRequest.addListener(function (details) {
-//TODO fix this
-//if (
-//  redirectingOrigin &&
-//  redirectingOrigin === thisOrigin &&
-//  requestRedirecting &&
-//  details.url.indexOf("chrome-extension") === -1 &&
-//  details.url.indexOf("localhost:900") === -1 &&
-//  details.type === "script"
-//) {
-//  return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
-//}
-//},
-//{urls: ["<all_urls>"]},
-//["requestBody", "blocking"]
-//);
+// chrome.webRequest.onBeforeRequest.addListener(function (details) {
+//     if (
+//       redirectingOrigin &&
+//       redirectingOrigin === thisOrigin &&
+//       requestRedirecting &&
+//       details.url.indexOf("chrome-extension") === -1 &&
+//       details.url.indexOf("localhost:900") === -1 &&
+//       details.type === "script"
+//     ) {
+//       return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
+//     }
+//   },
+//   {urls: ["<all_urls>"]},
+//   ["requestBody", "blocking"]
+// );
+
+// chrome.webRequest.onBeforeRequest.addListener(function () {
+//     return {cancel: true};
+//   },
+//   {
+//     urls: [
+//       "*beacon.krxd.net*",
+//       "*cdn.krxd.net*",
+//       "*connect.facebook.net*",
+//       "*dc8xl0ndzn2cb.cloudfront.net*",
+//       "*www.google-analytics.com*",
+//       "*b.scorecardresearch.com*",
+//     ]
+//   },
+//   ["blocking"]
+// );
 
 var augmentRule = function (policy, separator, policyAddition, secondAddition) {
   var sources = policy.split(separator)[1];

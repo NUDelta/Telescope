@@ -11,7 +11,7 @@ define([],
           window.unravelAgent.stopObserving();
           window.unravelAgent.emitHTMLSelect();
           window.unravelAgent.startObserving();
-        }, 250);
+        }, 2000);
 
         window.unravelAgent.observer = new MutationObserver(function (mutations, observer) {
           // var serializedMutations = window.unravelAgent._(mutations).map(function (mutation) {

@@ -250,13 +250,12 @@ Ibex Plan Actual
         Build Features, Fixes
     Mar 18
         Pilot Study 2
-    Mar 19 - 22
-        Code Complete
-    Mar 23
-        Video Coding
-        Data Analysis
-        Recruit/Test
-    Mar 27- April 8
+    Mar 19 - 25
+        Perf Refactors
+    Mar 25 - 31
+        Final Features, code complete
+    April 1 - April 8
+        Pro Sites Tests, Coding
         Write paper
         Related work
         Recruit/Test
@@ -286,7 +285,7 @@ Prototype Feasibility Analysis
         Tech: Hard
         Wow: Medium
 
-    (Punt) Highlight/ filter active HTML
+    (DONE) Highlight/ filter active HTML
         User Problem Ties: High
         Tech: Hard
         Wow: Medium
@@ -297,47 +296,53 @@ Prototype Feasibility Analysis
         Wow: Low
         Priority: provide a walkthrough -- wow there
 
-    Live Theseus From Pro Page to Fiddle
+    (DONE) Live Theseus From Pro Page to Fiddle
         User Problem Ties: Med
         Tech: Hard
         Wow: Med
 
-    Timeline Playback of Effect
+    (DONE) Timeline Constraint of Effect Outcomes
         Without visual outcome
             User Problem Ties: High
             Tech: Hard
             Wow: Med
 
+    (DONE) Highlight DOM Items on Inspection
+        User Problem Ties: High
+        Tech: Hard
+        Wow: Med
+
+    (PUNT) TimeLine Playback of Effect
         With visual outcome
             User Problem Ties: High
             Tech: Very Hard
             Wow: Very High
                 Q: how much can we do with remote debugging in Chrome?
 
-    HTML Tutorons
+    (PUNT) HTML Tutorons
         User Problem Ties: Med
         Tech: Easy
         Wow: Low
 
-    Code Behavior Decomposition Tagging
+    (PUNT) Code Behavior Decomposition Tagging
         (e.g. click handler, callback, dom change)
         User Problem Ties: Low
         Tech: Hard
         Wow: Med
 
-    CSS Animation Effects
+    (PUNT) CSS Animation Effects
         User Problem Ties: Low
         Tech: Very Hard
         Wow: Low
         Priority: Backburner
 
-    Vote up/down significant portions
+    (PUNT) Vote up/down significant portions
         User Problem Ties: Med
         Tech: Hard
         Wow: Low
         Priority:
 
-    Are two things related?
+    (PUNT) Are two things related?
         Can I draw the Lines?
 
     Better Unminification Strategy
@@ -430,7 +435,6 @@ Pilot Study 2
         Toy example & XKCD
             XKCD queries everything!
 
-
         Expanding views within JS don't really help
         Constrain more of HTML/JS
             Can you show just HTML structure only?
@@ -455,3 +459,21 @@ Pilot Study 2
         JS view doesn't make sense to me
             Lines aren't super obvious, need to be more pronounced
             JavaScript seems to be appended to the end of whats happening
+
+    Sort JS calls bottom at top
+    Sort JS by timestamp
+
+    Two Sliders (time and detail)
+
+
+Hq Test Affordances
+    The bottom parts are actually readable instead of library code
+        Identify un-minified parts!
+    Yellow JS is most important
+    Most important bits seem to be at the bottom
+    Timestamps? When did these happen?
+
+    Code calls that are near code in yellow
+        Can we expand yellow views out to find related code?
+
+    How do pro examples differ from ordinary user code?

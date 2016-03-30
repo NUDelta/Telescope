@@ -21,6 +21,7 @@ def([
       this.toEl = o.toEl;
       this.htmlMirror = o.htmlMirror;
       this.jsMirror = o.jsMirror;
+      this.toJSLine = o.toJSLine;
 
       this.reDrawDebounce = _.debounce(_.bind(this.reDraw, this), 0);
       this.bindListeners("on");
@@ -53,28 +54,90 @@ def([
       this.remove();
     },
 
+    getHTMLMirror: function () {
+      if (!this.$htmlMirror) {
+        this.$htmlMirror = $($(".CodeMirror-code")[0]);
+      }
+
+      return this.$htmlMirror;
+    },
+
+    getJSMirror: function () {
+      if (!this.$jsMirror) {
+        this.$jsMirror = $($(".CodeMirror-code")[2]);
+      }
+
+      return this.$jsMirror;
+    },
+
     draw: function () {
       var leftAbsolutePosition, topAbsolutePosition;
 
       var fromPos;
       if (!this.fromEl && this.fromHTMLLine !== undefined) {
-        var mirrorLineOffsest = parseInt($($(".CodeMirror-code")[0]).find("div:first-child .CodeMirror-linenumber")[0].innerHTML);
-        var el = $($(".CodeMirror-code")[0]).find("div:nth-child(" + (this.fromHTMLLine - mirrorLineOffsest) + ")")[0];
+        var $htmlMirror = this.getHTMLMirror();
+        var htmlFirstLineVisible = parseInt($htmlMirror.find("div:first-child .CodeMirror-linenumber")[0].innerHTML);
+        var htmlLastLineVisible = parseInt($htmlMirror.find("div:last-child .CodeMirror-linenumber")[0].innerHTML);
 
-        var fromEl = $(el)[0];
-        if (fromEl) {
-          fromPos = fromEl.getBoundingClientRect();
+        var rect = $htmlMirror[0].getBoundingClientRect();
+        if (this.fromHTMLLine >= htmlFirstLineVisible) {
+          if (this.fromHTMLLine <= htmlLastLineVisible) {
+            var el = $htmlMirror.find("div:nth-child(" + (this.fromHTMLLine - htmlFirstLineVisible) + ")")[0];
+            var fromEl = $(el)[0];
+            if (fromEl) {
+              fromPos = fromEl.getBoundingClientRect();
+            }
+          } else {
+            fromPos = { //down
+              height: 12,
+              top: rect.bottom,
+              right: rect.right,
+              bottom: rect.bottom
+            };
+          }
         } else {
-          //code mirror hid the line
+          fromPos = { //up
+            height: 12,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.top
+          };
         }
       } else {
         fromPos = $(this.fromEl)[0].getBoundingClientRect();
       }
       var toPos = $(this.toEl)[0].getBoundingClientRect();
 
+      if (!toPos.height || !toPos.width) {
+        var $jsMirror = this.getJSMirror();
+        var jsFirstLineVisible = parseInt($jsMirror.find("div:first-child .CodeMirror-linenumber")[0].innerHTML);
+        var jsLastLineVisible = parseInt($jsMirror.find("div:last-child .CodeMirror-linenumber")[0].innerHTML);
+        var rectJS = $jsMirror[0].getBoundingClientRect();
+
+        if (this.toJSLine >= jsFirstLineVisible) {
+          if (this.toJSLine > jsLastLineVisible) {
+            toPos = { //down
+              height: 12,
+              top: rectJS.bottom,
+              left: rectJS.left - 40,
+              bottom: rectJS.bottom
+            };
+          }
+        } else {
+          toPos = { //up
+            height: 12,
+            top: rectJS.top,
+            left: rectJS.left - 40,
+            bottom: rectJS.top
+          };
+        }
+      }
+
       if (!fromPos || !toPos ||
         fromPos.height < 1 || fromPos.height < 1 ||
         toPos.height < 1 || toPos.width < 1) {
+
+        console.log("Could not draw lineView:", this);
         return;
       }
 

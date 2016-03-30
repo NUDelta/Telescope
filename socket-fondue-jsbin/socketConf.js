@@ -2,9 +2,7 @@ module.exports = function (httpServer) {
   var socketIO = require("socket.io")(httpServer);
   var _ = require("underscore");
   var cheerio = require('cheerio');
-  var beautify_html = require('js-beautify').html;
-  var beautify_css = require('js-beautify').css;
-  var htmlMinify = require('html-minifier').minify;
+  var util = require("../fondue-api/util/util");
 
   var io = socketIO;
   var binSockets = {}; //supports multiple browsers
@@ -123,11 +121,7 @@ module.exports = function (httpServer) {
     socket.on("fondueDTO:css", function (data) {
       console.log("heard css destined for bin ", data.binId);
 
-      data.css = beautify_css(data.css, {
-        "indent_size": 2,
-        "indent_char": " ",
-        "eol": "\n"
-      });
+      data.css = util.beautifyCSS(data.css);
 
       emitToBin(data.binId, "fondueDTO:css", data);
     });
@@ -144,23 +138,10 @@ module.exports = function (httpServer) {
       $("head").remove();
       $("noscript").remove();
       $("svg").remove();
+      $("#unravel-introjs-style").remove();
       var body = $.html();
 
-      body = htmlMinify(body, {
-        removeComments: true,
-        collapseWhitespace: true,
-        collapseInlineTagWhitespace: true,
-        removeTagWhitespace: true,
-        removeRedundantAttributes: true,
-        useShortDoctype: true,
-        removeEmptyAttributes: true
-      });
-
-      data.html = beautify_html(body, {
-        "indent_size": 2,
-        "indent_char": " ",
-        "eol": "\n"
-      });
+      data.html = util.beautifyHTML(body);
 
       emitToBin(data.binId, "fondueDTO:html", data);
     });

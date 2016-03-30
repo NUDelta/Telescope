@@ -1,3 +1,5 @@
+console.log("index.js running")
+
 require = function e(t, n, r) {
   function i(s, a) {
     if (!n[s]) {
@@ -805,7 +807,7 @@ require = function e(t, n, r) {
       c(), y.bool("secure_form_key") && l()
     }
 
-    var h, d, p, f, m, i, a, s, g = e("jquery"), v = e("lodash"), y = e("prima/lib/flags"), b = (e("prima/lib/logger"), []), w = 174e4, x = y("is_long_form_key_renew")(function () {
+    var h, d, p, f, m, g = e("jquery"), v = e("lodash"), y = e("prima/lib/flags"), b = (e("prima/lib/logger"), []), w = 174e4, x = y("is_long_form_key_renew")(function () {
       function e() {
         g.ajax({type: "POST", url: "/svc/secure_form_key/exchange"}).done(function () {
         }).fail(function (e) {
@@ -28587,7 +28589,7 @@ require = function e(t, n, r) {
               return e || document
             }
 
-            var t = this[0], e = e.apply(t), r = this.offset(), i = /^(?:body|html)$/i.test(e.nodeName) ? {
+            var t = this[0], r = this.offset(), i = /^(?:body|html)$/i.test(e.nodeName) ? {
               top: 0,
               left: 0
             } : n(e).offset();

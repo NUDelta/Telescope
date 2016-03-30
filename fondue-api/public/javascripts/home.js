@@ -66,7 +66,12 @@ var scenario1 = function () {
     var a = 2;
     fooInHead();
   };
-  window.setInterval(intervalFoo, 5000);
+  window.setInterval(intervalFoo, 1000);
+
+  var intervalFoo2 = function () {
+    $("#test1").click();
+  };
+  window.setInterval(intervalFoo2, 2000);
 };
 
 

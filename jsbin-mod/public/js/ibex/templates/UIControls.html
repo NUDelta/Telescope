@@ -1,5 +1,20 @@
 <div id="fondue-ui-controls">
   <style>
+    #fondue-ui-controls {
+      float: right;
+      display: block;
+      height: 35px;
+      width: 89%;
+    }
+
+    #panels {
+      width: 210px;
+    }
+
+    #jsScriptOrder {
+      background-color: #edc9f3;
+    }
+
     #pauseUpdates {
       float: right;
       background-color: lightyellow;
@@ -9,7 +24,446 @@
       float: right;
       background-color: lightcyan;
     }
+
+    .fondue-option {
+      display: block;
+      line-height: 40px;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-right: 4px;
+      margin-top: 5px;
+      border-radius: 3px;
+      text-decoration: none;
+      float: right;
+    }
+
+    .fondue-option:hover {
+      opacity: 0.75;
+    }
+
+    .detail-slider-wrap {
+      float: right;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-right: 4px;
+      margin-top: 5px;
+      border-radius: 3px;
+      background-color: white;
+    }
+
+    .detail-slider-wrap input {
+      width: 90px;
+      margin-top: 22px;
+    }
+
+    .slider-label {
+      padding-top: 0px;
+      position: absolute;
+      width: 100px;
+      text-align: center;
+      top: 9px;
+    }
+
+    .timeline-slider-wrap {
+      float: right;
+      padding-left: 4px;
+      padding-right: 4px;
+      margin-right: 4px;
+      margin-top: 5px;
+      border-radius: 3px;
+      background-color: white;
+      width: 200px;
+      padding-bottom: 3px;
+    }
+
+    .timeline-slider-label {
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    #timeLineSlider {
+      margin-top: 6px;
+      margin-bottom: 3px;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+
+    .filter-selection-wrap {
+      float: right;
+      padding-left: 4px;
+      padding-right: 4px;
+      margin-right: 4px;
+      margin-top: 5px;
+      border-radius: 3px;
+      background-color: white;
+      width: 83px;
+      padding-bottom: 3px;
+      background-color: white;
+    }
+
+    #filterOnSelection {
+      float: left;
+      height: 32px;
+      width: 17%;
+    }
+
+    .filter-selection-label {
+      float: left;
+      width: 73%;
+      padding-top:5px;
+    }
+
+    .filter-selection-label p {
+      text-align: center;
+    }
   </style>
-  <a id="pauseUpdates" role="button" class="button group" href="javascript:;">Pause Updates</a>
-  <a id="resetTraces" role="button" class="button group" href="javascript:;">Reset Traces</a>
+
+  <style>
+
+    .ui-slider {
+      position: relative;
+      text-align: left;
+    }
+
+    .ui-slider .ui-slider-handle {
+      position: absolute;
+      z-index: 2;
+      width: 12px;
+      height: 11px;
+      cursor: default;
+      -ms-touch-action: none;
+      touch-action: none;
+    }
+
+    .ui-slider .ui-slider-range {
+      position: absolute;
+      z-index: 1;
+      font-size: .7em;
+      display: block;
+      border: 0;
+      background-position: 0 0;
+    }
+
+    /* support: IE8 - See #6727 */
+    .ui-slider.ui-state-disabled .ui-slider-handle,
+    .ui-slider.ui-state-disabled .ui-slider-range {
+      filter: inherit;
+    }
+
+    .ui-slider-horizontal {
+      height: 7px;
+    }
+
+    .ui-slider-horizontal .ui-slider-handle {
+      top: -3px;
+      margin-left: -.6em;
+    }
+
+    .ui-slider-horizontal .ui-slider-range {
+      top: 0;
+      height: 100%;
+    }
+
+    .ui-slider-horizontal .ui-slider-range-min {
+      left: 0;
+    }
+
+    .ui-slider-horizontal .ui-slider-range-max {
+      right: 0;
+    }
+
+    .ui-slider-vertical {
+      width: .8em;
+      height: 100px;
+    }
+
+    .ui-slider-vertical .ui-slider-handle {
+      left: -.3em;
+      margin-left: 0;
+      margin-bottom: -.6em;
+    }
+
+    .ui-slider-vertical .ui-slider-range {
+      left: 0;
+      width: 100%;
+    }
+
+    .ui-slider-vertical .ui-slider-range-min {
+      bottom: 0;
+    }
+
+    .ui-slider-vertical .ui-slider-range-max {
+      top: 0;
+    }
+
+    /* Component containers
+    ----------------------------------*/
+    .control-slider .ui-widget {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1em;
+    }
+
+    .control-slider .ui-widget .ui-widget {
+      font-size: 1em;
+    }
+
+    .control-slider .ui-widget input,
+    .control-slider .ui-widget select,
+    .control-slider .ui-widget textarea,
+    .control-slider .ui-widget button {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1em;
+    }
+
+    .control-slider .ui-widget-content {
+      border: 1px solid #b2b2b2;
+      background: #ffffff;
+      color: #333333;
+    }
+
+    .control-slider .ui-widget-content a {
+      color: #333333;
+    }
+
+    .control-slider .ui-widget-header {
+      background: orange;
+      color: #333333;
+      font-weight: bold;
+    }
+
+    .control-slider .ui-widget-header a {
+      color: #333333;
+    }
+
+    /* Interaction states
+    ----------------------------------*/
+    .control-slider .ui-state-default,
+    .control-slider .ui-widget-content .ui-state-default,
+    .control-slider .ui-widget-header .ui-state-default {
+      border: 1px solid #9a9a9a;
+      background: #f6f6f6;
+      font-weight: normal;
+      color: #454545;
+    }
+
+    .control-slider .ui-state-default a,
+    .control-slider .ui-state-default a:link,
+    .control-slider .ui-state-default a:visited {
+      color: #454545;
+      text-decoration: none;
+    }
+
+    .control-slider .ui-state-hover,
+    .control-slider .ui-widget-content .ui-state-hover,
+    .control-slider .ui-widget-header .ui-state-hover,
+    .control-slider .ui-state-focus,
+    .control-slider .ui-widget-content .ui-state-focus,
+    .control-slider .ui-widget-header .ui-state-focus {
+      border: 1px solid #cccccc;
+      background: #ededed;
+      font-weight: normal;
+      color: #2b2b2b;
+    }
+
+    .control-slider .ui-state-hover a,
+    .control-slider .ui-state-hover a:hover,
+    .control-slider .ui-state-hover a:link,
+    .control-slider .ui-state-hover a:visited,
+    .control-slider .ui-state-focus a,
+    .control-slider .ui-state-focus a:hover,
+    .control-slider .ui-state-focus a:link,
+    .control-slider .ui-state-focus a:visited {
+      color: #2b2b2b;
+      text-decoration: none;
+    }
+
+    .control-slider .ui-state-active,
+    .control-slider .ui-widget-content .ui-state-active,
+    .control-slider .ui-widget-header .ui-state-active {
+      border: 1px solid #003eff;
+      background: #007fff;
+      font-weight: normal;
+      color: #ffffff;
+    }
+
+    .control-slider .ui-state-active a,
+    .control-slider .ui-state-active a:link,
+    .control-slider .ui-state-active a:visited {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    /* Interaction Cues
+    ----------------------------------*/
+    .control-slider .ui-state-highlight,
+    .control-slider .ui-widget-content .ui-state-highlight,
+    .control-slider .ui-widget-header .ui-state-highlight {
+      border: 1px solid #dad55e;
+      background: #fffa90;
+      color: #777620;
+    }
+
+    .control-slider .ui-state-highlight a,
+    .control-slider .ui-widget-content .ui-state-highlight a,
+    .control-slider .ui-widget-header .ui-state-highlight a {
+      color: #777620;
+    }
+
+    .control-slider .ui-state-error,
+    .control-slider .ui-widget-content .ui-state-error,
+    .control-slider .ui-widget-header .ui-state-error {
+      border: 1px solid #f1a899;
+      background: #fddfdf;
+      color: #5f3f3f;
+    }
+
+    .control-slider .ui-state-error a,
+    .control-slider .ui-widget-content .ui-state-error a,
+    .control-slider .ui-widget-header .ui-state-error a {
+      color: #5f3f3f;
+    }
+
+    .control-slider .ui-state-error-text,
+    .control-slider .ui-widget-content .ui-state-error-text,
+    .control-slider .ui-widget-header .ui-state-error-text {
+      color: #5f3f3f;
+    }
+
+    .control-slider .ui-priority-primary,
+    .control-slider .ui-widget-content .ui-priority-primary,
+    .control-slider .ui-widget-header .ui-priority-primary {
+      font-weight: bold;
+    }
+
+    .control-slider .ui-priority-secondary,
+    .control-slider .ui-widget-content .ui-priority-secondary,
+    .control-slider .ui-widget-header .ui-priority-secondary {
+      opacity: .7;
+      filter: Alpha(Opacity=70); /* support: IE8 */
+      font-weight: normal;
+    }
+
+    .control-slider .ui-state-disabled,
+    .control-slider .ui-widget-content .ui-state-disabled,
+    .control-slider .ui-widget-header .ui-state-disabled {
+      opacity: .35;
+      filter: Alpha(Opacity=35); /* support: IE8 */
+      background-image: none;
+    }
+
+    .control-slider .ui-state-disabled .ui-icon {
+      filter: Alpha(Opacity=35); /* support: IE8 - See #6059 */
+    }
+
+    /* Icons
+    ----------------------------------*/
+
+    /* states and images */
+    .control-slider .ui-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .control-slider .ui-icon,
+    .control-slider .ui-widget-content .ui-icon {
+      background-image: url("images/ui-icons_444444_256x240.png");
+    }
+
+    .control-slider .ui-widget-header .ui-icon {
+      background-image: url("images/ui-icons_444444_256x240.png");
+    }
+
+    .control-slider .ui-state-default .ui-icon {
+      background-image: url("images/ui-icons_777777_256x240.png");
+    }
+
+    .control-slider .ui-state-hover .ui-icon,
+    .control-slider .ui-state-focus .ui-icon {
+      background-image: url("images/ui-icons_555555_256x240.png");
+    }
+
+    .control-slider .ui-state-active .ui-icon {
+      background-image: url("images/ui-icons_ffffff_256x240.png");
+    }
+
+    .control-slider .ui-state-highlight .ui-icon {
+      background-image: url("images/ui-icons_777620_256x240.png");
+    }
+
+    .control-slider .ui-state-error .ui-icon,
+    .control-slider .ui-state-error-text .ui-icon {
+      background-image: url("images/ui-icons_cc0000_256x240.png");
+    }
+
+    /* Misc visuals
+    ----------------------------------*/
+
+    /* Corner radius */
+    .control-slider .ui-corner-all,
+    .control-slider .ui-corner-top,
+    .control-slider .ui-corner-left,
+    .control-slider .ui-corner-tl {
+      border-top-left-radius: 3px;
+    }
+
+    .control-slider .ui-corner-all,
+    .control-slider .ui-corner-top,
+    .control-slider .ui-corner-right,
+    .control-slider .ui-corner-tr {
+      border-top-right-radius: 3px;
+    }
+
+    .control-slider .ui-corner-all,
+    .control-slider .ui-corner-bottom,
+    .control-slider .ui-corner-left,
+    .control-slider .ui-corner-bl {
+      border-bottom-left-radius: 3px;
+    }
+
+    .control-slider .ui-corner-all,
+    .control-slider .ui-corner-bottom,
+    .control-slider .ui-corner-right,
+    .control-slider .ui-corner-br {
+      border-bottom-right-radius: 3px;
+    }
+
+    /* Overlays */
+    .control-slider .ui-widget-overlay {
+      background: #aaaaaa;
+      opacity: .3;
+      filter: Alpha(Opacity=30); /* support: IE8 */
+    }
+
+    .control-slider .ui-widget-shadow {
+      margin: 0px 0 0 0px;
+      padding: 5px;
+      background: #666666;
+      opacity: .3;
+      filter: Alpha(Opacity=30); /* support: IE8 */
+      border-radius: 8px;
+    }
+
+  </style>
+
+  <a id="pauseUpdates" class="fondue-option" href="javascript:;">Pause Updates</a>
+  <a id="resetTraces" class="fondue-option" href="javascript:;">Reset Traces</a>
+  <a id="jsScriptOrder" class="fondue-option" href="javascript:;">JS Order
+    <span class="orderUpDown reverse"> &#8593;</span>
+    <span class="orderUpDown normal" style="display: none;"> &#8595;</span>
+  </a>
+  <div class="detail-slider-wrap">
+    <div class="slider-label">JS Detail</div>
+    <input id="detailSlider" type="range" min="1" max="100" step="1" value="1"/>
+  </div>
+  <div class="timeline-slider-wrap control-slider">
+    <div class="timeline-slider-label">JS Time</div>
+    <div id="timeLineSlider"></div>
+  </div>
+  <!--<div class="filter-selection-wrap">-->
+    <!--<input type="checkbox" id="filterOnSelection" checked="checked"/>-->
+    <!--<div class="filter-selection-label">-->
+      <!--<p>Selection</p>-->
+      <!--<p>Filter</p>-->
+    <!--</div>-->
+  <!--</div>-->
 </div>

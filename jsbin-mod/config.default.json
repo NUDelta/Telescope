@@ -2,7 +2,7 @@
   "env": "development",
   "timezone": "UTC",
   "url": {
-    "host": "localhost:8080",
+    "host": "localhost:3005",
     "prefix": "/",
     "ssl": false,
     "static": false,
