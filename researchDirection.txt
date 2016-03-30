@@ -285,7 +285,7 @@ Prototype Feasibility Analysis
         Tech: Hard
         Wow: Medium
 
-    (Punt) Highlight/ filter active HTML
+    (DONE) Highlight/ filter active HTML
         User Problem Ties: High
         Tech: Hard
         Wow: Medium
@@ -296,47 +296,53 @@ Prototype Feasibility Analysis
         Wow: Low
         Priority: provide a walkthrough -- wow there
 
-    Live Theseus From Pro Page to Fiddle
+    (DONE) Live Theseus From Pro Page to Fiddle
         User Problem Ties: Med
         Tech: Hard
         Wow: Med
 
-    Timeline Playback of Effect
+    (DONE) Timeline Constraint of Effect Outcomes
         Without visual outcome
             User Problem Ties: High
             Tech: Hard
             Wow: Med
 
+    (DONE) Highlight DOM Items on Inspection
+        User Problem Ties: High
+        Tech: Hard
+        Wow: Med
+
+    (PUNT) TimeLine Playback of Effect
         With visual outcome
             User Problem Ties: High
             Tech: Very Hard
             Wow: Very High
                 Q: how much can we do with remote debugging in Chrome?
 
-    HTML Tutorons
+    (PUNT) HTML Tutorons
         User Problem Ties: Med
         Tech: Easy
         Wow: Low
 
-    Code Behavior Decomposition Tagging
+    (PUNT) Code Behavior Decomposition Tagging
         (e.g. click handler, callback, dom change)
         User Problem Ties: Low
         Tech: Hard
         Wow: Med
 
-    CSS Animation Effects
+    (PUNT) CSS Animation Effects
         User Problem Ties: Low
         Tech: Very Hard
         Wow: Low
         Priority: Backburner
 
-    Vote up/down significant portions
+    (PUNT) Vote up/down significant portions
         User Problem Ties: Med
         Tech: Hard
         Wow: Low
         Priority:
 
-    Are two things related?
+    (PUNT) Are two things related?
         Can I draw the Lines?
 
     Better Unminification Strategy
