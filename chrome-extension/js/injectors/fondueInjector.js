@@ -44,8 +44,6 @@ define([], function () {
         },
 
         updateTrackedNodes: function () {
-          console.log("FondueInjector: updateTrackedNodes()");
-
           var newNodes = this.getNewNodes();
           if (!newNodes || !newNodes.length) {
             return;
@@ -71,7 +69,7 @@ define([], function () {
             return;
           }
 
-          console.log("fondueInjector: startTrackInterval: got nodes!");
+          console.log("fondueInjector: startTrackInterval: Got nodes... emitting!");
           this.resetTracer();
           if (this.interval) {
             window.clearInterval(this.interval);

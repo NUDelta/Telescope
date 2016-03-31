@@ -31,15 +31,20 @@ module.exports = {
     }, function (err, subRes, body) {
       if (err) throw err;
 
+      console.log("Fetching inline scripts for JSBin", url);
+
       var arrJS = [];
       var $ = cheerio.load(body);
       var scripts = $("script");
       _.each(scripts, function (scriptNode, i) {
         var $scriptEl = $(scriptNode);
         if (!$scriptEl.attr("src")) {
+          var src = $scriptEl.html();
+          src = util.beautifyJS(src, url);
+
           arrJS.push({
             order: i,
-            js: $scriptEl.html()
+            js: src
           });
         }
       });
