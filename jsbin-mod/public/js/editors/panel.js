@@ -107,8 +107,10 @@ var Panel = function (name, settings) {
       gutters: ['pill-gutter', "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       lineNumbers: true,
       foldGutter: true,
+      // theme: jsbin.settings.theme || 'jsbin',
       theme: jsbin.settings.theme || 'jsbin',
-      highlightLine: true
+      highlightLine: true,
+      scrollbarStyle: "null"
       // viewportMargin: Infinity
     };
 

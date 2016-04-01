@@ -155,12 +155,14 @@ def([
 
       this.headerControlView.on("activeCodePanel:reset", function () {
         this.pauseUIUpdates();
+        this.htmlJSLinksView.collapseAll();
         this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
       }, this);
 
       this.headerControlView.on("controlView:order", function (jsOrderReversed) {
         this.sourceCollection.setOrder(jsOrderReversed);
+        this.htmlJSLinksView.collapseAll();
         this.codeMirrorHTMLView.render();
         this.dropDownJSView.render();
         this.codeMirrorJSView.showSources();
