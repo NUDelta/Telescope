@@ -79,9 +79,9 @@ def([
 
     mergeInvocations: function (arrInvocations) {
       //We have to relate them as the come with the full list
-      if (!this.hasFullNodeList) {
-        return;
-      }
+      // if (!this.hasFullNodeList) {
+      //   return;
+      // }
 
       var nodesCreated = 0;
       _(arrInvocations).each(function (invocation) {
@@ -106,7 +106,7 @@ def([
 
         var invokeArr = activeNodeModel.get("invokes") || [];
 
-        if (invokeArr.length < 500) {
+        if (invokeArr.length < 100) {
           invokeArr.push(invocation);
           activeNodeModel.set("invokes", invokeArr);
         }

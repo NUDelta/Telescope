@@ -31,9 +31,9 @@ def([
       this.pause = _.bind(this.pause, this);
       this.resume = _.bind(this.resume, this);
 
-      this.triggerSlideChange = _.throttle(_.bind(function () {
-        this.trigger("timeSlideChange");
-      }, this), 500);
+      this.triggerSlideChangeThrottled = _.throttle(_.bind(function () {
+        this.triggerSlideChange();
+      }, this), 1000);
     },
 
     render: function () {
@@ -67,10 +67,14 @@ def([
       this.slideValUpper = ui.values[1];
 
       this.activeNodeCollection.setTimeStampBounds(this.slideValLower, this.slideValUpper);
-      this.triggerSlideChange();
+      this.triggerSlideChangeThrottled();
     },
 
     triggerSlideChange: function () {
+      var earliestTS = this.activeNodeCollection.getEarliestTimeStamp();
+      var latestTS = this.activeNodeCollection.getLatestTimeStamp();
+      console.log("Slide change:", "[", earliestTS, ", ", this.slideValLower, ",", this.slideValUpper, ",", latestTS);
+
       this.trigger("timeSlideChange");
     },
 

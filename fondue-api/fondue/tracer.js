@@ -1257,6 +1257,76 @@ if (typeof {name} === 'undefined') {
 
 	this.resetTrace = _resetTrace;
 
+  this.softReset = function(logHandle){
+    // invocationById = {};
+    invocationsByNodeId = {};
+    _fileCallGraph = [];
+
+    var temp = {};
+    temp[logHandle] = logEntries[logHandle];
+    logEntries = temp;
+
+    for(var i=0; i< logHandle; i++){
+      _logQueries[i] = {
+        ids:[]
+      }
+    }
+  };
+
+	this.getLogLength = function(logHandle){
+    if (logEntries[logHandle] && logEntries[logHandle].entries && logEntries[logHandle].entries.length) {
+      return logEntries[logHandle].entries.length;
+    } else {
+      return 0;
+    }
+  };
+
+  this.getNodeMap = function(){
+    return nodeById;
+  };
+
+  this.getNodeList = function(){
+    return nodes;
+  };
+
+	this.toJSON = function () {
+    return {
+      sourceByPath: sourceByPath,
+      nodes: nodes, // objects describing functions, branches, call sites, etc
+      nodeById: nodeById, // id(string) -> node
+      invocationStack: invocationStack,
+      invocationById: invocationById, // id(string) -> invocation
+      invocationsByNodeId: invocationsByNodeId, // id(string) -> array of invocations
+      exceptionsByNodeId: exceptionsByNodeId, // nodeId -> array of { exception: ..., invocationId: ... }
+      uncaughtExceptionsByNodeId: uncaughtExceptionsByNodeId, // nodeId -> array of { exception: ..., invocationId: ... }
+      nodeHitCounts: nodeHitCounts, // { query-handle: { nodeId: hit-count } }
+      exceptionCounts: exceptionCounts, // { query-handle: { nodeId: exception-count } }
+      logEntries: logEntries, // { query-handle: [invocation id] }
+      anonFuncParentInvocation: anonFuncParentInvocation,
+      lastException: lastException,
+      astExceptionThrownFromInvocation: lastExceptionThrownFromInvocation, // yucky globals track state between trace* calls
+      nextInvocationId: nextInvocationId,
+      _hitQueries: _hitQueries,
+      _exceptionQueries: _exceptionQueries,
+      _logQueries: _logQueries,
+      _fileCallGraph: _fileCallGraph,
+      _sourceMaps: _sourceMaps,
+      _connected: _connected,
+      _lastEpochID: _lastEpochID,
+      _lastEmitterID: _lastEmitterID,
+      _epochsById: _epochsById, // int -> epoch (only epochs that end up as part of the call graph are saved)
+      _epochsByName: _epochsByName, // string -> [epoch] (only epochs that end up as part of the call graph are saved)
+      _topLevelEpochsByName: _topLevelEpochsByName, // string -> [epoch]
+      _epochStack: _epochStack,
+      _epochInvocationDepth: _epochInvocationDepth, // stack of how deep into the invocation stack of each epoch we are
+      _topLevelInvocationsByEventName: _topLevelInvocationsByEventName,
+      _bailedTick: _bailedTick,
+      _invocationsThisTick: _invocationsThisTick,
+      _invocationStackSize: _invocationStackSize,
+      _explainedBails: _explainedBails
+    };
+  };
+
 	// accessors
 
 	// this is mostly here for unit tests, and not necessary or encouraged

@@ -58,6 +58,8 @@ def([
       this.bindSocketHandlers();
       this.bindViewListeners();
       this.fetchData();
+
+      this.totalInvocations = 0;
     },
 
     fetchData: function () {
@@ -74,6 +76,9 @@ def([
 
     bindSocketHandlers: function () {
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
+        this.totalInvocations += obj.invocations.length;
+        console.log("Total Invocations Stored:", this.totalInvocations);
+
         this.activeNodeCollection.mergeInvocations(obj.invocations);
 
         if (!this.sourceCollection.length) {

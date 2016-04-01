@@ -1,6 +1,13 @@
 define([], function () {
     return function () {
       var FondueBridge = function () {
+        this.updateTrackedNodes = unravelAgent._.bind(this.updateTrackedNodes, this);
+        this.startTracking = unravelAgent._.bind(this.startTracking, this);
+        this.getNodes = unravelAgent._.bind(this.getNodes, this);
+        this.resetTracer = unravelAgent._.bind(this.resetTracer, this);
+        this.startTrackInterval = unravelAgent._.bind(this.startTrackInterval, this);
+        this.getNewNodes = unravelAgent._.bind(this.getNewNodes, this);
+        this.totalInvocations = 0;
       };
 
       FondueBridge.MAX_LOG_COUNT = 3000;
@@ -10,18 +17,8 @@ define([], function () {
       FondueBridge.prototype = {
         constructor: FondueBridge,
 
-        initialize: function () {
-          this.updateTrackedNodes = unravelAgent._.bind(this.updateTrackedNodes, this);
-          this.startTracking = unravelAgent._.bind(this.startTracking, this);
-          this.getNodes = unravelAgent._.bind(this.getNodes, this);
-          this.resetTracer = unravelAgent._.bind(this.resetTracer, this);
-          this.startTrackInterval = unravelAgent._.bind(this.startTrackInterval, this);
-          this.getNewNodes = unravelAgent._.bind(this.getNewNodes, this);
-          this.totalInovactions = 0;
-        },
-
         getNodes: function () {
-          return unravelAgent._(this.nodeMap).values();
+          return __tracer.getNodeList();
         },
 
         getNewNodes: function () {
@@ -44,18 +41,7 @@ define([], function () {
         },
 
         updateTrackedNodes: function () {
-          var newNodes = this.getNewNodes();
-          if (!newNodes || !newNodes.length) {
-            return;
-          }
-          var _nodeArr = unravelAgent._(newNodes);
-          this.nodeMap = this.nodeMap || {};
-          _nodeArr.each(function (node) {
-            if (!this.nodeMap[node.id]) {
-              this.nodeMap[node.id] = node;
-            }
-          }, this);
-          this.ids = unravelAgent._(this.nodeMap).keys();
+          this.ids = unravelAgent._(__tracer.getNodeMap()).keys();
           this.logHandle = window.__tracer.trackLogs({ids: this.ids});
         },
 
@@ -69,7 +55,7 @@ define([], function () {
             return;
           }
 
-          console.log("fondueInjector: startTrackInterval: Got nodes... emitting!");
+          console.log("fondueInjector: startTrackInterval: Got nodes... emitting");
           this.resetTracer();
           if (this.interval) {
             window.clearInterval(this.interval);
@@ -142,14 +128,13 @@ define([], function () {
               console.log("emitNodeActivity:no invocations")
               return;
             }
-            console.log("emitNodeActivity:", arrInvocations.length, "invocations!")
+            console.log("emitNodeActivity:", arrInvocations.length, "invocations");
 
-            var _arrInvocations = unravelAgent._(arrInvocations);
-
+            var nodeMap = __tracer.getNodeMap();
             //For each one, get its callStack, up to 10 deep
-            _arrInvocations.each(function (invocation) {
+            unravelAgent._(arrInvocations).each(function (invocation) {
               //Give this invocation a nodename too
-              var node = this.nodeMap[invocation.nodeId];
+              var node = nodeMap[invocation.nodeId];
               if (!node.startLine) {
                 node.startLine = node.start.line;
                 node.startColumn = node.start.column;
@@ -173,21 +158,30 @@ define([], function () {
               }
             }, this);
 
-            //this.totalInovactions += _arrInvocations.length;
-            // if (this.totalInovactions > 10000) {
-            //   this.resetTracer();
-            //   this.totalInovactions = 0;
+            // if (arrInvocations.length < FondueBridge.MAX_LOG_COUNT) {
+            if (unravelAgent.scriptLoadComplete) {
+              __tracer.softReset(this.logHandle);
+            }
             // }
+
+            var logLength = __tracer.getLogLength(this.logHandle);
+            if (logLength > 10000) {
+              console.log("Remaining Log Length is too large:", logLength, "... clearing.");
+              this.updateTrackedNodes();
+              __tracer.softReset(this.logHandle);
+              // __tracer.clearLogs(this.logHandle);
+            }
+
 
             window.dispatchEvent(new CustomEvent("fondueDTO", {
                 detail: {
                   eventStr: "fondueDTO:arrInvocations",
-                  obj: {invocations: _arrInvocations.value()}
+                  obj: {invocations: arrInvocations}
                 }
               })
             );
           } catch (err) {
-            console.warn("Err on dispatching invocations.")
+            console.warn("Err on dispatching invocations:", err);
           }
         }
       };

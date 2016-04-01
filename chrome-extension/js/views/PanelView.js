@@ -82,7 +82,7 @@ define([
       var send = _.bind(function () {
         if (!this.binReady) {
           console.log("Bin not ready for data, waiting...");
-          setTimeout(send, 100);
+          setTimeout(send, 500);
           return;
         }
 
@@ -121,7 +121,7 @@ define([
 
         var onNodesLoaded = function (nodeArr) {
           if (!nodeArr) {
-            setTimeout(tryToGetNodes, 100);
+            setTimeout(tryToGetNodes, 500);
           } else {
             panelView.nodeCollection.add(nodeArr);
             console.log("", nodeArr.length, " nodes loaded.");

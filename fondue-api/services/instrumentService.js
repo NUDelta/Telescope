@@ -13,6 +13,7 @@ var blockedDomains = [
   "connect.facebook.net",
   "google-analytics.com",
   "beacon.krxd.net",
+  "trackingTags_v1.1",
 ];
 
 
@@ -109,17 +110,6 @@ module.exports = {
   },
 
   instrumentJS: function (url, basePath, callback) {
-    if (_(blockedDomains).find(function (domain) {
-        if (url.indexOf(domain) > -1) {
-          return true;
-        }
-      })) {
-      console.log("Blocking source request and return \"\" for:", url);
-
-      callback("");
-      return;
-    }
-
     request({
       url: url,
       fileName: basePath,
@@ -130,6 +120,17 @@ module.exports = {
       if (err) {
         console.log("Error on fetching JS. Returning \"\" for:", url);
         callback("");
+        return;
+      }
+
+      if (_(blockedDomains).find(function (domain) {
+          if (url.indexOf(domain) > -1) {
+            return true;
+          }
+        })) {
+        console.log("Blocking source request and returning original for:", url);
+
+        callback(body);
         return;
       }
 
