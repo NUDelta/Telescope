@@ -199,9 +199,12 @@ define([],
           return;
         }
 
+        // var instrumentedURL = "https://localhost:3001/instrument?url=" + encodeURIComponent(window.location.href) +
+        //   "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname) +
+        //   "&callback=window.unravelAgent.reWriteCallback&fmt=json";
         var instrumentedURL = "https://localhost:3001/instrument?url=" + encodeURIComponent(window.location.href) +
           "&html=true&basePath=" + encodeURIComponent(window.location.origin + window.location.pathname) +
-          "&callback=window.unravelAgent.reWriteCallback&fmt=json";
+          "&callback=window.unravelAgent.reWriteCallback";
 
         var http = new XMLHttpRequest();
         http.open("GET", instrumentedURL, true);
@@ -250,13 +253,13 @@ define([],
                 window.localStorage.clear();
               }
 
-              var res = JSON.parse(http.responseText);
+              // var res = JSON.parse(http.responseText);
               window.dispatchEvent(new CustomEvent("ReloadContentListeners")); //Async request to reinit contentscript
 
               //Rewrite with fondue
               document.open('text/html');
-              // document.write(http.responseText);
-              document.write(res.htmlStr);
+              document.write(http.responseText);
+              // document.write(res.htmlStr);
               document.close();
 
               var loadScripts = function (arrScripts, insertFn, callback) {
@@ -317,6 +320,7 @@ define([],
                 unravelAgent.$("html").append(scriptEl);
               };
 
+              /*
               // console.log("Loading pre-head scripts...");
               loadScripts(res.preHeadScripts, preHeadInsertFn, function () {
                 // console.log("Loading head scripts...");
@@ -340,6 +344,7 @@ define([],
                   })
                 })
               });
+              */
 
             } catch (err) {
               debugger;

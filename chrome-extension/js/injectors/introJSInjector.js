@@ -1873,7 +1873,7 @@ define([],
         "  padding: 10px;" +
         "  background-color: white;" +
         "  min-width: 200px;" +
-        "  max-width: 300px;" +
+        "  max-width: 318;" +
         "  border-radius: 3px;" +
         "  box-shadow: 0 1px 10px rgba(0,0,0,.4);" +
         "  -webkit-transition: opacity 0.1s ease-out;" +

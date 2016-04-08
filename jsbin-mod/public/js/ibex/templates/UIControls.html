@@ -1,71 +1,86 @@
-<div id="fondue-ui-controls">
+<div id="fondue-ui-controls" class="row">
   <style>
-    #fondue-ui-controls {
-      float: right;
+    #control {
+      box-shadow: 0 0 5px rgba(57, 70, 78, .2);
+    }
+
+    .control {
+      background-color: white;
+    }
+
+    .actionItem {
+      float: left;
+      font-size: 14px;
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+
+    .actionItem a {
       display: block;
-      height: 35px;
-      width: 89%;
-    }
-
-    #panels {
-      width: 210px;
-    }
-
-    #jsScriptOrder {
-      background-color: #edc9f3;
-    }
-
-    #pauseUpdates {
-      float: right;
-      background-color: lightyellow;
-    }
-
-    #resetTraces {
-      float: right;
-      background-color: lightcyan;
-    }
-
-    .fondue-option {
-      display: block;
-      line-height: 40px;
-      padding-left: 8px;
-      padding-right: 8px;
-      margin-right: 4px;
-      margin-top: 5px;
-      border-radius: 3px;
+      outline: 0;
+      line-height: 52px;
       text-decoration: none;
-      float: right;
+      color: #39464E;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
     }
 
-    .fondue-option:hover {
-      opacity: 0.75;
+    .actionDivider {
+      height: 55px;
+      float: left;
+      border-right: 1px solid #e7e7e7;
+      width: 1px;
+      margin-right: 15px;
+      margin-left: 4px;
+    }
+
+    .actionItem:hover {
+      border-bottom: solid 3px #1C90F3;
+      padding-right: 12px;
+    }
+
+    .actionItem:active {
+      background-color: whitesmoke;
+      box-shadow: inset 1px 1px 4px 0px rgba(204, 202, 204, 1);
+    }
+
+    .actionItem.receiver.active {
+      border-bottom: solid 3px #f33800;
+      box-shadow: inset 1px 1px 4px 0px rgba(204, 202, 204, 1);
+    }
+
+    .actionItem.receiver.inactive {
+      border-bottom: solid 3px #08f30f;
     }
 
     .detail-slider-wrap {
-      float: right;
+      float: left;
       padding-left: 8px;
       padding-right: 8px;
       margin-right: 4px;
       margin-top: 5px;
       border-radius: 3px;
       background-color: white;
+      width: 165px;
     }
 
-    .detail-slider-wrap input {
-      width: 90px;
-      margin-top: 22px;
-    }
-
-    .slider-label {
+    .detail-slider-label {
       padding-top: 0px;
       position: absolute;
       width: 100px;
-      text-align: center;
-      top: 9px;
+      top: 10px;
+      color: #39464E;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
+      margin-left: 24px;
+    }
+
+    #detailSlider {
+      margin-top: 31px;
     }
 
     .timeline-slider-wrap {
-      float: right;
+      float: left;
       padding-left: 4px;
       padding-right: 4px;
       margin-right: 4px;
@@ -77,44 +92,36 @@
     }
 
     .timeline-slider-label {
-      margin-top: 4px;
+      margin-top: 5px;
+      color: #39464E;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
       text-align: center;
     }
 
     #timeLineSlider {
-      margin-top: 6px;
+      margin-top: 10px;
       margin-bottom: 3px;
       margin-left: 6px;
       margin-right: 6px;
     }
 
-    .filter-selection-wrap {
-      float: right;
-      padding-left: 4px;
-      padding-right: 4px;
+    #pauseUpdates {
+      /*width: 75px;*/
+    }
+
+    .octicon {
       margin-right: 4px;
-      margin-top: 5px;
-      border-radius: 3px;
-      background-color: white;
-      width: 83px;
-      padding-bottom: 3px;
-      background-color: white;
     }
 
-    #filterOnSelection {
+    .telescope-logo {
       float: left;
-      height: 32px;
-      width: 17%;
-    }
-
-    .filter-selection-label {
-      float: left;
-      width: 73%;
-      padding-top:5px;
-    }
-
-    .filter-selection-label p {
-      text-align: center;
+      line-height: 55px;
+      background-color: #333333;
+      color: white;
+      padding-left: 7px;
+      padding-right: 7px;
+      padding-top: 5px;
     }
   </style>
 
@@ -221,14 +228,23 @@
       color: #333333;
     }
 
+    .detail-slider-wrap.control-slider .ui-widget-content {
+      background: linear-gradient(to right, #2cee49 0%,#ffffff 80%);
+      /*background: #2cee49;*/
+    }
+
     .control-slider .ui-widget-content a {
       color: #333333;
     }
 
     .control-slider .ui-widget-header {
-      background: orange;
+      background: #ffb533;
       color: #333333;
       font-weight: bold;
+    }
+
+    .detail-slider-wrap.control-slider .ui-widget-header {
+      background: white;
     }
 
     .control-slider .ui-widget-header a {
@@ -445,25 +461,47 @@
 
   </style>
 
-  <a id="pauseUpdates" class="fondue-option" href="javascript:;">Pause Updates</a>
-  <a id="resetTraces" class="fondue-option" href="javascript:;">Reset Traces</a>
-  <a id="jsScriptOrder" class="fondue-option" href="javascript:;">JS Order
-    <span class="orderUpDown reverse"> &#8593;</span>
-    <span class="orderUpDown normal" style="display: none;"> &#8595;</span>
-  </a>
-  <div class="detail-slider-wrap">
-    <div class="slider-label">JS Detail</div>
-    <input id="detailSlider" type="range" min="1" max="100" step="1" value="1"/>
+  <div class="telescope-logo">
+    <span class="mega-octicon octicon-telescope"></span>
   </div>
+
+  <div class="actionItem receiver inactive">
+    <a id="pauseUpdates" class="fondue-option" href="javascript:;">
+      <span class="octicon octicon-rss"></span>
+      <span id="pauseStatusOn">Receiving</span>
+      <span id="pauseStatusOff" style="display: none;">&nbsp;&nbsp;Paused</span>
+    </a>
+  </div>
+
+  <div class="actionItem">
+    <a id="resetTraces" class="fondue-option" href="javascript:;">
+      <span class="octicon octicon-sync"></span>
+      <span>Reset Traces</span>
+    </a>
+  </div>
+
+  <div class="actionItem">
+    <a id="jsScriptOrder" class="fondue-option" href="javascript:;">
+      <span class="octicon octicon-list-ordered"></span>
+      <span>JS Order</span>
+      <span class="orderUpDown reverse"> &#8593;</span>
+      <span class="orderUpDown normal" style="display: none;"> &#8595;</span>
+    </a>
+  </div>
+
+  <div class="actionDivider"></div>
+
+  <div class="detail-slider-wrap control-slider">
+    <div class="detail-slider-label"><span class="octicon octicon-settings"></span>JS Detail:&nbsp;<span
+      id="detailLevel">1</span></div>
+    <div id="detailSlider"></div>
+  </div>
+
+  <div class="actionDivider"></div>
+
   <div class="timeline-slider-wrap control-slider">
-    <div class="timeline-slider-label">JS Time</div>
+    <div class="timeline-slider-label"><span class="octicon octicon-watch"></span>JS Call Time: <span id="slideValLower"></span> &#8596; <span id="slideValUpper"></span></div>
     <div id="timeLineSlider"></div>
   </div>
-  <!--<div class="filter-selection-wrap">-->
-    <!--<input type="checkbox" id="filterOnSelection" checked="checked"/>-->
-    <!--<div class="filter-selection-label">-->
-      <!--<p>Selection</p>-->
-      <!--<p>Filter</p>-->
-    <!--</div>-->
-  <!--</div>-->
+
 </div>

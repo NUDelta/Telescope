@@ -103,6 +103,7 @@ def([
         return;
       }
 
+      gutterPillView.$el.removeClass("selected");
       if (gutterPillView.nonDom) {
         gutterPillView.expanded = false;
         this.codeMirrorHTMLView.$missingEl.hide();

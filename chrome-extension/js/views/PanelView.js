@@ -82,7 +82,7 @@ define([
       var send = _.bind(function () {
         if (!this.binReady) {
           console.log("Bin not ready for data, waiting...");
-          setTimeout(send, 100);
+          setTimeout(send, 500);
           return;
         }
 
@@ -121,15 +121,18 @@ define([
 
         var onNodesLoaded = function (nodeArr) {
           if (!nodeArr) {
-            setTimeout(tryToGetNodes, 100);
+            setTimeout(tryToGetNodes, 500);
           } else {
+            //Wait for other scripts to come in
             panelView.nodeCollection.add(nodeArr);
             console.log("", nodeArr.length, " nodes loaded.");
             panelView.getScriptMetaData(function () {
               console.log("getScriptMetaData callback");
 
               UnravelAgent.runInPage(function () {
+                unravelAgent.scriptLoadComplete = true;
                 unravelAgent.startObserving();
+                unravelAgent.fondueBridge.updateTrackedNodes();
               }, function () {
                 panelView.binSetupInProgress = false;
                 panelView.sendNodesHTMLCSSToJSBin();
@@ -139,10 +142,12 @@ define([
         };
 
         UnravelAgent.runInPage(function () {
-          // var hasBodyChildren = !!$("body").children().length;
-          // var scripts = unravelAgent.$("script");
-          // if (hasBodyChildren && scripts && scripts[0]) {
-          if (unravelAgent.scriptLoadComplete) {
+          var hasBodyChildren = !!unravelAgent.$("body").children().length;
+          var scripts = unravelAgent.$("script");
+          if (hasBodyChildren && scripts && scripts[0]) {
+            // if (unravelAgent.scriptLoadComplete) {
+            unravelAgent.fondueBridge.startTracking();
+            unravelAgent.fondueBridge.updateTrackedNodes();
             return unravelAgent.fondueBridge.getNodes(); //for our script metadata
           } else {
             console.log("PanelView: Waiting on scripts to finish loading...");
@@ -244,6 +249,8 @@ define([
               order: null,
               js: ""
             };
+          } else {
+            meta.merged = true;
           }
 
           return {
@@ -256,6 +263,21 @@ define([
             js: ""
           };
         }, this).value();
+
+      _(this.metaScripts).each(function (metaS) {
+        if (!metaS.merged && metaS.url) {
+          var path = metaS.url.split("#")[0];
+          hitScripts.push({
+            path: path,
+            url: path,
+            builtIn: false,
+            inline: metaS.inline,
+            domPath: metaS.domPath,
+            order: metaS.order,
+            js: ""
+          });
+        }
+      }, this);
 
       var emitToBin = _.bind(function () {
         this.ibexSocketRouter.emit("fondueDTO:scripts", {scripts: hitScripts});
@@ -360,7 +382,7 @@ define([
     },
 
     reloadInjecting: function () {
-        UnravelAgent.reloadInjecting();
+      UnravelAgent.reloadInjecting();
     }
   });
 });

@@ -58,6 +58,8 @@ def([
       this.bindSocketHandlers();
       this.bindViewListeners();
       this.fetchData();
+
+      this.totalInvocations = 0;
     },
 
     fetchData: function () {
@@ -74,6 +76,9 @@ def([
 
     bindSocketHandlers: function () {
       this.jsBinSocketRouter.onSocketData("fondueDTO:arrInvocations", function (obj) {
+        this.totalInvocations += obj.invocations.length;
+        console.log("Total Invocations Stored:", this.totalInvocations);
+
         this.activeNodeCollection.mergeInvocations(obj.invocations);
 
         if (!this.sourceCollection.length) {
@@ -150,12 +155,14 @@ def([
 
       this.headerControlView.on("activeCodePanel:reset", function () {
         this.pauseUIUpdates();
+        this.htmlJSLinksView.collapseAll();
         this.activeNodeCollection.empty();
         this.jsBinSocketRouter.emit("jsbin:reset", {});
       }, this);
 
       this.headerControlView.on("controlView:order", function (jsOrderReversed) {
         this.sourceCollection.setOrder(jsOrderReversed);
+        this.htmlJSLinksView.collapseAll();
         this.codeMirrorHTMLView.render();
         this.dropDownJSView.render();
         this.codeMirrorJSView.showSources();

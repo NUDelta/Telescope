@@ -315,7 +315,12 @@ function traceFilter(src, options) {
     var prologue = options.prefix;
     prologue += template(/*tracer-stub.js{*/fs.readFileSync(__dirname + '/tracer-stub.js', 'utf8')/*}tracer-stub.js*/, {name: options.tracer_name});
     if (options.source_map) prologue += '/*mapshere*/';
-    prologue += options.tracer_name + '.add(' + JSON.stringify(options.path) + ', ' + JSON.stringify(src) + ', { nodes: ' + JSON.stringify(nodes) + ' });\n\n';
+
+    // if (options.path && options.path.indexOf("-script-") > -1) {
+    //   prologue += options.tracer_name + '.add(' + JSON.stringify(options.path) + ', ' + JSON.stringify(src) + ', { nodes: ' + JSON.stringify(nodes) + ' });\n\n';
+    // } else {
+      prologue += options.tracer_name + '.add(' + JSON.stringify(options.path) + ', "", { nodes: ' + JSON.stringify(nodes) + ' });\n\n';
+    // }
 
     return {
       map: function () {

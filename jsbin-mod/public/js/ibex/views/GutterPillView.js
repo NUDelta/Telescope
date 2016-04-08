@@ -42,12 +42,14 @@ def([
     },
 
     setCount: function (count) {
-      var txt = " call" + (count === 1 ? "" : "s");
+      var html = count + " Call" + (count === 1 ? "" : "s");
       if (this.htmlRelatedNodeModels) {
-        txt = count === 1 ? " query" : " queries";
+        html = "Query";
+        this.$el.addClass("html-side")
+      } else {
+        this.$el.addClass("js-side")
       }
 
-      var html = count + txt;
       this.$el.find(".counts").html(html);
       this.$el.toggleClass("none", count === 0);
       this.count = count;
@@ -59,17 +61,8 @@ def([
 
     setDomModifier: function () {
       if (this.activeNodeModel && this.activeNodeModel.get("domModifier")) {
-        this.$el.attr("style", "background-color: yellow !important;");
+        this.$el.addClass("domModifier");
       }
-    },
-
-    setActive: function (isActive) {
-      this._active = isActive;
-      this.$el.toggleClass("active", isActive);
-    },
-
-    toggle: function () {
-      this.setActive(!this._active);
     },
 
     setCollapseFn: function (fn) {
@@ -82,8 +75,10 @@ def([
 
     toggleTrace: function () {
       if (this.expanded) {
+        this.$el.removeClass("selected");
         this.collapseFn(this);
       } else {
+        this.$el.addClass("selected");
         this.expandFn(this);
       }
     }
