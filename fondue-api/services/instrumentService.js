@@ -14,6 +14,7 @@ var blockedDomains = [
   "google-analytics.com",
   "beacon.krxd.net",
   "trackingTags_v1.1",
+  // "moment",
 ];
 
 

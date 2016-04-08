@@ -56,7 +56,7 @@ define([], function () {
           }
 
           console.log("fondueInjector: startTrackInterval: Got nodes... emitting");
-          this.resetTracer();
+          this.logHandle = window.__tracer.trackLogs({ids: this.ids});
           if (this.interval) {
             window.clearInterval(this.interval);
           }
