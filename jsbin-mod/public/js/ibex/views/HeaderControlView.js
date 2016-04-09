@@ -127,7 +127,7 @@ def([
     },
 
     jsDetailChange: function (event, ui) {
-      var newVal = Math.ceil(ui.value / 25);
+      var newVal = Math.ceil(ui.value / 20);
 
       if (this.lastDetailSlideVal) {
         if (newVal !== this.lastDetailSlideVal) {

@@ -252,10 +252,13 @@ Ibex Plan Actual
         Pilot Study 2
     Mar 19 - 25
         Perf Refactors
-    Mar 25 - 31
+    Mar 25 - April 3
         Final Features, code complete
-    April 1 - April 8
         Pro Sites Tests, Coding
+    April 5
+        Paper Outline, Formatting, Intro
+    April 6
+        System Description, Design Process, More Outlining
         Write paper
         Related work
         Recruit/Test
@@ -477,3 +480,298 @@ Hq Test Affordances
         Can we expand yellow views out to find related code?
 
     How do pro examples differ from ordinary user code?
+
+Qualitative Study
+
+    Here's a website, here's the code
+
+    Start TElescope.. inspect... controls.
+    What can you tell me about the way this feature was written?
+    What coding design patterns can you identify?
+    How is this way of implementing the feature different than how you might have?
+        Nudge them to describe their approach
+    Given a task where you were required to add X feature on site Y (different domain)
+
+    How did Telescope help you understand this example and what's happening?
+        I saw you were using feature X, what were you trying to accomplish?
+
+    Which other websites and UI features would you like to use Telescope on?
+
+    Do you see ways in which telescope can help you learn
+        how would you see yourself using telescope
+        now that you have the tool, what 
+
+    If I launched this today, what are some things you could see yourself
+        doing with it in the short term or long term?
+
+10 Sites Measurments / Case studies
+
+    How the HTML is manipulated by JavaScript
+    What libarires they use
+    How the code is organized
+    How many button clicks did it take to get to the relevant part of code
+        How obvious were the button clicks
+    What similiarites exist between disparate implementations
+    What is the ratio of libabry/utility code to useful code?
+        60k vs 80
+        on the page, telescope pull out, is or isn't library code, active code, its relevant
+
+    At various levels of code views, how much can you understand?
+        Generalized picture of code shrink/growth vs understand
+
+    Success Cases and Failure Cases
+
+    At what levels is the zooming/refining most useful
+
+
+Qualitative Study Findings
+
+    
+    Greg 
+
+        Adjustments to time
+            0 > 3s
+            0 > 3s
+            3 > 0
+            0 > 3
+        Scrolls In JS
+            3
+        Amount of Code visible 
+            130 loc
+        JS Gutter Clicks 1
+        HTML Gutter Clicks 0
+        Notes
+            "Is there a way to search?"
+            "Is there a way to look at CSS"
+            "Is there a way to look up variables?"
+            "Even though its constrained it's still sort of overwhelming"
+            Didn't know how XKCD map works
+            Unsure if library or custom code
+            "i can tell that jQuery is used a lot"
+            "lots of specific hard-coded variables"
+            "i don't really know how I would do it, but this way seems odd"
+            "every time i open up soemthing like this to figure out how it works 
+            its just a block of javascript or minified, so i don't even try, its
+            not worth the time"
+
+        Odd Uses
+            Copied urls out of html for inspection
+
+        Using for?
+            I reverse engineer stuff like this a lot
+            I like to take the bits and pieces of the site I use for
+            I typically do this more with CSS, but I could see myself using this
+            for JavaScript interaction design as well
+            I struggle with knowing whether a cool interaction is supported by a library or is all custom code
+
+    Leesha 
+
+        Design: Abstraction of functions is helpful
+        Seeing how updating is separated from dragging
+        Its helpful to know how to structure code
+        Used double constrain
+
+        Using for?
+            Reference and lifting out pieces I need, not copy paste
+
+        Output caused some frustration
+
+        Just starting out, I'm afraid to move it further out
+
+        For more complex features I'd like to use this over an inspector
+            "inspector's are good for simple things like css and attributes"
+            "this would become my starting point over forums/tutorials"
+            ""
+
+    Nikhil - play-dot-to.com
+        Adjustments to time
+            0 > 80s
+            0 > 90s
+        Scrolls In JS
+            10
+        Amount of Code visible 
+            130 loc
+        JS Gutter Clicks 1
+        HTML Gutter Clicks 8
+        Watched HTML Changes
+
+        Pause Interaction 2
+
+        "I wish there was a way to play it back"
+        "Can I see what was run inside the function?"
+        "Where's the svg?"
+        "Helpful to have an expert walk through"
+
+        Found Mouseover
+
+        Missed the setup code by skipping it out of habit
+
+        Gives you a general idea of how things work apart from library code
+
+        A lot of my front end questions are CSS'y than JS
+            Here are what css classes triggered with x
+
+        I'm not sure what happened at which second, so its difficult to constrain the time
+
+        The detail helps alot
+            I'm not sure when to use more detail vs less
+            Once I found that raphael was being used, I wanted more detail to see how it was invoked
+
+        "It's very cool, technically i'm impressed you can do this"
+
+        ""
+
+    Ryan - xkcd
+
+        Adjustments to time
+            1 to 6
+        Scrolls In JS
+            3
+        Amount of Code visible 
+            130 loc
+        JS Gutter Clicks 1
+        HTML Gutter Clicks 2
+        Watched HTML Changes
+
+        Pause Interaction 2
+
+        "Can we use the native element highlighting from chrome?"
+        "It looks like they're using jquery to insert HTML into the DOM"
+
+        Found tiling concept
+
+        The detail control is crazy because it lets me see what modified the dom or bring in the background code run
+
+        Like the timeline because it lets me Separate those two totally distinct sets of calls apart 
+
+        There was an interaction with a giant picture that I had no idea how to do it
+
+        Found some odd code in tumblr, with random animation duration
+
+        Replaces my workflow of inspecting some element and digging out 
+            That has varying levels of success, i would do this instead
+            I would use the page, wait, and adjust the sliders until I see what i want
+
+    No users filtered scripts
+
+
+    Sarah - xkcd
+
+        Usage similar to Ryan
+
+        Seeing only the relevant part makes it easy
+        I can see there are just a bunch of tiles composed together that are calculated and loaded when need.
+
+        It would help to see what new javascript was coming in over time
+
+        "I would know how to apporach this problem design-wise" "I would have a map object with a drag event that modifies a coordinate system"
+
+        assemble a map out of a bunch of tiles that are named accroding to the coordinates, capture the coordinates from the events and query the appropriate tile
+            that's not something i would have known before
+
+        "I haven't looked much at the HTML, so I'll start on that"
+
+        I want to understand how functions relate to one another, i can see call counts changing and functions coming in over time
+
+        I can see a function got called 100 times for one interaction, so I think that might be a utility
+
+        I would not have known how to look at this if I was more novice-y
+
+        I want to know how update effects one tile in the dom
+
+        I would like to use this for websites with a functionaly scoped effect, like not facebook messenger, but maybe a drag-and-drop feature
+            I would want to run telescope on the demo pages of libraries to understand how their written with a library
+                so that i could know how to implement them without one
+
+        This helps me mentally map and abstract concepts in JavaScript down to a specific implemention case
+            I know how to do event handlers, queries, and syntax and JavaScript but I'm missing the "how" of making them work together for a feature like a draggable map.
+
+        I see these components on a lot of websites and I think I know most of what it would require, but I don't know how to go about building it.
+
+        I want to annotate or add comments to this
+
+
+10 Site Case Study
+
+    
+
+    How the HTML is manipulated by JavaScript
+    What Libraries they use
+    How the code is organized
+    How many button clicks did it take to get to the relevant part of code
+        How obvious were the button clicks
+
+    What similarities exist between disparate implementations
+
+    What is the ratio of library/utility code to useful code?
+        60k vs 80
+        on the page, telescope pull out, is or isn't library code, active code, its relevant
+
+    At various levels of code views, how much can you understand?
+        Generalized picture of code shrink/growth vs understand
+
+    Success Cases and Failure Cases
+
+    At what levels is the zooming/refining most useful
+
+    Success Cases
+
+        xkcd.com/1110/
+            From Startup
+                11,000 lines unminified JS
+                4730 dom modifier
+                9,378 active js
+                31 HTML Lines queried
+
+            During Interaction
+                49 dom modifier lines of non-library code
+                165 dom modifier lines with library
+                1079 active JS lines
+                1 HTML Line queried
+
+            Clicks
+                One click to start and see setup code
+                One click and drag to constrain time window 
+                Scroll through JavaScript
+                Clicked to see related HTML
+
+            Interaction Methods Found
+                update // alters map tile positions, loads new tiles
+                drag   //
+
+            Implementation Lesson
+                To create a draggable map:
+                    - Store initial user position
+                    - Divide up super large image into grid of images
+                    - Create start point in the grid and reveal to user
+                    - Only load images in view or touching current view
+                    - As the user drags, store new user position on map
+                    - Update map tile position
+                    - Load / unload surrounding tiles based on position and tile dimension
+
+            4 HTML elements
+
+        
+
+    Failure Cases
+        Mac Pro
+        New York Times
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

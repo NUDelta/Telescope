@@ -643,11 +643,11 @@ function upgradeConsolePanel(console) {
         $('#runconsole')[this.visible ? 'hide' : 'show']();
       };
 
-      jsbin.panels.panels.live.on('show', hidebutton).on('hide', hidebutton);
+      // jsbin.panels.panels.live.on('show', hidebutton).on('hide', hidebutton);
 
-      if (jsbin.panels.panels.live.visible) {
-        $('#runconsole').hide();
-      }
+      // if (jsbin.panels.panels.live.visible) {
+      //   $('#runconsole').hide();
+      // }
 
     });
 }

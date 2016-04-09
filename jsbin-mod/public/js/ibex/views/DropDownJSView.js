@@ -60,27 +60,33 @@ def([
       });
 
       switch (headerControlVal) {
-        case 1:  //active js dom modifiers only
+        case 1:  //active js dom modifiers only, no libraries
           this.markBlockedSourceModels();
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: true,
             activeCodeOnly: true
           });
           break;
-        case 2:  //active js only
+        case 2:  //active js dom modifiers only with libraries
+          this.codeMirrorJSView.showOptional({
+            domModifiersOnly: true,
+            activeCodeOnly: true
+          });
+          break;
+        case 3:  //active js only
           this.markBlockedSourceModels();
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: false,
             activeCodeOnly: true
           });
           break;
-        case 3:  // active js with known libs
+        case 4:  // active js with known libs
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: false,
             activeCodeOnly: true
           });
           break;
-        case 4:  // all js
+        case 5:  // all js
           this.codeMirrorJSView.showOptional({
             domModifiersOnly: false,
             activeCodeOnly: false

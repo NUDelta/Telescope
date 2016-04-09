@@ -154,10 +154,10 @@ panels.restore = function () {
           key = 'javascript';
         }
 
-        if (key === 'output') {
-          query.live = query.live;
-          key = 'live';
-        }
+        // if (key === 'output') {
+        //   query.live = query.live;
+        //   key = 'live';
+        // }
 
         if (query[key] === undefined) {
           query[key] = '';
@@ -336,7 +336,7 @@ panels.focus = function (panel) {
 panels.getQuery = function () {
   var alt = {
     javascript: 'js',
-    live: 'output'
+    // live: 'output'
   };
 
   var visible = panels.getVisible();
@@ -518,23 +518,23 @@ var panelInit = {
     return new Panel('console', { label: 'Console' });
   },
   live: function () {
-    function show() {
-      // var panel = this;
-      if (panels.ready) {
-        renderLivePreview();
-      }
-    }
-
-    function hide() {
-      // detroy the iframe if we hide the panel
-      // note: $live is defined in live.js
-      // Commented out so that the live iframe is never destroyed
-      if (panels.panels.console.visible === false) {
-        // $live.find('iframe').remove();
-      }
-    }
-
-    return new Panel('live', { label: 'Output', show: show, hide: hide });
+    // function show() {
+    //   // var panel = this;
+    //   if (panels.ready) {
+    //     renderLivePreview();
+    //   }
+    // }
+    //
+    // function hide() {
+    //   // detroy the iframe if we hide the panel
+    //   // note: $live is defined in live.js
+    //   // Commented out so that the live iframe is never destroyed
+    //   if (panels.panels.console.visible === false) {
+    //     // $live.find('iframe').remove();
+    //   }
+    // }
+    //
+    // return new Panel('live', { label: 'Output', show: show, hide: hide });
   }
 };
 
@@ -546,14 +546,14 @@ editors.css = panelInit.css();
 editors.javascript = panelInit.javascript();
 editors.console = panelInit.console();
 upgradeConsolePanel(editors.console);
-editors.live = panelInit.live();
+// editors.live = panelInit.live();
 
 // jsconsole.init(); // sets up render functions etc.
-editors.live.settings.render = function (showAlerts) {
-  if (panels.ready) {
-    renderLivePreview(showAlerts);
-  }
-};
+// editors.live.settings.render = function (showAlerts) {
+//   if (panels.ready) {
+//     renderLivePreview(showAlerts);
+//   }
+// };
 
 panels.allEditors = function (fn) {
   var panelId, panel;
@@ -600,12 +600,12 @@ var editorsReady = setInterval(function () {
     clearInterval(editorsReady);
 
     // if the console is visible, it'll handle rendering of the output and console
-    if (panels.panels.console.visible) {
-      editors.console.render();
-    } else {
-      // otherwise, force a render
-      renderLivePreview();
-    }
+    // if (panels.panels.console.visible) {
+    //   editors.console.render();
+    // } else {
+    //   // otherwise, force a render
+    //   renderLivePreview();
+    // }
 
 
     $(window).resize(function () {

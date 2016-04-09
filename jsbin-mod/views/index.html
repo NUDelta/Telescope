@@ -2,9 +2,9 @@
 <html id="jsbin" lang="en" class="{{#if flash_tip}}showtip{{/if}}{{#if embed}} embed{{/if}}{{#equal editorLayout "0"}}{{else}} layout layout{{editorLayout}}{{/equal}}">
 <head>
   <meta charset=utf-8>
-  <title>JS Bin - Collaborative JavaScript Debugging</title>
+  <title>Telescope - UI Discovery</title>
   <link rel="alternate" type="application/json+oembed" href="{{root}}/oembed?url={{root}}{{request.url}}">
-  <link rel="icon" href="{{static}}/images/favicon.png">
+  <link rel="icon" href="{{static}}/images/favicon.ico">
   <link rel="stylesheet" href="{{static}}/css/style.css{{cacheBust}}">
   {{#if userCSS}}<style>{{userCSS}}</style>{{/if}}
   <link rel="stylesheet" href="{{static}}/css/font.css{{cacheBust}}">
@@ -401,6 +401,7 @@ Include alerts, prompts &amp; confirm boxes">Run with JS</button>
 {{#if custom_js}}
 <script src="{{makeURL custom_js static}}{{cacheBust}}"></script>
 {{/if}}
+
 </body>
 </html>
 
