@@ -749,13 +749,130 @@ Qualitative Study Findings
                     - Update map tile position
                     - Load / unload surrounding tiles based on position and tile dimension
 
-            4 HTML elements
+        tumblr.com
+            From Startup
+                92,070 lines unminified JS
+                4970 dom modifier
+                10,504 active js
+                34 HTML Lines queried
 
-        
+            During Interaction
+                (1) 52 dom modifier lines of non-library code
+                (2) 205 dom modifier lines with library
+                (4) 1839 active JS lines
+                1 HTML Line queried
+
+            Clicks
+                One click to start and see setup code
+                One click and drag to constrain time window 
+                One click to constrain end time
+                Scroll through JavaScript
+                Clicked to see related HTML
+
+            Interaction Methods Found
+                showSlide: alters div opacity and translateX,Y properties
+                __mouseWheel: debounces and captures scroll down event
+                _setActiveSection: toggle css classes to show hide divs
+                nextSection: calls set section with index + 1
+                setSection: call unset and applies section classes
+                _unsetActiveSection: removes class from active section
+                _resetScrolling: updates scrolling state asynchronously
+                showLogo: applies class to show logo
+                __aboutTumblrChange: shows and hides the about section
+                update: toggles the active css class on the sidebar dots
+
+            Implementation Lesson
+                To achieve a card-flip effect:
+                    - Use jQuery animate to adjust the translateX and Y values of css as a scalar
+                    - Swap css classes to show/hide active state
+                    - Debounce scroll effects to control scrolling
+                    - Update dot markers by swapping CSS
+
+        play-dot-to.com
+            From Startup
+                12,910 lines unminified JS
+                5,534 dom modifier
+                9,697 active js
+                3 HTML Lines queried
+            During Interaction
+                115 dom modifier non-library
+                232 dom moidifier
+                1687 active js
+                23 HTML Lines queried
+            Clicks
+                One click to start and see setup code
+                One click and drag to constrain time window 
+                One click to constrain end time
+                Scroll through JavaScript
+                Clicked to see related HTML
+            Interaction Methods Found
+                c (or activate round) change the game from menu to level state
+                    long switch state of which ui details to show (start, end, awards, level, round)
+                y (or start timer)
+                    set interval function every 10 millis to update round time
+                        round up to the nearest second
+                    if round time reaches max, hide timer
+                n (or draw line) invoke raphaelJS svg library to draw a line
+                    with animated wobble
+                u (or handle mouse events on dot) 
+                    track mouse down and drag event, release on mouse up
+                    animate the dot on mouseover, track path like in xkcd
+                    mouse up, finish line
+                    mouse out, finish line
+            Implementation lesson
+                - track mouse drag events like on XKCD
+                - all the above
+
+        New York Times Avalanche
+            Moderate success:
+                There are so many calls in the vast codebase
+                    That memory limits cause use to lose track of what was queried
+                    at the beginning
+
+            From Startup
+                41526 lines unminified JS
+                275 dom modifier non-library
+                521 dom modifier 
+                2546 active js
+                2 HTML Queries
+
+            During Interaction
+                150 dom modifier non-library
+                342 dom modifier
+                522 active js
+                30 HTML Queries
+
+            Clicks
+                One click to start and see setup code
+                One click and drag to constrain time window 
+                One click to constrain end time
+                Scroll through JavaScript
+                Clicked to see related HTML
+            Interaction Methods Found
+                updateOrientation: portrait vs landscape for mobile
+                a.fn.videoBG.setFullscreen: expands video into full view
+                    using window weith, height, centering
+                e.bind: attach events to the videos to tell when they can play
+                updateTopNav: hides on scroll with fading
+                checkArticleProgress: 
+                    detects if current view has a movie playing
+                    checks desktop/mobile attribute
+                    checks each video trigger 
+                    updates status on section cover, title, color, transition, and video playback
+                checkInstructProgress: prepares css transition for next section
+                checkSectionProgress: controls when the prompt for next section appears
+                checkCurrentView: checks the scroll offset against content to make sure
+                    the right things have rendered where the user is
+                    orders the current view in the above and below views
+                percentTillNext: calculates article progress against next section
+            Implementation Lesson
+                A dynamic view manager, where a user can enter the article 
+                    at any point, leave that point, or return to that point
+                    and have video playback sequences and scroll sequences in sync
 
     Failure Cases
         Mac Pro
-        New York Times
+        Google Maps
 
 
 
