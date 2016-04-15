@@ -86,9 +86,11 @@ var scenario2 = function () {
   });
 
   $("#test2").click(function () {
-    var $effect2 = $("#effect2");
-    var currentMoment = moment().format('MMMM Do YYYY, h:mm:ss a');
-    $effect2.append("<p>" + currentMoment + "</p>");
+    if ($("#effect1").is(":visible")) {
+      var $effect2 = $("#effect2");
+      var currentMoment = moment().format('MMMM Do YYYY, h:mm:ss a');
+      $effect2.append("<p>" + currentMoment + "</p>");
+    }
   });
 
 
