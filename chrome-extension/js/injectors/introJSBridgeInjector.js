@@ -56,10 +56,20 @@ define([], function () {
                 } catch (ig) {
                 }
 
+
+                var visible = unravelAgent.$(el).is(":visible") && onScreen;
+
+                if(!visible && window.location.hostname === "xkcd.com") {
+                  if(queryString.indexOf("ground") > -1 || queryString.indexOf("tile") > -1){
+                    subEl = unravelAgent.$("#comic")[0];
+                    visible = true;
+                  }
+                }
+
                 els.push({
                   el: subEl,
                   html: html,
-                  visible: unravelAgent.$(el).is(":visible") && onScreen
+                  visible: visible
                 });
               });
             }
@@ -69,7 +79,7 @@ define([], function () {
           unravelAgent._(els).map(function (el) {
             var invisibleNotice = "";
             if (!el.visible) {
-              invisibleNotice = "<h6 style='font-weight:bold;'>(Element is Hidden)</h6>"
+              invisibleNotice = "<h6 style='font-weight:bold;'>Element is not fully visible in the current view.</h6>"
             }
 
             stepArr.push({

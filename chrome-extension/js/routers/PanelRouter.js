@@ -33,9 +33,11 @@ define([
         router.on("ContentScriptReloaded", function (data) {
           if (!this.heardReload) {
             this.heardReload = true;
-            router.homeView.onFondueReady();
+
             UnravelAgent.runInPage(function () {
               window.dispatchEvent(new CustomEvent("StopCSReloadEmitter"));
+            }, function onRunDone(){
+              router.homeView.onFondueReady();
             });
           }
         }, router);

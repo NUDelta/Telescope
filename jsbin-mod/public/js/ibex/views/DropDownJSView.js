@@ -17,7 +17,10 @@ def([
     },
 
     _blockLibs: _([
+      "a3c5de",
       "jquery",
+      "moderniz",
+      "plugins",
       "moment",
       "underscore",
       "backbone",

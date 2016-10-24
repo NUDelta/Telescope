@@ -71,75 +71,42 @@ chrome.tabs.onUpdated.addListener(function (updatedTabId, changeInfo) {
   }
 });
 
-//Redirect script requests to fondue
-// chrome.webRequest.onBeforeRequest.addListener(function (details) {
-//     if (
-//       redirectingOrigin &&
-//       redirectingOrigin === thisOrigin &&
-//       requestRedirecting &&
-//       details.url.indexOf("chrome-extension") === -1 &&
-//       details.url.indexOf("localhost:900") === -1 &&
-//       details.type === "script"
-//     ) {
-//       return {redirectUrl: "https://localhost:9001?url=" + encodeURIComponent(details.url)};
-//     }
-//   },
-//   {urls: ["<all_urls>"]},
-//   ["requestBody", "blocking"]
-// );
-
-// chrome.webRequest.onBeforeRequest.addListener(function () {
-//     return {cancel: true};
-//   },
-//   {
-//     urls: [
-//       "*beacon.krxd.net*",
-//       "*cdn.krxd.net*",
-//       "*connect.facebook.net*",
-//       "*dc8xl0ndzn2cb.cloudfront.net*",
-//       "*www.google-analytics.com*",
-//       "*b.scorecardresearch.com*",
-//     ]
-//   },
-//   ["blocking"]
-// );
-
-var augmentRule = function (policy, separator, policyAddition, secondAddition) {
-  var sources = policy.split(separator)[1];
-  secondAddition = secondAddition || "";
-  sources = policyAddition + secondAddition + sources;
-  return [policy.split(separator)[0], separator, sources].join("");
-};
+// var augmentRule = function (policy, separator, policyAddition, secondAddition) {
+//   var sources = policy.split(separator)[1];
+//   secondAddition = secondAddition || "";
+//   sources = policyAddition + secondAddition + sources;
+//   return [policy.split(separator)[0], separator, sources].join("");
+// };
 
 
 // Alter page security policy headers to allow localhost to communicate with the page externally
 //http://www.html5rocks.com/en/tutorials/security/content-security-policy/
-chrome.webRequest.onHeadersReceived.addListener(function (details) {
-  if (details.method == "GET") {
-    details.responseHeaders.forEach(function (v, i, a) {
-      if (v.name == "content-security-policy") {
-
-        if (v.value) {
-          if (v.value.indexOf("script-src") > -1) {
-            v.value = augmentRule(v.value, "script-src", " https://localhost:3001 ", "'unsafe-inline'");
-          }
-
-          if (v.value.indexOf("connect-src") > -1) {
-            v.value = augmentRule(v.value, "connect-src", " https://localhost:3001 ");
-          }
-
-          var rules = v.value.split(" ");
-          rules.forEach(function (val, i, arr) {
-            if (val.indexOf("nonce") > -1) {
-              arr[i] = "";
-            }
-          });
-
-          v.value = rules.join(" ");
-        }
-
-      }
-    });
-    return {responseHeaders: details.responseHeaders};
-  }
-}, {urls: ["<all_urls>"]}, ["responseHeaders", "blocking"]);
+// chrome.webRequest.onHeadersReceived.addListener(function (details) {
+//   if (details.method == "GET") {
+//     details.responseHeaders.forEach(function (v, i, a) {
+//       if (v.name == "content-security-policy") {
+//
+//         if (v.value) {
+//           if (v.value.indexOf("script-src") > -1) {
+//             v.value = augmentRule(v.value, "script-src", " https://localhost:3001 ", "'unsafe-inline'");
+//           }
+//
+//           if (v.value.indexOf("connect-src") > -1) {
+//             v.value = augmentRule(v.value, "connect-src", " https://localhost:3001 ");
+//           }
+//
+//           var rules = v.value.split(" ");
+//           rules.forEach(function (val, i, arr) {
+//             if (val.indexOf("nonce") > -1) {
+//               arr[i] = "";
+//             }
+//           });
+//
+//           v.value = rules.join(" ");
+//         }
+//
+//       }
+//     });
+//     return {responseHeaders: details.responseHeaders};
+//   }
+// }, {urls: ["<all_urls>"]}, ["responseHeaders", "blocking"]);

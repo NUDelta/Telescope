@@ -125,15 +125,17 @@ define([
           } else {
             //Wait for other scripts to come in
             panelView.nodeCollection.add(nodeArr);
-            console.log("", nodeArr.length, " nodes loaded.");
+            console.log("1. ", nodeArr.length, " nodes loaded.");
             panelView.getScriptMetaData(function () {
-              console.log("getScriptMetaData callback");
+              console.log("2. Script metadata found");
 
               UnravelAgent.runInPage(function () {
                 unravelAgent.scriptLoadComplete = true;
                 unravelAgent.startObserving();
                 unravelAgent.fondueBridge.updateTrackedNodes();
               }, function () {
+                console.log("3. Observing tracer nodes.");
+
                 panelView.binSetupInProgress = false;
                 panelView.sendNodesHTMLCSSToJSBin();
               });
@@ -145,7 +147,6 @@ define([
           var hasBodyChildren = !!unravelAgent.$("body").children().length;
           var scripts = unravelAgent.$("script");
           if (hasBodyChildren && scripts && scripts[0]) {
-            // if (unravelAgent.scriptLoadComplete) {
             unravelAgent.fondueBridge.startTracking();
             unravelAgent.fondueBridge.updateTrackedNodes();
             return unravelAgent.fondueBridge.getNodes(); //for our script metadata

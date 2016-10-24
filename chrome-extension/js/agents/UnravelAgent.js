@@ -2,7 +2,7 @@ define([
   "../injectors/jQueryInjector",
   "../injectors/underscoreInjector",
   "../injectors/observerInjector",
-  "../injectors/jsTraceInjector",
+  "../injectors/siteSwapInjector",
   "../injectors/fondueInjector",
   "../injectors/whittleInjector",
   "../injectors/introJSInjector",
@@ -11,7 +11,7 @@ define([
 ], function (jQueryInjector,
              underscoreInjector,
              observerInjector,
-             jsTraceInjector,
+             siteSwapInjector,
              fondueInjector,
              whittleInjector,
              introJSInjector,
@@ -39,7 +39,7 @@ define([
     var f1 = "(" + agentFn.toString() + ").apply(this, []); ";
     var f2 = "(" + jQueryInjector.toString() + ").apply(this, []); ";
     var f3 = "(" + underscoreInjector.toString() + ").apply(this, []); ";
-    var f5 = "(" + jsTraceInjector.toString() + ").apply(this, []); ";
+    var f5 = "(" + siteSwapInjector.toString() + ").apply(this, []); ";
     var f6 = "(" + observerInjector.toString() + ").apply(this, []); ";
     var f7 = "(" + fondueInjector.toString() + ").apply(this, []); ";
     var f8 = "(" + whittleInjector.toString() + ").apply(this, []); ";
