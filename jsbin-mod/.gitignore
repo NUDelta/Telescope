@@ -1,6 +1,5 @@
 logs
 logs/*
-public/js/jsbin*.js
 .nodemonignore
 public/js/prod
 !config.default.json
